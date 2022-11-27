@@ -4,6 +4,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
+    kotlin("plugin.serialization") version "1.4.21-2"
 }
 
 group = "pl.patrykzaucha"
@@ -27,6 +28,8 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation("org.seleniumhq.selenium:selenium-java:2.41.0")
+                implementation("it.skrape:skrapeit:1.1.5")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
             }
         }
         val jvmTest by getting

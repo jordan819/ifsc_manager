@@ -1,9 +1,12 @@
 package scraping.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Climber(
-    val climberId: Int,
-    val name: String,
-    val age: Int?,
-    val country: String,
-    val federation: String
+    var climberId: Int = 0,
+    var name: String = "",
+    var age: Int? = 0,
+    var country: String = "",
+    var federation: String = ""
 )

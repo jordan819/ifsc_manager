@@ -5,6 +5,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import scraping.Scraper
 
 @Composable
 @Preview
@@ -20,8 +21,9 @@ fun App() {
     }
 }
 
-fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        App()
-    }
-}
+fun main() = Scraper().fetchClimbers()
+//    application {
+//    Window(onCloseRequest = ::exitApplication) {
+//        App()
+//    }
+//}

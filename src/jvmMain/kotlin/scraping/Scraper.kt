@@ -8,13 +8,14 @@ import it.skrape.selects.html5.div
 import it.skrape.selects.html5.h1
 import it.skrape.selects.html5.span
 import it.skrape.selects.html5.strong
-import kotlinx.coroutines.delay
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.RemoteWebElement
+import org.openqa.selenium.support.ui.ExpectedConditions
+import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
-import java.util.NoSuchElementException
+import scraping.model.boulder.BoulderGeneral
 import java.util.concurrent.TimeUnit
 
 class Scraper {
@@ -106,7 +107,8 @@ class Scraper {
                 val name = driver.findElementByClassName("name").text
                 val country = driver.findElementByClassName("country").text
                 val federation = driver.findElementByClassName("federation").text
-                val age = (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
+                val age =
+                    (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
 
                 val climber = Climber(climberId, name, age, country, federation)
                 println(climber)
@@ -122,33 +124,77 @@ class Scraper {
         println("Selenium fetched ${climberId - 1} climbers in ${interval}s")
     }
 
-    suspend fun scrape() {
-        println("Starting web scraping...")
-        val url =
-            "https://www.ifsc-climbing.org/index.php/world-competition/calendar/?task=resultathletes&event=1235&result=6"
+    fun fetchEvents() {
+        println("Fetching events...")
+        val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
+
+        driver.get(url)
+        driver.switchTo().frame("calendar")
+        val wait = WebDriverWait(driver, 30)
+        wait.until(
+            ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
+        )
+
+        val tags = driver.findElementsByClassName("tag")
+        val competitions = mutableListOf<Pair<String, String>>()
+        tags.forEach {
+            val href = (it as RemoteWebElement).findElementByTagName("a").getAttribute("href")
+            val type = it.text.split(" ").first()
+            competitions.add(href to type)
+        }
+        competitions.forEach {
+            fetchTableContent(it.first, it.second)
+        }
+        println("Total links: ${tags.size}")
+    }
+
+    private fun fetchTableContent(url: String, type: String) {
+        println("Fetching table content for $url")
 
         // Navigate to a page
         driver.get(url)
         driver.switchTo().frame("calendar")
-        val table = driver.findElementById("table_id")
 
-        delay(500)
+        val wait = WebDriverWait(driver, 30)
+        wait.until(
+            ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
+        )
+
+        val table = driver.findElementById("table_id")
 
         val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
 
-        rows.forEach { row ->
-            val columns = row.findElements(By.tagName("div"))
-            val rank = columns.getOrNull(0)?.text ?: ""
-            val name = columns.getOrNull(1)?.text ?: ""
-            val surname = columns.getOrNull(2)?.text ?: ""
-            val country = columns.getOrNull(3)?.text ?: ""
-            val eight = columns.getOrNull(4)?.text ?: ""
-            val quarter = columns.getOrNull(5)?.text ?: ""
-            val semi = columns.getOrNull(6)?.text ?: ""
-            val smallFinal = columns.getOrNull(7)?.text ?: ""
-            val bigFinal = columns.getOrNull(8)?.text ?: ""
-            println("$rank | $name | $surname | $country | $eight | $quarter | $semi | $smallFinal | $bigFinal")
+        when (type) {
+            BOULDER, SPEED, BOULDER_AND_LEAD -> {
+                // TODO: implement
+                println("$type - skipping")
+                return
+            }
+
+            LEAD -> {
+                rows.forEach { row ->
+                    val rank =
+                        (row as RemoteWebElement).findElementsByClassName("rank").firstOrNull()?.text?.toIntOrNull()
+                    val climberId =
+                        row.findElementByTagName("a").getAttribute("href").split("=").last().toIntOrNull() ?: return
+                    val scores = row.findElements(By.className("tdAlignNormal"))
+                    val qualification = scores[0].text
+                    val semiFinal = scores.getOrNull(1)?.text
+                    val final = scores.getOrNull(2)?.text
+                    val result = BoulderGeneral(rank, climberId, qualification, semiFinal, final)
+                    println(result)
+                }
+            }
+
+            else -> return
         }
+    }
+
+    companion object {
+        const val BOULDER = "BOULDER"
+        const val LEAD = "LEAD"
+        const val SPEED = "SPEED"
+        const val BOULDER_AND_LEAD = "BOULDER&LEAD"
     }
 
 }

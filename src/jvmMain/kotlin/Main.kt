@@ -3,7 +3,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import scraping.Scraper
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
 
 @Composable
 @Preview
@@ -19,13 +20,8 @@ fun App() {
     }
 }
 
-fun main() {
-    val scraper = Scraper()
-    scraper.fetchClimbersWithSkrapeIt()
-    scraper.fetchClimbersWithSelenium()
+fun main() = application {
+    Window(onCloseRequest = ::exitApplication) {
+        App()
+    }
 }
-//    application {
-//    Window(onCloseRequest = ::exitApplication) {
-//        App()
-//    }
-//}

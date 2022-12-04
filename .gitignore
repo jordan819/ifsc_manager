@@ -9,6 +9,7 @@ build/
 .idea/workspace.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
+.idea/csv-editor.xml
 .idea/libraries/
 .idea/artifacts/
 *.iws

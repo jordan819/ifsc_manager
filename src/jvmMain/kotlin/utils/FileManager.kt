@@ -14,7 +14,7 @@ class FileManager {
             File(pathName).writeText("climberId, name, age, country, federation\n")
         }
         File("src/jvmMain/resources/climbers").appendText(
-            "${climber.climberId}, ${climber.name}, ${climber.age}, ${climber.country}, ${climber.federation}\n"
+            "${climber.climberId}, ${climber.name}, ${climber.yearOfBirth}, ${climber.country}, ${climber.federation}\n"
         )
     }
 

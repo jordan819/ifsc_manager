@@ -24,7 +24,9 @@ import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
 import scraping.model.lead.LeadGeneral
 import utils.FileManager
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.NoSuchElementException
 
 class Scraper {
 
@@ -87,7 +89,7 @@ class Scraper {
                             findFirst {
                                 strong {
                                     findFirst {
-                                        it.age = this.text.toIntOrNull()
+                                        it.yearOfBirth = this.text.toIntOrNull()
                                     }
                                 }
                             }
@@ -108,25 +110,26 @@ class Scraper {
         CoroutineScope(Dispatchers.IO).launch {
             println("Fetching all climbers using Selenium...")
             val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
-            var climberId = 1
+            var climberId = 0
             val start = System.currentTimeMillis()
-            while (climberId < 101) {
+            loop@ while (climberId < 14400) {
                 try {
+                    climberId++
                     driver.get(url + climberId)
-                    val name = driver.findElementByClassName("name").text
+                    val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: continue@loop
                     val country = driver.findElementByClassName("country").text
                     val federation = driver.findElementByClassName("federation").text
+
                     val age =
                         (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
+                    val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
-                    val climber = Climber(climberId, name, age, country, federation)
+                    val climber = Climber(climberId, name, yearOfBirth, country, federation)
                     Database.write(climber)
                     println(climber)
-
-                    climberId++
                 } catch (_: NoSuchElementException) {
                     println("Succesfully fetched ${climberId - 1} climbers")
-                    return@launch
+                    continue@loop
                 }
             }
             val stop = System.currentTimeMillis()

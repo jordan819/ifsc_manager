@@ -8,7 +8,7 @@ class ClimberRealm : RealmObject {
     @PrimaryKey
     var id = 0
     var name: String = ""
-    var age: Int? = null
+    var yearOfBirth: Int? = null
     var country: String = ""
     var federation: String = ""
 }
@@ -22,7 +22,7 @@ object Database {
             this.copyToRealm(ClimberRealm().apply {
                 id = climber.climberId
                 name = climber.name
-                age = climber.age
+                yearOfBirth = climber.yearOfBirth
                 country = climber.country
                 federation = climber.federation
             })

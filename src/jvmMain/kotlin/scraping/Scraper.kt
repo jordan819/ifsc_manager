@@ -1,5 +1,6 @@
 package scraping
 
+import io.realm.Database
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.BrowserFetcher
 import it.skrape.fetcher.extractIt
@@ -8,7 +9,10 @@ import it.skrape.selects.html5.div
 import it.skrape.selects.html5.h1
 import it.skrape.selects.html5.span
 import it.skrape.selects.html5.strong
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.openqa.selenium.By
 import org.openqa.selenium.TimeoutException
 import org.openqa.selenium.chrome.ChromeDriver
@@ -101,31 +105,34 @@ class Scraper {
 
 
     fun fetchClimbersWithSelenium() {
-        println("Fetching all climbers using Selenium...")
-        val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
-        var climberId = 1
-        val start = System.currentTimeMillis()
-        while (climberId < 101) {
-            try {
-                driver.get(url + climberId)
-                val name = driver.findElementByClassName("name").text
-                val country = driver.findElementByClassName("country").text
-                val federation = driver.findElementByClassName("federation").text
-                val age =
-                    (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
+        CoroutineScope(Dispatchers.IO).launch {
+            println("Fetching all climbers using Selenium...")
+            val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
+            var climberId = 1
+            val start = System.currentTimeMillis()
+            while (climberId < 101) {
+                try {
+                    driver.get(url + climberId)
+                    val name = driver.findElementByClassName("name").text
+                    val country = driver.findElementByClassName("country").text
+                    val federation = driver.findElementByClassName("federation").text
+                    val age =
+                        (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
 
-                val climber = Climber(climberId, name, age, country, federation)
-                println(climber)
+                    val climber = Climber(climberId, name, age, country, federation)
+                    Database.write(climber)
+                    println(climber)
 
-                climberId++
-            } catch (_: NoSuchElementException) {
-                println("Succesfully fetched ${climberId - 1} climbers")
-                return
+                    climberId++
+                } catch (_: NoSuchElementException) {
+                    println("Succesfully fetched ${climberId - 1} climbers")
+                    return@launch
+                }
             }
+            val stop = System.currentTimeMillis()
+            val interval = TimeUnit.MILLISECONDS.toSeconds(stop - start)
+            println("Selenium fetched ${climberId - 1} climbers in ${interval}s")
         }
-        val stop = System.currentTimeMillis()
-        val interval = TimeUnit.MILLISECONDS.toSeconds(stop - start)
-        println("Selenium fetched ${climberId - 1} climbers in ${interval}s")
     }
 
     suspend fun fetchEvents() {

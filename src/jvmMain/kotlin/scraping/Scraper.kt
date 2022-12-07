@@ -23,7 +23,6 @@ import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
 import scraping.model.lead.LeadGeneral
-import utils.FileManager
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.NoSuchElementException
@@ -125,7 +124,7 @@ class Scraper {
                     val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
                     val climber = Climber(climberId, name, yearOfBirth, country, federation)
-                    Database.write(climber)
+                    Database.writeClimber(climber)
                     println(climber)
                 } catch (_: NoSuchElementException) {
                     println("Succesfully fetched ${climberId - 1} climbers")
@@ -144,7 +143,7 @@ class Scraper {
 
         var currentYear: Int? = null
 
-        while (true) {
+        do {
             driver.get(url)
             driver.switchTo().frame("calendar")
             val wait = WebDriverWait(driver, 30)
@@ -191,10 +190,10 @@ class Scraper {
                 }
             }
             competitionsDriver.close()
-        }
+        } while ((currentYear ?: 0) > 2007)
     }
 
-    private fun fetchTableContent(url: String, type: String, currentYear: String, driver: ChromeDriver) {
+    private suspend fun fetchTableContent(url: String, type: String, currentYear: String, driver: ChromeDriver) {
         driver.get(url)
         driver.switchTo().frame("calendar")
 
@@ -213,6 +212,7 @@ class Scraper {
                 println("$type - skipping $url")
                 return
             }
+
             LEAD -> {
                 println("Fetching $type results from $url")
                 val results: MutableList<LeadGeneral> = mutableListOf()
@@ -228,9 +228,10 @@ class Scraper {
                     val result = LeadGeneral(rank, climberId, qualification, semiFinal, final)
                     results.add(result)
                 }
-                val fileName = url.split("&")[1] + "_" + url.split("&")[2]
-                FileManager().writeToCsv(results, currentYear, fileName)
+                val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
+                Database.writeLeadResults(results, currentYear.toInt(), competitionId)
             }
+
             else -> {
                 System.err.println("UNEXPECTED TYPE: $type $url")
                 return

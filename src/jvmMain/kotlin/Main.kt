@@ -18,8 +18,6 @@ fun App() {
 
     val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    var text by remember { mutableStateOf("Hello, World!") }
-
     MaterialTheme {
         Column {
             Button(onClick = {
@@ -29,6 +27,7 @@ fun App() {
             }) {
                 Text("Pobierz i zapisz zawodników")
             }
+
             Button(onClick = {
                 coroutineScope.launch {
                     val climbers = Database.getAllClimbers()
@@ -38,6 +37,26 @@ fun App() {
                 }
             }) {
                 Text("Odczytaj zawodników z bazy")
+            }
+
+            Button(onClick = {
+                coroutineScope.launch {
+                    Scraper().fetchEvents()
+                }
+            }) {
+                Text("Pobierz zawody")
+            }
+
+            Button(onClick = {
+                coroutineScope.launch {
+                    val leads = Database.getAllLeads()
+                    leads.forEach { lead ->
+                        println("${lead.id} ${lead.year} ${lead.competitionId}")
+                    }
+                    println(leads.size)
+                }
+            }) {
+                Text("Odczytaj zawody z bazy")
             }
         }
     }

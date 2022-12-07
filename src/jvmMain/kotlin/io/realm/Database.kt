@@ -30,7 +30,7 @@ object Database {
     private val realm = Realm.open(configuration)
 
     suspend fun writeClimber(climber: Climber) = realm.write {
-        if (!this.query<LeadResultRealm>("id == $0", climber.climberId).find().isEmpty()) {
+        if (!this.query<ClimberRealm>("id == $0", climber.climberId).find().isEmpty()) {
             System.err.println("Climber with id ${climber.climberId} already exists - skipping")
             return@write
         }

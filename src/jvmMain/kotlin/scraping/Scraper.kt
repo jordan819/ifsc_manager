@@ -1,14 +1,6 @@
 package scraping
 
 import io.realm.Database
-import it.skrape.core.htmlDocument
-import it.skrape.fetcher.BrowserFetcher
-import it.skrape.fetcher.extractIt
-import it.skrape.fetcher.skrape
-import it.skrape.selects.html5.div
-import it.skrape.selects.html5.h1
-import it.skrape.selects.html5.span
-import it.skrape.selects.html5.strong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -45,69 +37,9 @@ class Scraper {
         driver = ChromeDriver(driverOptions)
     }
 
-    /**
-     * SkrapeIt is way less efficient than expected. Stays in code for now, but shouldn't be used.
-     */
-    fun fetchClimbersWithSkrapeIt() {
-        var climberId = 1
-        println("Fetching all climbers using SkrapeIt...")
-        val start = System.currentTimeMillis()
-        while (climberId < 101) {
-            skrape(BrowserFetcher) {
-                request {
-                    url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id=$climberId"
-                }
-                extractIt<Climber> {
-                    htmlDocument {
-                        relaxed = true
-
-                        it.climberId = climberId
-
-                        h1 {
-                            withClass = "name"
-                            findFirst {
-                                it.name = this.text
-                            }
-                        }
-                        div {
-                            withClass = "country"
-                            findFirst {
-                                span {
-                                    it.country = this.findFirst { this.text }
-                                }
-                            }
-                        }
-                        span {
-                            withClass = "federation"
-                            findFirst {
-                                it.federation = this.text
-                            }
-                        }
-                        span {
-                            withClass = "age"
-                            findFirst {
-                                strong {
-                                    findFirst {
-                                        it.yearOfBirth = this.text.toIntOrNull()
-                                    }
-                                }
-                            }
-                        }
-                        println(it)
-                    }
-                }
-            }
-            climberId++
-        }
-        val stop = System.currentTimeMillis()
-        val interval = TimeUnit.MILLISECONDS.toSeconds(stop - start)
-        println("SkrapeIt fetched ${climberId - 1} climbers in ${interval}s")
-    }
-
-
-    fun fetchClimbersWithSelenium() {
+    fun fetchClimbers() {
         CoroutineScope(Dispatchers.IO).launch {
-            println("Fetching all climbers using Selenium...")
+            println("Fetching climbers...")
             val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
             var climberId = 0
             val start = System.currentTimeMillis()

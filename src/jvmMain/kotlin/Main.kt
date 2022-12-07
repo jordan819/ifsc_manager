@@ -22,7 +22,7 @@ fun App() {
         Column {
             Button(onClick = {
                 coroutineScope.launch {
-                    Scraper().fetchClimbersWithSelenium()
+                    Scraper().fetchClimbers()
                 }
             }) {
                 Text("Pobierz i zapisz zawodników")

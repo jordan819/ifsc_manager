@@ -25,7 +25,7 @@ fun App() {
                     Scraper().fetchClimbers()
                 }
             }) {
-                Text("Pobierz i zapisz zawodników")
+                Text("Pobierz zawodników")
             }
 
             Button(onClick = {
@@ -36,7 +36,7 @@ fun App() {
                     }
                 }
             }) {
-                Text("Odczytaj zawodników z bazy")
+                Text("Odczytaj zawodników")
             }
 
             Button(onClick = {
@@ -56,7 +56,19 @@ fun App() {
                     println(leads.size)
                 }
             }) {
-                Text("Odczytaj zawody z bazy")
+                Text("Odczytaj zawody LEAD")
+            }
+
+            Button(onClick = {
+                coroutineScope.launch {
+                    val speeds = Database.getAllSpeeds()
+                    speeds.forEach { speed ->
+                        println("${speed.id} ${speed.laneA}")
+                    }
+                    println(speeds.size)
+                }
+            }) {
+                Text("Odczytaj zawody SPEED")
             }
         }
     }

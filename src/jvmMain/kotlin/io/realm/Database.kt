@@ -3,6 +3,7 @@ package io.realm
 import io.realm.annotations.PrimaryKey
 import scraping.model.Climber
 import scraping.model.lead.LeadGeneral
+import scraping.model.speed.SpeedResult
 
 class ClimberRealm : RealmObject {
     @PrimaryKey
@@ -25,8 +26,28 @@ class LeadResultRealm : RealmObject {
     var final: String? = null
 }
 
+class SpeedResultRealm : RealmObject {
+    @PrimaryKey
+    var id: String = ""
+    var rank: Int? = null
+    var climberId = 0
+    var laneA: String? = null
+    var laneB: String? = null
+    var oneEighth: String? = null
+    var quarter: String? = null
+    var semiFinal: String? = null
+    var smallFinal: String? = null
+    var final: String? = null
+}
+
 object Database {
-    private val configuration = RealmConfiguration.with(schema = setOf(ClimberRealm::class, LeadResultRealm::class))
+    private val configuration = RealmConfiguration.with(
+        schema = setOf(
+            ClimberRealm::class,
+            LeadResultRealm::class,
+            SpeedResultRealm::class
+        )
+    )
     private val realm = Realm.open(configuration)
 
     suspend fun writeClimber(climber: Climber) = realm.write {
@@ -68,7 +89,36 @@ object Database {
         }
     }
 
+    suspend fun writeSpeedResults(results: List<SpeedResult>, year: Int, competitionId: String) =
+        results.forEach { result ->
+            writeSpeedResult(result, year, competitionId)
+        }
+
+    private suspend fun writeSpeedResult(result: SpeedResult, year: Int, competitionId: String) {
+        val resultId = "$competitionId-${result.climberId}"
+        realm.write {
+            if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
+                System.err.println("Speed result with id $resultId already exists - skipping")
+                return@write
+            }
+            this.copyToRealm(SpeedResultRealm().apply {
+                id = resultId
+                rank = result.rank
+                climberId = result.climberId
+                laneA = result.laneA
+                laneB = result.laneB
+                oneEighth = result.oneEighth
+                quarter = result.quarter
+                semiFinal = result.semiFinal
+                smallFinal = result.smallFinal
+                final = result.final
+            })
+        }
+    }
+
     fun getAllLeads(): List<LeadResultRealm> = realm.query<LeadResultRealm>().find()
+
+    fun getAllSpeeds(): List<SpeedResultRealm> = realm.query<SpeedResultRealm>().find()
 
     fun getAllClimbers(): List<ClimberRealm> {
         return realm.query<ClimberRealm>().find()

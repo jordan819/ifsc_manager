@@ -15,6 +15,9 @@ import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
 import scraping.model.lead.LeadGeneral
+import scraping.model.speed.SpeedFinal
+import scraping.model.speed.SpeedQualification
+import scraping.model.speed.SpeedResult
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.NoSuchElementException
@@ -73,7 +76,7 @@ class Scraper {
         println("Fetching events...")
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
-        var currentYear: Int? = null
+        var currentYear: Int? = 2008
 
         do {
             driver.get(url)
@@ -134,20 +137,72 @@ class Scraper {
             ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
         )
 
-        val table = driver.findElementById("table_id")
-
-        val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
-
         when (type) {
-            BOULDER, SPEED, BOULDER_AND_LEAD, COMBINED -> {
+            BOULDER, BOULDER_AND_LEAD, COMBINED -> {
                 // TODO: implement
                 println("$type - skipping $url")
                 return
             }
 
+            SPEED -> {
+                println("Fetching $type results from $url")
+                driver.findElementsByClassName("link").firstOrNull()?.click() ?: return
+                wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
+                )
+                val table = driver.findElementById("table_id")
+                val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
+                val qualificationResults = mutableListOf<SpeedQualification>()
+                val finalResults = mutableListOf<SpeedFinal>()
+                rows.forEach { row ->
+                    val climberId =
+                        row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
+                    val laneA = row.findElements(By.className("number")).firstOrNull()?.text
+                    val laneB = row.findElements(By.className("number")).lastOrNull()?.text
+                    qualificationResults.add(SpeedQualification(climberId, laneA, laneB))
+                }
+
+                driver.findElementsByClassName("link").last().click()
+                wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
+                )
+                val rows2 = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
+                rows2.forEach { row ->
+                    val rank = row.findElements(By.className("rank")).firstOrNull()?.text?.toIntOrNull()
+                    val climberId =
+                        row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
+                    val results = row.findElements(By.className("number"))
+                    val oneEighth = results[0].text
+                    val quarter = results.getOrNull(1)?.text
+                    val semiFinal = results.getOrNull(2)?.text
+                    val smallFinal = results.getOrNull(3)?.text
+                    val final = results.getOrNull(4)?.text
+                    finalResults.add(SpeedFinal(rank, climberId, oneEighth, quarter, semiFinal, smallFinal, final))
+                }
+
+                val results = qualificationResults.map { qualificationResult ->
+                    val finalResult = finalResults.getOrNull(qualificationResult.climberId)
+                    SpeedResult(
+                        null, //FIXME: get rank from general results
+                        qualificationResult.climberId,
+                        qualificationResult.laneA,
+                        qualificationResult.laneB,
+                        finalResult?.oneEighth,
+                        finalResult?.quarter,
+                        finalResult?.semiFinal,
+                        finalResult?.smallFinal,
+                        finalResult?.final,
+                    )
+                }
+                val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
+                Database.writeSpeedResults(results, currentYear.toInt(), competitionId)
+            }
+
             LEAD -> {
                 println("Fetching $type results from $url")
                 val results: MutableList<LeadGeneral> = mutableListOf()
+                val table = driver.findElementById("table_id")
+                val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
                 rows.forEach { row ->
                     val rank =
                         (row as RemoteWebElement).findElementsByClassName("rank").firstOrNull()?.text?.toIntOrNull()

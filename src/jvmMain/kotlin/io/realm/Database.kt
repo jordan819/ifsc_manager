@@ -1,44 +1,11 @@
 package io.realm
 
-import io.realm.annotations.PrimaryKey
+import io.realm.model.ClimberRealm
+import io.realm.model.LeadResultRealm
+import io.realm.model.SpeedResultRealm
 import scraping.model.Climber
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
-
-class ClimberRealm : RealmObject {
-    @PrimaryKey
-    var id = 0
-    var name: String = ""
-    var yearOfBirth: Int? = null
-    var country: String = ""
-    var federation: String = ""
-}
-
-class LeadResultRealm : RealmObject {
-    @PrimaryKey
-    var id: String = ""
-    var year: Int = 0
-    var competitionId: String = ""
-    var rank: Int? = null
-    var climber: Int = 0
-    var qualification: String = ""
-    var semiFinal: String? = null
-    var final: String? = null
-}
-
-class SpeedResultRealm : RealmObject {
-    @PrimaryKey
-    var id: String = ""
-    var rank: Int? = null
-    var climberId = 0
-    var laneA: String? = null
-    var laneB: String? = null
-    var oneEighth: String? = null
-    var quarter: String? = null
-    var semiFinal: String? = null
-    var smallFinal: String? = null
-    var final: String? = null
-}
 
 object Database {
     private val configuration = RealmConfiguration.with(

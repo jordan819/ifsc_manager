@@ -76,7 +76,7 @@ class Scraper {
         println("Fetching events...")
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
-        var currentYear: Int? = 2008
+        var currentYear: Int? = null
 
         do {
             driver.get(url)

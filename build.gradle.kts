@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.compose")
     kotlin("plugin.serialization") version "1.4.21-2"
     id("io.realm.kotlin") version "0.10.0"
+    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 group = "pl.patrykzaucha"
@@ -47,4 +48,8 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+dependencies {
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.7.20")
 }

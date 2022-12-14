@@ -3,6 +3,9 @@ package io.realm.model
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
+/**
+ * Class used to store lead result in database.
+ */
 class LeadResultRealm : RealmObject {
     @PrimaryKey
     var id: String = ""

@@ -1,7 +1,7 @@
 package scraping.model.lead
 
 /**
- * The simplest type of results - all data is available in general table.
+ * Class used to fetch lead general result.
  */
 data class LeadGeneral(
     val rank: Int?,

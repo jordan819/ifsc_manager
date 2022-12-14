@@ -3,6 +3,9 @@ package io.realm.model
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
+/**
+ * Class used to store speed result in database.
+ */
 class SpeedResultRealm : RealmObject {
     @PrimaryKey
     var id: String = ""

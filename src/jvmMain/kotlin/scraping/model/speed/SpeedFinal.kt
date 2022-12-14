@@ -1,5 +1,8 @@
 package scraping.model.speed
 
+/**
+ * Class used to fetch speed final phase result.
+ */
 data class SpeedFinal(
     val rank: Int?,
     val climberId: Int,

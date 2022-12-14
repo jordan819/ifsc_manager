@@ -7,6 +7,11 @@ import scraping.model.Climber
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
 
+/**
+ * Object that allows user to perform various actions on local database.
+ *
+ * User may write some data to database, and later read that from it. Once saved data may also be edited, or even deleted.
+ */
 object Database {
     private val configuration = RealmConfiguration.with(
         schema = setOf(
@@ -17,6 +22,12 @@ object Database {
     )
     private val realm = Realm.open(configuration)
 
+    /**
+     * Allows user to save data about a certain player to database. In case record with given id already exists,
+     * operation will be skipped.
+     *
+     * @param[climber] climber data to be saved
+     */
     suspend fun writeClimber(climber: Climber) = realm.write {
         if (!this.query<ClimberRealm>("id == $0", climber.climberId).find().isEmpty()) {
             System.err.println("Climber with id ${climber.climberId} already exists - skipping")
@@ -31,6 +42,14 @@ object Database {
         })
     }
 
+    /**
+     * Allows user to save data about all results from LEAD type of event to database.
+     * In case record with given id already exists, operation will be skipped.
+     *
+     * @param[results] list of lead results to be saved
+     * @param[year] year in which event happened - used to generate unique id for the result
+     * @param[competitionId] id of the competition
+     */
     suspend fun writeLeadResults(results: List<LeadGeneral>, year: Int, competitionId: String) =
         results.forEach { result ->
             writeLeadResult(result, year, competitionId)
@@ -56,6 +75,14 @@ object Database {
         }
     }
 
+    /**
+     * Allows user to save data about all results from SPEED type of event to database.
+     * In case record with given id already exists, operation will be skipped.
+     *
+     * @param[results] list of speed results to be saved
+     * @param[year] year in which event happened - used to generate unique id for the result
+     * @param[competitionId] id of the competition
+     */
     suspend fun writeSpeedResults(results: List<SpeedResult>, year: Int, competitionId: String) =
         results.forEach { result ->
             writeSpeedResult(result, year, competitionId)
@@ -83,14 +110,27 @@ object Database {
         }
     }
 
+    /**
+     * Returns all the lead results saved in database.
+     */
     fun getAllLeads(): List<LeadResultRealm> = realm.query<LeadResultRealm>().find()
 
+    /**
+     * Returns all the speed results saved in database.
+     */
     fun getAllSpeeds(): List<SpeedResultRealm> = realm.query<SpeedResultRealm>().find()
 
-    fun getAllClimbers(): List<ClimberRealm> {
-        return realm.query<ClimberRealm>().find()
-    }
+    /**
+     * Returns all the climbers saved in database.
+     */
+    fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find()
 
+    /**
+     * Returns selected climber if exists.
+     *
+     * @param[id] id of the user to be returned
+     * @return selected [climber][ClimberRealm] if exists, null otherwise
+     */
     fun getClimberById(id: Int): ClimberRealm? = realm.query<ClimberRealm>("id==$0", id).first().find()
 
 }

@@ -12,6 +12,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import scraping.Scraper
 
+/**
+ * Main Activity of the application.
+ * From here user may get access to locally stored data, fetch or add new records to database, or generate comparisons
+ * between climbers.
+ */
 @Composable
 @Preview
 fun App() {
@@ -72,6 +77,22 @@ fun App() {
             }
         }
     }
+}
+
+/**
+ * Generates comparison between 2 or 3 climbers.
+ *
+ * Displays information about climbers' ages, the greatest scores and won awards.
+ */
+fun compareClimbers(climber1: Int, climber2: Int, climber3: Int? = null) {
+
+}
+
+/**
+ * Generates visualization of climber's progress over the time of one's career.
+ */
+fun analyzeClimberHistory(climber: Int) {
+
 }
 
 fun main() = application {

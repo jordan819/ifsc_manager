@@ -22,6 +22,9 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.NoSuchElementException
 
+/**
+ * Class that allows to fetch data from web page, without dedicated API.
+ */
 class Scraper {
 
     private lateinit var driver: ChromeDriver
@@ -40,6 +43,11 @@ class Scraper {
         driver = ChromeDriver(driverOptions)
     }
 
+    /**
+     * Fetches data about all registered [climbers][Climber].
+     *
+     * Fetches information about a climber and writes it to local database.
+     */
     fun fetchClimbers() {
         CoroutineScope(Dispatchers.IO).launch {
             println("Fetching climbers...")
@@ -72,6 +80,12 @@ class Scraper {
         }
     }
 
+    /**
+     * Fetches data about all available events types, like [lead][LeadGeneral], or [speed][SpeedResult].
+     *
+     * Fetches information about climbers results in competitions and writes it to local database.
+     * Afterwards links result with a certain [climber][Climber].
+     */
     suspend fun fetchEvents() {
         println("Fetching events...")
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
@@ -226,6 +240,9 @@ class Scraper {
         }
     }
 
+    /**
+     * Contains all types of available competitions types.
+     */
     companion object {
         const val BOULDER = "BOULDER"
         const val LEAD = "LEAD"

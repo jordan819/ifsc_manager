@@ -75,6 +75,18 @@ fun App() {
             }) {
                 Text("Odczytaj zawody SPEED")
             }
+
+            Button(onClick = {
+                coroutineScope.launch {
+                    val boulders = Database.getAllBoulders()
+                    boulders.forEach { boulder ->
+                        println("${boulder.id} ${boulder.qualification}")
+                    }
+                    println(boulders.size)
+                }
+            }) {
+                Text("Odczytaj zawody BOULDER")
+            }
         }
     }
 }

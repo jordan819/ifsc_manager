@@ -3,7 +3,6 @@ package scraping
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.openqa.selenium.By
 import org.openqa.selenium.TimeoutException
@@ -109,9 +108,6 @@ class Scraper {
 
             currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
             println("---------------- Fetching data for year $currentYear ----------------")
-
-            //TODO: maybe sth smarter can be done
-            delay(1000)
 
             wait.until(
                 ExpectedConditions.visibilityOfElementLocated(By.className("competition"))

@@ -172,6 +172,11 @@ object Database {
     fun getAllSpeeds(): List<SpeedResultRealm> = realm.query<SpeedResultRealm>().find()
 
     /**
+     * Returns all the boulder results saved in database.
+     */
+    fun getAllBoulders(): List<BoulderResultRealm> = realm.query<BoulderResultRealm>().find()
+
+    /**
      * Returns all the climbers saved in database.
      */
     fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find()

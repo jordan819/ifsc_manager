@@ -58,18 +58,8 @@ object Database {
             writeLeadResult(result, year, competitionId)
         }
 
-    /**
-     * Allows user to save data about result from LEAD type of event to database.
-     * In case record with given id already exists, operation will be skipped.
-     *
-     * @param[result] speed results to be saved
-     * @param[year] year in which event happened - used to generate unique id for the result
-     * @param[competitionId] id of the competition
-     *
-     * @return true if result saved successfully, false otherwise
-     */
-    suspend fun writeLeadResult(result: LeadGeneral, year: Int, competitionId: String) {
-        val resultId = "$competitionId-${result.climberId}"
+    private suspend fun writeLeadResult(result: LeadGeneral, year: Int, competitionId: String) {
+        val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<LeadResultRealm>("id == $0", resultId).find().isEmpty()) {
                 System.err.println("Lead result with id $resultId already exists - skipping")
@@ -93,8 +83,8 @@ object Database {
             writeBoulderResult(result, year, competitionId)
         }
 
-    suspend fun writeBoulderResult(result: BoulderGeneral, year: Int, competitionId: String) {
-        val resultId = "$competitionId-${result.climberId}"
+    private suspend fun writeBoulderResult(result: BoulderGeneral, year: Int, competitionId: String) {
+        val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
                 System.err.println("Lead result with id $resultId already exists - skipping")
@@ -126,19 +116,8 @@ object Database {
             writeSpeedResult(result, year, competitionId)
         }
 
-    /**
-     * Allows user to save data about result from SPEED type of event to database.
-     * In case record with given id already exists, operation will be skipped.
-     *
-     * @param[result] speed results to be saved
-     * @param[year] year in which event happened - used to generate unique id for the result
-     * @param[competitionId] id of the competition
-     *
-     * @return true if result saved successfully, false otherwise
-     */
-    private suspend fun writeSpeedResult(result: SpeedResult, year: Int, competitionId: String): Boolean {
-        val resultId = "$competitionId-${result.climberId}"
-        var isWriteSuccessful = false
+    private suspend fun writeSpeedResult(result: SpeedResult, year: Int, competitionId: String) {
+        val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
                 System.err.println("Speed result with id $resultId already exists - skipping")
@@ -146,6 +125,7 @@ object Database {
             }
             this.copyToRealm(SpeedResultRealm().apply {
                 id = resultId
+                this.year = year
                 rank = result.rank
                 climberId = result.climberId
                 laneA = result.laneA
@@ -156,10 +136,10 @@ object Database {
                 smallFinal = result.smallFinal
                 final = result.final
             })
-            isWriteSuccessful = true
         }
-        return isWriteSuccessful
     }
+
+    private fun generateResultId(competitionId: String, climberId: Int) = competitionId + "_" + climberId
 
     /**
      * Returns all the lead results saved in database.

@@ -179,7 +179,7 @@ class Scraper {
                         )
                     }
                 }
-                val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
+                val competitionId = generateCompetitionId(url)
                 Database.writeBoulderResults(results, currentYear.toInt(), competitionId)
             }
 
@@ -247,7 +247,7 @@ class Scraper {
                         finalResult?.final,
                     )
                 }
-                val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
+                val competitionId = generateCompetitionId(url)
                 Database.writeSpeedResults(results, currentYear.toInt(), competitionId)
             }
 
@@ -270,7 +270,7 @@ class Scraper {
                         )
                     }
                 }
-                val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
+                val competitionId = generateCompetitionId(url)
                 Database.writeLeadResults(results, currentYear.toInt(), competitionId)
             }
 
@@ -290,6 +290,12 @@ class Scraper {
         val final = scores.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
         return BasicResult(rank, climberId, qualification, semiFinal, final)
     }
+
+    /**
+     * Generates unique competition cumber, based on event id and category (male or female).
+     */
+    private fun generateCompetitionId(url: String) =
+        url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
 
     /**
      * Contains all types of available competitions types.

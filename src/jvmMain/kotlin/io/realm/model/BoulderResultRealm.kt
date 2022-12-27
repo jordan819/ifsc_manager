@@ -3,6 +3,9 @@ package io.realm.model
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
+/**
+ * Class used to store boulder result in database.
+ */
 class BoulderResultRealm : RealmObject {
     @PrimaryKey
     var id: String = ""

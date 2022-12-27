@@ -3,6 +3,7 @@ package scraping.model
 import kotlinx.serialization.Serializable
 
 @Serializable
+// TODO: add sex maybe
 data class Climber(
     var climberId: Int = 0,
     var name: String = "",

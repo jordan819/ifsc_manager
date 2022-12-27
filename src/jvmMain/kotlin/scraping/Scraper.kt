@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
+import scraping.model.boulder.BoulderGeneral
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedFinal
 import scraping.model.speed.SpeedQualification
@@ -152,10 +153,31 @@ class Scraper {
         )
 
         when (type) {
-            BOULDER, BOULDER_AND_LEAD, COMBINED -> {
+            BOULDER_AND_LEAD, COMBINED -> {
                 // TODO: implement
                 println("$type - skipping $url")
                 return
+            }
+
+            BOULDER -> {
+                println("Fetching $type results from $url")
+                val results: MutableList<BoulderGeneral> = mutableListOf()
+                val table = driver.findElementById("table_id")
+                val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
+                rows.forEach { row ->
+                    val rank =
+                        (row as RemoteWebElement).findElementsByClassName("rank").firstOrNull()?.text?.toIntOrNull()
+                    val climberId =
+                        row.findElementByTagName("a").getAttribute("href").split("=").last().toIntOrNull() ?: return
+                    val scores = row.findElements(By.className("tdAlignNormal"))
+                    val qualification = scores[0].text
+                    val semiFinal = scores.getOrNull(1)?.text
+                    val final = scores.getOrNull(2)?.text
+                    val result = BoulderGeneral(rank, climberId, qualification, semiFinal, final)
+                    results.add(result)
+                }
+                val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
+                Database.writeBoulderResults(results, currentYear.toInt(), competitionId)
             }
 
             SPEED -> {

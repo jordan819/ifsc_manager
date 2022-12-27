@@ -1,9 +1,11 @@
 package io.realm
 
+import io.realm.model.BoulderResultRealm
 import io.realm.model.ClimberRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import scraping.model.Climber
+import scraping.model.boulder.BoulderGeneral
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
 
@@ -16,6 +18,7 @@ object Database {
     private val configuration = RealmConfiguration.with(
         schema = setOf(
             ClimberRealm::class,
+            BoulderResultRealm::class,
             LeadResultRealm::class,
             SpeedResultRealm::class
         )
@@ -85,6 +88,31 @@ object Database {
         }
     }
 
+    suspend fun writeBoulderResults(results: List<BoulderGeneral>, year: Int, competitionId: String) =
+        results.forEach { result ->
+            writeBoulderResult(result, year, competitionId)
+        }
+
+    suspend fun writeBoulderResult(result: BoulderGeneral, year: Int, competitionId: String) {
+        val resultId = "$competitionId-${result.climberId}"
+        realm.write {
+            if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
+                System.err.println("Lead result with id $resultId already exists - skipping")
+                return@write
+            }
+            this.copyToRealm(BoulderResultRealm().apply {
+                id = resultId
+                this.year = year
+                this.competitionId = competitionId
+                rank = result.rank
+                climber = result.climberId
+                qualification = result.qualification
+                semiFinal = result.semiFinal
+                final = result.final
+            })
+        }
+    }
+
     /**
      * Allows user to save data about all results from SPEED type of event to database.
      * In case record with given id already exists, operation will be skipped.
@@ -108,7 +136,7 @@ object Database {
      *
      * @return true if result saved successfully, false otherwise
      */
-    suspend fun writeSpeedResult(result: SpeedResult, year: Int, competitionId: String): Boolean {
+    private suspend fun writeSpeedResult(result: SpeedResult, year: Int, competitionId: String): Boolean {
         val resultId = "$competitionId-${result.climberId}"
         var isWriteSuccessful = false
         realm.write {

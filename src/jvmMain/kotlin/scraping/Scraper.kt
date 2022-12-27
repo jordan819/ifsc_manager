@@ -3,9 +3,11 @@ package scraping
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.openqa.selenium.By
 import org.openqa.selenium.TimeoutException
+import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.RemoteWebElement
@@ -14,6 +16,7 @@ import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
 import scraping.model.boulder.BoulderGeneral
+import scraping.model.common.BasicResult
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedFinal
 import scraping.model.speed.SpeedQualification
@@ -70,7 +73,7 @@ class Scraper {
                     Database.writeClimber(climber)
                     println(climber)
                 } catch (_: NoSuchElementException) {
-                    println("Succesfully fetched ${climberId - 1} climbers")
+                    println("Successfully fetched ${climberId - 1} climbers")
                     continue@loop
                 }
             }
@@ -108,6 +111,8 @@ class Scraper {
 
             currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
             println("---------------- Fetching data for year $currentYear ----------------")
+
+            delay(1000)
 
             wait.until(
                 ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
@@ -161,16 +166,18 @@ class Scraper {
                 val table = driver.findElementById("table_id")
                 val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
                 rows.forEach { row ->
-                    val rank =
-                        (row as RemoteWebElement).findElementsByClassName("rank").firstOrNull()?.text?.toIntOrNull()
-                    val climberId =
-                        row.findElementByTagName("a").getAttribute("href").split("=").last().toIntOrNull() ?: return
-                    val scores = row.findElements(By.className("tdAlignNormal"))
-                    val qualification = scores[0].text
-                    val semiFinal = scores.getOrNull(1)?.text
-                    val final = scores.getOrNull(2)?.text
-                    val result = BoulderGeneral(rank, climberId, qualification, semiFinal, final)
-                    results.add(result)
+                    val result = fetchBasicResultFromTable(row)
+                    if (result.climberId != null) {
+                        results.add(
+                            BoulderGeneral(
+                                rank = result.rank,
+                                climberId = result.climberId,
+                                qualification = result.qualification,
+                                semiFinal = result.semiFinal,
+                                final = result.final
+                            )
+                        )
+                    }
                 }
                 val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
                 Database.writeBoulderResults(results, currentYear.toInt(), competitionId)
@@ -178,19 +185,33 @@ class Scraper {
 
             SPEED -> {
                 println("Fetching $type results from $url")
-                driver.findElementsByClassName("link").firstOrNull()?.click() ?: return
                 wait.until(
                     ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
                 )
                 val table = driver.findElementById("table_id")
+                val generalRows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
+                val ranks = mutableMapOf<Int, Int?>()
+                generalRows.forEach { row ->
+                    val rank = row.findElements(By.className("rank")).firstOrNull()?.text?.toIntOrNull()
+                    val climberId =
+                        row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
+                    ranks[climberId] = rank
+                }
+
+                driver.findElementsByClassName("link").firstOrNull()?.click() ?: return
+                wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
+                )
                 val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
                 val qualificationResults = mutableListOf<SpeedQualification>()
                 val finalResults = mutableListOf<SpeedFinal>()
                 rows.forEach { row ->
                     val climberId =
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
-                    val laneA = row.findElements(By.className("number")).firstOrNull()?.text
-                    val laneB = row.findElements(By.className("number")).lastOrNull()?.text
+                    val laneA =
+                        row.findElements(By.className("number")).firstOrNull()?.text.takeUnless { it.isNullOrBlank() }
+                    val laneB =
+                        row.findElements(By.className("number")).lastOrNull()?.text.takeUnless { it.isNullOrBlank() }
                     qualificationResults.add(SpeedQualification(climberId, laneA, laneB))
                 }
 
@@ -205,17 +226,17 @@ class Scraper {
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
                     val results = row.findElements(By.className("number"))
                     val oneEighth = results[0].text
-                    val quarter = results.getOrNull(1)?.text
-                    val semiFinal = results.getOrNull(2)?.text
-                    val smallFinal = results.getOrNull(3)?.text
-                    val final = results.getOrNull(4)?.text
+                    val quarter = results.getOrNull(1)?.text.takeUnless { it.isNullOrBlank() }
+                    val semiFinal = results.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
+                    val smallFinal = results.getOrNull(3)?.text.takeUnless { it.isNullOrBlank() }
+                    val final = results.getOrNull(4)?.text.takeUnless { it.isNullOrBlank() }
                     finalResults.add(SpeedFinal(rank, climberId, oneEighth, quarter, semiFinal, smallFinal, final))
                 }
 
                 val results = qualificationResults.map { qualificationResult ->
-                    val finalResult = finalResults.getOrNull(qualificationResult.climberId)
+                    val finalResult = finalResults.find { it.climberId == qualificationResult.climberId }
                     SpeedResult(
-                        null, //FIXME: get rank from general results
+                        ranks[qualificationResult.climberId],
                         qualificationResult.climberId,
                         qualificationResult.laneA,
                         qualificationResult.laneB,
@@ -236,16 +257,18 @@ class Scraper {
                 val table = driver.findElementById("table_id")
                 val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
                 rows.forEach { row ->
-                    val rank =
-                        (row as RemoteWebElement).findElementsByClassName("rank").firstOrNull()?.text?.toIntOrNull()
-                    val climberId =
-                        row.findElementByTagName("a").getAttribute("href").split("=").last().toIntOrNull() ?: return
-                    val scores = row.findElements(By.className("tdAlignNormal"))
-                    val qualification = scores[0].text
-                    val semiFinal = scores.getOrNull(1)?.text
-                    val final = scores.getOrNull(2)?.text
-                    val result = LeadGeneral(rank, climberId, qualification, semiFinal, final)
-                    results.add(result)
+                    val result = fetchBasicResultFromTable(row)
+                    if (result.climberId != null) {
+                        results.add(
+                            LeadGeneral(
+                                rank = result.rank,
+                                climberId = result.climberId,
+                                qualification = result.qualification,
+                                semiFinal = result.semiFinal,
+                                final = result.final
+                            )
+                        )
+                    }
                 }
                 val competitionId = url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]
                 Database.writeLeadResults(results, currentYear.toInt(), competitionId)
@@ -256,6 +279,16 @@ class Scraper {
                 return
             }
         }
+    }
+
+    private fun fetchBasicResultFromTable(row: WebElement): BasicResult {
+        val rank = (row as RemoteWebElement).findElementsByClassName("rank").firstOrNull()?.text?.toIntOrNull()
+        val climberId = row.findElementByTagName("a").getAttribute("href").split("=").last().toIntOrNull()
+        val scores = row.findElements(By.className("tdAlignNormal"))
+        val qualification = scores[0].text
+        val semiFinal = scores.getOrNull(1)?.text.takeUnless { it.isNullOrBlank() }
+        val final = scores.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
+        return BasicResult(rank, climberId, qualification, semiFinal, final)
     }
 
     /**

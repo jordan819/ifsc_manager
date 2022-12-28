@@ -72,7 +72,7 @@ object Database {
                 this.year = year
                 this.competitionId = competitionId
                 rank = result.rank
-                climber = result.climberId
+                climberId = result.climberId
                 qualification = result.qualification
                 semiFinal = result.semiFinal
                 final = result.final
@@ -97,7 +97,7 @@ object Database {
                 this.year = year
                 this.competitionId = competitionId
                 rank = result.rank
-                climber = result.climberId
+                climberId = result.climberId
                 qualification = result.qualification
                 semiFinal = result.semiFinal
                 final = result.final

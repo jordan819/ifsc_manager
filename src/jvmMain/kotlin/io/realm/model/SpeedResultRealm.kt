@@ -1,0 +1,22 @@
+package io.realm.model
+
+import io.realm.RealmObject
+import io.realm.annotations.PrimaryKey
+
+/**
+ * Class used to store speed result in database.
+ */
+class SpeedResultRealm : RealmObject {
+    @PrimaryKey
+    var id: String = ""
+    var year: Int = 0
+    var rank: Int? = null
+    var climberId = 0
+    var laneA: String? = null
+    var laneB: String? = null
+    var oneEighth: String? = null
+    var quarter: String? = null
+    var semiFinal: String? = null
+    var smallFinal: String? = null
+    var final: String? = null
+}

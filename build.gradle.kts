@@ -4,6 +4,9 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
+    kotlin("plugin.serialization") version "1.4.21-2"
+    id("io.realm.kotlin") version "0.10.0"
+    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 group = "pl.patrykzaucha"
@@ -27,6 +30,9 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation("org.seleniumhq.selenium:selenium-java:2.41.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                implementation("io.realm.kotlin:library-base:0.10.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
             }
         }
         val jvmTest by getting
@@ -42,4 +48,8 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+dependencies {
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.7.20")
 }

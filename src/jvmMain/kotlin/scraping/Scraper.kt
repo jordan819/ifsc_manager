@@ -62,6 +62,12 @@ class Scraper {
                 try {
                     climberId++
                     driver.get(url + climberId)
+
+                    val wait = WebDriverWait(driver, 30)
+                    wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(By.className("name"))
+                    )
+
                     val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: continue@loop
                     val country = driver.findElementByClassName("country").text
                     val federation = driver.findElementByClassName("federation").text

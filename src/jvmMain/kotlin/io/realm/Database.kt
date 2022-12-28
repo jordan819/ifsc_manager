@@ -36,8 +36,10 @@ object Database {
             System.err.println("Climber with id ${climber.climberId} already exists - skipping")
             return@write
         }
+
         this.copyToRealm(ClimberRealm().apply {
             id = climber.climberId
+            sex = climber.sex?.name
             name = climber.name
             yearOfBirth = climber.yearOfBirth
             country = climber.country

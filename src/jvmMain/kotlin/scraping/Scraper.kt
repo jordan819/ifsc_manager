@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
+import scraping.model.Sex
 import scraping.model.boulder.BoulderGeneral
 import scraping.model.common.BasicResult
 import scraping.model.lead.LeadGeneral
@@ -65,11 +66,16 @@ class Scraper {
                     val country = driver.findElementByClassName("country").text
                     val federation = driver.findElementByClassName("federation").text
 
+                    val sex =
+                        if (driver.pageSource.contains("WOMEN")) Sex.WOMAN
+                        else if (driver.pageSource.contains("MEN")) Sex.MAN
+                        else null
+
                     val age =
                         (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
                     val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
-                    val climber = Climber(climberId, name, yearOfBirth, country, federation)
+                    val climber = Climber(climberId, name, sex, yearOfBirth, country, federation)
                     Database.writeClimber(climber)
                     println(climber)
                 } catch (_: NoSuchElementException) {

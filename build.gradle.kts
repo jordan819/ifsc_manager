@@ -44,7 +44,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ifsc_manager"
+            packageName = "IFSC Manager"
             packageVersion = "1.0.0"
         }
     }

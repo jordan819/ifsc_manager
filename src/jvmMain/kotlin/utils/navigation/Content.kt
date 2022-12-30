@@ -48,7 +48,8 @@ class Root(
         ClimberList(
             scraper = scraper,
             database = database,
-            onBackClick = router::pop
+            onBackClick = router::pop,
+            coroutineScope = coroutineScope,
         ).asContent { ClimberListUi(it) }
 
 }

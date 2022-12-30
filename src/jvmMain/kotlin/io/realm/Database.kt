@@ -1,5 +1,6 @@
 package io.realm
 
+import com.toxicbakery.logging.Arbor
 import io.realm.model.BoulderResultRealm
 import io.realm.model.ClimberRealm
 import io.realm.model.LeadResultRealm
@@ -190,8 +191,12 @@ object Database {
     /**
      * Deletes climber by its id.
      */
-    fun deleteClimber(id: Int) {
-
+    suspend fun deleteClimber(climberId: Int) {
+        Arbor.d("Deleting user with id $climberId")
+        realm.write {
+            val climber: ClimberRealm = this.query<ClimberRealm>("id == $0", climberId).find().first()
+            delete(climber)
+        }
     }
 
     /**

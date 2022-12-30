@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.realm.Database
-import io.realm.model.ClimberRealm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import scraping.Scraper
@@ -26,14 +25,50 @@ fun ClimberListScreen(
     database: Database,
     onBackClick: () -> Unit,
     coroutineScope: CoroutineScope,
-    climbers: List<ClimberRealm>,
 ) {
 
-    var climberList by remember { mutableStateOf(climbers) }
+    var climberList by remember { mutableStateOf(Database.getAllClimbers()) }
+
+    // Filter List
+    val isMaleChecked = remember { mutableStateOf(false) }
+    val isFemaleChecked = remember { mutableStateOf(false) }
+
+    val sortOption = remember { mutableStateOf(ClimberSortOption.ID) }
 
     fun deleteUser(climberId: Int) = coroutineScope.launch {
         database.deleteClimber(climberId)
         climberList = database.getAllClimbers()
+    }
+
+    fun fetchNewClimbers() {
+        coroutineScope.launch {
+            scraper.fetchNewClimbers()
+        }
+    }
+
+    fun onFilterListUpdated() {
+        val selectedSex = mutableListOf<String>()
+        if (isMaleChecked.value) {
+            selectedSex.add(Sex.MAN.name)
+        }
+        if (isFemaleChecked.value) {
+            selectedSex.add(Sex.WOMAN.name)
+        }
+
+        climberList = if (selectedSex.isNotEmpty()) {
+            Database.getAllClimbers().filter { it.sex in selectedSex }
+        } else {
+            Database.getAllClimbers()
+        }
+    }
+
+    fun onSortOptionUpdated() {
+        climberList = when (sortOption.value) {
+            ClimberSortOption.ID -> Database.getAllClimbers().sortedBy { it.id }
+            ClimberSortOption.NAME -> Database.getAllClimbers().sortedBy { it.name }
+            ClimberSortOption.YEAR -> Database.getAllClimbers().sortedBy { it.yearOfBirth }
+            ClimberSortOption.COUNTRY -> Database.getAllClimbers().sortedBy { it.country }
+        }
     }
 
     MaterialTheme {
@@ -57,6 +92,97 @@ fun ClimberListScreen(
                 }
             )
 
+            Button(onClick = {
+                fetchNewClimbers()
+            }) {
+                Text("Pobierz nowych zawodników")
+            }
+
+            Text(
+                text = "Filtrowanie"
+            )
+            Checkbox(
+                checked = isMaleChecked.value,
+                onCheckedChange = {
+                    isMaleChecked.value = it
+                    onFilterListUpdated()
+                },
+            )
+            Text(
+                text = "Mężczyzna"
+            )
+
+            Checkbox(
+                checked = isFemaleChecked.value,
+                onCheckedChange = {
+                    isFemaleChecked.value = it
+                    onFilterListUpdated()
+                },
+            )
+            Text(
+                text = "Kobieta"
+            )
+
+            Text(
+                text = "Sortowanie"
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Id"
+                )
+                Checkbox(
+                    checked = sortOption.value == ClimberSortOption.ID,
+                    onCheckedChange = {
+                        sortOption.value = ClimberSortOption.ID
+                        onSortOptionUpdated()
+                    },
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Imię i nazwisko"
+                )
+                Checkbox(
+                    checked = sortOption.value == ClimberSortOption.NAME,
+                    onCheckedChange = {
+                        sortOption.value = ClimberSortOption.NAME
+                        onSortOptionUpdated()
+                    },
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Rok urodzenia"
+                )
+                Checkbox(
+                    checked = sortOption.value == ClimberSortOption.YEAR,
+                    onCheckedChange = {
+                        sortOption.value = ClimberSortOption.YEAR
+                        onSortOptionUpdated()
+                    },
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Kraj"
+                )
+                Checkbox(
+                    checked = sortOption.value == ClimberSortOption.COUNTRY,
+                    onCheckedChange = {
+                        sortOption.value = ClimberSortOption.COUNTRY
+                        onSortOptionUpdated()
+                    },
+                )
+            }
+
             // Each cell of a column must have the same weight.
             val column1Weight = .1f // 10%
             val column2Weight = .4f // 40%
@@ -74,7 +200,7 @@ fun ClimberListScreen(
                         TableCell(text = "Płeć", weight = column3Weight)
                         TableCell(text = "Rok urodzenia", weight = column4Weight)
                         TableCell(text = "Kraj", weight = column5Weight)
-                        TableCell(text = "Usuwanie", weight = column6Weight)
+                        TableCell(text = "X", weight = column6Weight)
                     }
                 }
                 // Here are all the lines of your table.

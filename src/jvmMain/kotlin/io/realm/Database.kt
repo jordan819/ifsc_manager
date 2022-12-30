@@ -162,7 +162,7 @@ object Database {
     /**
      * Returns all the climbers saved in database.
      */
-    fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find()
+    fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find().sortedBy { it.id }
 
     /**
      * Returns selected climber if exists.

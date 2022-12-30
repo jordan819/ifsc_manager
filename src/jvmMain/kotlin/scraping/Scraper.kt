@@ -2,10 +2,7 @@ package scraping
 
 import com.toxicbakery.logging.Arbor
 import io.realm.Database
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.openqa.selenium.By
 import org.openqa.selenium.TimeoutException
 import org.openqa.selenium.WebElement
@@ -32,20 +29,18 @@ import kotlin.NoSuchElementException
  */
 class Scraper {
 
-    private lateinit var driver: ChromeDriver
     private val driverOptions = ChromeOptions()
 
     init {
-        setupDriver()
+        setupDriverOptions()
     }
 
-    private fun setupDriver() {
+    private fun setupDriverOptions() {
         // Chrome version causes problems - the following driver version supports Chrome 107 only
         // Download driver from here: https://chromedriver.chromium.org/downloads
         // Check Chrome version here: chrome://settings/help
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe")
         driverOptions.addArguments("--headless")
-        driver = ChromeDriver(driverOptions)
     }
 
     /**
@@ -53,47 +48,94 @@ class Scraper {
      *
      * Fetches information about a climber and writes it to local database.
      */
-    fun fetchClimbers() {
-        CoroutineScope(Dispatchers.IO).launch {
-            Arbor.d("Fetching climbers...")
-            val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
-            var climberId = 0
-            val start = System.currentTimeMillis()
-            loop@ while (climberId < 14400) {
-                try {
-                    climberId++
-                    driver.get(url + climberId)
+    suspend fun fetchAllClimbers() {
+        Arbor.d("Fetching all climbers...")
+        val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
+        var climberId = 0
+        val start = System.currentTimeMillis()
+        val driver = ChromeDriver(driverOptions)
+        loop@ while (climberId < MAX_CLIMBER_ID) {
+            try {
+                climberId++
+                driver.get(url + climberId)
 
-                    val wait = WebDriverWait(driver, 30)
-                    wait.until(
-                        ExpectedConditions.visibilityOfElementLocated(By.className("name"))
-                    )
+                val wait = WebDriverWait(driver, 30)
+                wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.className("name"))
+                )
 
-                    val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: continue@loop
-                    val country = driver.findElementByClassName("country").text
-                    val federation = driver.findElementByClassName("federation").text
+                val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: continue@loop
+                val country = driver.findElementByClassName("country").text
+                val federation = driver.findElementByClassName("federation").text
 
-                    val sex =
-                        if (driver.pageSource.contains("WOMEN")) Sex.WOMAN
-                        else if (driver.pageSource.contains("MEN")) Sex.MAN
-                        else null
+                val sex =
+                    if (driver.pageSource.contains("WOMEN")) Sex.WOMAN
+                    else if (driver.pageSource.contains("MEN")) Sex.MAN
+                    else null
 
-                    val age =
-                        (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
-                    val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
+                val age =
+                    (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
+                val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
-                    val climber = Climber(climberId, name, sex, yearOfBirth, country, federation)
-                    Database.writeClimber(climber)
-                    Arbor.d(climber.toString())
-                } catch (_: NoSuchElementException) {
-                    Arbor.d("Successfully fetched ${climberId - 1} climbers")
-                    continue@loop
-                }
+                val climber = Climber(climberId, name, sex, yearOfBirth, country, federation)
+                Database.writeClimber(climber)
+                Arbor.d(climber.toString())
+            } catch (_: NoSuchElementException) {
+                Arbor.d("Successfully fetched ${climberId - 1} climbers")
+                continue@loop
             }
-            val stop = System.currentTimeMillis()
-            val interval = TimeUnit.MILLISECONDS.toSeconds(stop - start)
-            Arbor.d("Selenium fetched ${climberId - 1} climbers in ${interval}s")
         }
+        driver.close()
+        val stop = System.currentTimeMillis()
+        val interval = TimeUnit.MILLISECONDS.toSeconds(stop - start)
+        Arbor.d("Selenium fetched ${climberId - 1} climbers in ${interval}s")
+    }
+
+    suspend fun fetchNewClimbers() {
+        Arbor.d("Fetching new climbers only...")
+        val oldClimbersIdList = Database.getAllClimbers().map { it.id }
+        var climberId = 1
+        while (climberId < MAX_CLIMBER_ID) {
+            if (climberId !in oldClimbersIdList) {
+                fetchSingleClimber(climberId)
+            }
+            climberId++
+        }
+        Arbor.d("Finished fetching new climbers")
+    }
+
+    private suspend fun fetchSingleClimber(climberId: Int) {
+        Arbor.d("Fetching climber with id: $climberId...")
+        val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
+        val driver = ChromeDriver(driverOptions)
+        try {
+            driver.get(url + climberId)
+
+            val wait = WebDriverWait(driver, 30)
+            wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.className("name"))
+            )
+
+            val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: return
+            val country = driver.findElementByClassName("country").text
+            val federation = driver.findElementByClassName("federation").text
+
+            val sex =
+                if (driver.pageSource.contains("WOMEN")) Sex.WOMAN
+                else if (driver.pageSource.contains("MEN")) Sex.MAN
+                else null
+
+            val age =
+                (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
+            val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
+
+            val climber = Climber(climberId, name, sex, yearOfBirth, country, federation)
+            Database.writeClimber(climber)
+            Arbor.d(climber.toString())
+        } catch (_: NoSuchElementException) {
+            Arbor.e("Climber with id $climberId could not be fetched")
+        }
+        driver.close()
     }
 
     /**
@@ -104,6 +146,7 @@ class Scraper {
      */
     suspend fun fetchEvents() {
         Arbor.d("Fetching events...")
+        val driver = ChromeDriver(driverOptions)
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
         var currentYear: Int? = null
@@ -155,6 +198,7 @@ class Scraper {
             }
             competitionsDriver.close()
         } while ((currentYear ?: 0) > 2007)
+        driver.close()
     }
 
     private suspend fun fetchTableContent(url: String, type: String, currentYear: String, driver: ChromeDriver) {
@@ -319,6 +363,8 @@ class Scraper {
         const val SPEED = "SPEED"
         const val BOULDER_AND_LEAD = "BOULDER&LEAD"
         const val COMBINED = "COMBINED"
+
+        const val MAX_CLIMBER_ID = 14400
     }
 
 }

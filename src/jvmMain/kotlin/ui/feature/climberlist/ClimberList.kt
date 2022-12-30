@@ -11,7 +11,6 @@ class ClimberList(
     val onBackClick: () -> Unit,
     val coroutineScope: CoroutineScope,
 ) {
-    val climbers = database.getAllClimbers()
 }
 
 @Composable
@@ -21,6 +20,5 @@ fun ClimberListUi(climberList: ClimberList) {
         database = climberList.database,
         onBackClick = climberList.onBackClick,
         coroutineScope = climberList.coroutineScope,
-        climbers = climberList.climbers
     )
 }

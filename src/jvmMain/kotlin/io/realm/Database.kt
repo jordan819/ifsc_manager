@@ -34,7 +34,7 @@ object Database {
      */
     suspend fun writeClimber(climber: Climber) = realm.write {
         if (!this.query<ClimberRealm>("id == $0", climber.climberId).find().isEmpty()) {
-            System.err.println("Climber with id ${climber.climberId} already exists - skipping")
+            Arbor.e("Climber with id ${climber.climberId} already exists - skipping")
             return@write
         }
 
@@ -65,7 +65,7 @@ object Database {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<LeadResultRealm>("id == $0", resultId).find().isEmpty()) {
-                System.err.println("Lead result with id $resultId already exists - skipping")
+                Arbor.e("Lead result with id $resultId already exists - skipping")
                 return@write
             }
             this.copyToRealm(LeadResultRealm().apply {
@@ -90,7 +90,7 @@ object Database {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
-                System.err.println("Lead result with id $resultId already exists - skipping")
+                Arbor.e("Lead result with id $resultId already exists - skipping")
                 return@write
             }
             this.copyToRealm(BoulderResultRealm().apply {
@@ -123,7 +123,7 @@ object Database {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
-                System.err.println("Speed result with id $resultId already exists - skipping")
+                Arbor.e("Speed result with id $resultId already exists - skipping")
                 return@write
             }
             this.copyToRealm(SpeedResultRealm().apply {
@@ -192,7 +192,7 @@ object Database {
      * Deletes climber by its id.
      */
     suspend fun deleteClimber(climberId: Int) {
-        Arbor.d("Deleting user with id $climberId")
+        Arbor.d("Deleting user with id $climberId...")
         realm.write {
             val climber: ClimberRealm = this.query<ClimberRealm>("id == $0", climberId).find().first()
             delete(climber)

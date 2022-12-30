@@ -1,5 +1,6 @@
 package scraping
 
+import com.toxicbakery.logging.Arbor
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,7 +55,7 @@ class Scraper {
      */
     fun fetchClimbers() {
         CoroutineScope(Dispatchers.IO).launch {
-            println("Fetching climbers...")
+            Arbor.d("Fetching climbers...")
             val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
             var climberId = 0
             val start = System.currentTimeMillis()
@@ -83,15 +84,15 @@ class Scraper {
 
                     val climber = Climber(climberId, name, sex, yearOfBirth, country, federation)
                     Database.writeClimber(climber)
-                    println(climber)
+                    Arbor.d(climber.toString())
                 } catch (_: NoSuchElementException) {
-                    println("Successfully fetched ${climberId - 1} climbers")
+                    Arbor.d("Successfully fetched ${climberId - 1} climbers")
                     continue@loop
                 }
             }
             val stop = System.currentTimeMillis()
             val interval = TimeUnit.MILLISECONDS.toSeconds(stop - start)
-            println("Selenium fetched ${climberId - 1} climbers in ${interval}s")
+            Arbor.d("Selenium fetched ${climberId - 1} climbers in ${interval}s")
         }
     }
 
@@ -102,7 +103,7 @@ class Scraper {
      * Afterwards links result with a certain [climber][Climber].
      */
     suspend fun fetchEvents() {
-        println("Fetching events...")
+        Arbor.d("Fetching events...")
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
         var currentYear: Int? = null
@@ -122,7 +123,7 @@ class Scraper {
             }
 
             currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
-            println("---------------- Fetching data for year $currentYear ----------------")
+            Arbor.d("---------------- Fetching data for year $currentYear ----------------")
 
             delay(1000)
 
@@ -149,7 +150,7 @@ class Scraper {
                         driver = competitionsDriver
                     )
                 } catch (e: TimeoutException) {
-                    System.err.println("Could not fetch data from ${it.first}")
+                    Arbor.e("Could not fetch data from ${it.first}")
                 }
             }
             competitionsDriver.close()
@@ -168,12 +169,12 @@ class Scraper {
         when (type) {
             BOULDER_AND_LEAD, COMBINED -> {
                 // TODO: implement
-                println("$type - skipping $url")
+                Arbor.d("$type - skipping $url")
                 return
             }
 
             BOULDER -> {
-                println("Fetching $type results from $url")
+                Arbor.d("Fetching $type results from $url")
                 val results: MutableList<BoulderGeneral> = mutableListOf()
                 val table = driver.findElementById("table_id")
                 val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
@@ -196,7 +197,7 @@ class Scraper {
             }
 
             SPEED -> {
-                println("Fetching $type results from $url")
+                Arbor.d("Fetching $type results from $url")
                 wait.until(
                     ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
                 )
@@ -264,7 +265,7 @@ class Scraper {
             }
 
             LEAD -> {
-                println("Fetching $type results from $url")
+                Arbor.d("Fetching $type results from $url")
                 val results: MutableList<LeadGeneral> = mutableListOf()
                 val table = driver.findElementById("table_id")
                 val rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
@@ -287,7 +288,7 @@ class Scraper {
             }
 
             else -> {
-                System.err.println("UNEXPECTED TYPE: $type $url")
+                Arbor.e("UNEXPECTED TYPE: $type $url")
                 return
             }
         }

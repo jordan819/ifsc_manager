@@ -14,14 +14,24 @@ import androidx.compose.ui.unit.dp
 fun RowScope.TableCell(
     text: String,
     weight: Float,
-    onClick: () -> Unit = { },
+    onClick: (() -> Unit)? = null,
 ) {
-    Text(
-        text = text,
-        Modifier
-            .border(1.dp, Color.Black)
-            .weight(weight)
-            .padding(8.dp)
-            .clickable { onClick() },
-    )
+    if (onClick != null) {
+        Text(
+            text = text,
+            Modifier
+                .border(1.dp, Color.Black)
+                .weight(weight)
+                .padding(8.dp)
+                .clickable { onClick() },
+        )
+    } else {
+        Text(
+            text = text,
+            Modifier
+                .border(1.dp, Color.Black)
+                .weight(weight)
+                .padding(8.dp)
+        )
+    }
 }

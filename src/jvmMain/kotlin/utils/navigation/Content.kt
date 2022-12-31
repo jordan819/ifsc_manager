@@ -9,6 +9,8 @@ import com.arkivanov.decompose.router
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import scraping.Scraper
+import ui.feature.climberdetails.ClimberDetails
+import ui.feature.climberdetails.ClimberDetailsUi
 import ui.feature.climberlist.ClimberList
 import ui.feature.climberlist.ClimberListUi
 import ui.feature.home.Home
@@ -37,6 +39,7 @@ class Root(
         when (configuration) {
             Configuration.Home -> home()
             Configuration.ClimberList -> climberList()
+            is Configuration.ClimberDetails -> climberDetails(configuration.climberId)
         }
 
     private fun home(): Content =
@@ -49,8 +52,17 @@ class Root(
             scraper = scraper,
             database = database,
             onBackClick = router::pop,
+            navigateToClimberDetails = { router.push(Configuration.ClimberDetails(climberId = it)) },
             coroutineScope = coroutineScope,
         ).asContent { ClimberListUi(it) }
+
+    private fun climberDetails(climberId: Int): Content =
+        ClimberDetails(
+            climberId = climberId,
+            database = database,
+            onBackClick = router::pop,
+            coroutineScope = coroutineScope,
+        ).asContent { ClimberDetailsUi(it) }
 
 }
 

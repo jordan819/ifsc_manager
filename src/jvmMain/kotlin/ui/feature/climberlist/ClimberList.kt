@@ -9,9 +9,9 @@ class ClimberList(
     val scraper: Scraper,
     val database: Database,
     val onBackClick: () -> Unit,
+    val navigateToClimberDetails: (climberId: Int) -> Unit,
     val coroutineScope: CoroutineScope,
-) {
-}
+)
 
 @Composable
 fun ClimberListUi(climberList: ClimberList) {
@@ -19,6 +19,7 @@ fun ClimberListUi(climberList: ClimberList) {
         scraper = climberList.scraper,
         database = climberList.database,
         onBackClick = climberList.onBackClick,
+        navigateToClimberDetails = climberList.navigateToClimberDetails,
         coroutineScope = climberList.coroutineScope,
     )
 }

@@ -1,6 +1,7 @@
 package ui.feature.climberlist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +25,7 @@ fun ClimberListScreen(
     scraper: Scraper,
     database: Database,
     onBackClick: () -> Unit,
+    navigateToClimberDetails: (climberId: Int) -> Unit,
     coroutineScope: CoroutineScope,
 ) {
 
@@ -210,7 +212,7 @@ fun ClimberListScreen(
                         Sex.WOMAN.name -> "Kobieta"
                         else -> "-"
                     }
-                    Row(Modifier.fillMaxWidth()) {
+                    Row(Modifier.fillMaxWidth().clickable { navigateToClimberDetails(it.id) }) {
                         TableCell(text = it.id.toString(), weight = column1Weight)
                         TableCell(text = it.name, weight = column2Weight)
                         TableCell(text = sex, weight = column3Weight)

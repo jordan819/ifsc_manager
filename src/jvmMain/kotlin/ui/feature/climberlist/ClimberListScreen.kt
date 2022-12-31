@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 import scraping.Scraper
 import scraping.model.Sex
 import ui.common.TableCell
+import ui.common.TableCellImage
 
 @Composable
 fun ClimberListScreen(
@@ -218,7 +220,7 @@ fun ClimberListScreen(
                         TableCell(text = sex, weight = column3Weight)
                         TableCell(text = it.yearOfBirth?.toString() ?: "-", weight = column4Weight)
                         TableCell(text = it.country, weight = column5Weight)
-                        TableCell(text = "DEL", weight = column6Weight, onClick = { deleteUser(it.id) })
+                        TableCellImage(image = Icons.Default.Delete, weight = column6Weight, onClick = { deleteUser(it.id) })
 
                     }
                 }

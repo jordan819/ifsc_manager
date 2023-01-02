@@ -18,6 +18,7 @@ import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import scraping.Scraper
+import scraping.model.RecordType
 import scraping.model.Sex
 import ui.common.TableCell
 import ui.common.TableCellImage
@@ -36,8 +37,16 @@ fun ClimberListScreen(
     // Filter List
     val isMaleChecked = remember { mutableStateOf(false) }
     val isFemaleChecked = remember { mutableStateOf(false) }
+    val isOfficialChecked = remember { mutableStateOf(false) }
+    val isUnofficialChecked = remember { mutableStateOf(false) }
 
     val sortOption = remember { mutableStateOf(ClimberSortOption.ID) }
+
+    val isAddDialogVisible = remember { mutableStateOf(false) }
+
+    fun showAddClimberDialog() {
+        isAddDialogVisible.value = true
+    }
 
     fun deleteUser(climberId: Int) = coroutineScope.launch {
         database.deleteClimber(climberId)
@@ -59,11 +68,28 @@ fun ClimberListScreen(
             selectedSex.add(Sex.WOMAN.name)
         }
 
-        climberList = if (selectedSex.isNotEmpty()) {
+        val selectedRecordType = mutableListOf<String>()
+        if (isOfficialChecked.value) {
+            selectedRecordType.add(RecordType.OFFICIAL.name)
+        }
+        if (isUnofficialChecked.value) {
+            selectedRecordType.add(RecordType.UNOFFICIAL.name)
+        }
+
+        var filteredClimberList = if (selectedSex.isNotEmpty()) {
             Database.getAllClimbers().filter { it.sex in selectedSex }
         } else {
             Database.getAllClimbers()
         }
+
+        filteredClimberList = if (selectedRecordType.isNotEmpty()) {
+            filteredClimberList.filter { it.recordType in selectedRecordType }
+        } else {
+            filteredClimberList
+        }
+
+        climberList = filteredClimberList
+
     }
 
     fun onSortOptionUpdated() {
@@ -96,36 +122,93 @@ fun ClimberListScreen(
                 }
             )
 
-            Button(onClick = {
-                fetchNewClimbers()
-            }) {
-                Text("Pobierz nowych zawodników")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Button(onClick = {
+                    fetchNewClimbers()
+                }) {
+                    Text("Pobierz nowych zawodników")
+                }
+                Button(onClick = {
+                    showAddClimberDialog()
+                }) {
+                    Text("Dodaj zawodnika")
+                }
             }
+
+            if (isAddDialogVisible.value) {
+                Dialog(
+                    title = "Dodawanie zawodnika",
+                    content = DialogContentAddClimber(database, coroutineScope),
+                    onCloseRequest = { isAddDialogVisible.value = false },
+                )
+            }
+
 
             Text(
                 text = "Filtrowanie"
             )
-            Checkbox(
-                checked = isMaleChecked.value,
-                onCheckedChange = {
-                    isMaleChecked.value = it
-                    onFilterListUpdated()
-                },
-            )
-            Text(
-                text = "Mężczyzna"
-            )
 
-            Checkbox(
-                checked = isFemaleChecked.value,
-                onCheckedChange = {
-                    isFemaleChecked.value = it
-                    onFilterListUpdated()
-                },
-            )
-            Text(
-                text = "Kobieta"
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Oficjalny"
+                )
+                Checkbox(
+                    checked = isOfficialChecked.value,
+                    onCheckedChange = {
+                        isOfficialChecked.value = it
+                        onFilterListUpdated()
+                    },
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Nieoficjalny"
+                )
+                Checkbox(
+                    checked = isUnofficialChecked.value,
+                    onCheckedChange = {
+                        isUnofficialChecked.value = it
+                        onFilterListUpdated()
+                    },
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Mężczyzna"
+                )
+                Checkbox(
+                    checked = isMaleChecked.value,
+                    onCheckedChange = {
+                        isMaleChecked.value = it
+                        onFilterListUpdated()
+                    },
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Kobieta"
+                )
+                Checkbox(
+                    checked = isFemaleChecked.value,
+                    onCheckedChange = {
+                        isFemaleChecked.value = it
+                        onFilterListUpdated()
+                    },
+                )
+            }
 
             Text(
                 text = "Sortowanie"
@@ -220,7 +303,10 @@ fun ClimberListScreen(
                         TableCell(text = sex, weight = column3Weight)
                         TableCell(text = it.yearOfBirth?.toString() ?: "-", weight = column4Weight)
                         TableCell(text = it.country, weight = column5Weight)
-                        TableCellImage(image = Icons.Default.Delete, weight = column6Weight, onClick = { deleteUser(it.id) })
+                        TableCellImage(
+                            image = Icons.Default.Delete,
+                            weight = column6Weight,
+                            onClick = { deleteUser(it.id) })
 
                     }
                 }

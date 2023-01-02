@@ -13,6 +13,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import scraping.model.Climber
+import scraping.model.RecordType
 import scraping.model.Sex
 import scraping.model.boulder.BoulderGeneral
 import scraping.model.common.BasicResult
@@ -77,7 +78,7 @@ class Scraper {
                     (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
                 val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
-                val climber = Climber(climberId, name, sex, yearOfBirth, country, federation)
+                val climber = Climber(climberId, name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
                 Database.writeClimber(climber)
                 Arbor.d(climber.toString())
             } catch (_: NoSuchElementException) {
@@ -129,7 +130,7 @@ class Scraper {
                 (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
             val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
-            val climber = Climber(climberId, name, sex, yearOfBirth, country, federation)
+            val climber = Climber(climberId, name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
             Database.writeClimber(climber)
             Arbor.d(climber.toString())
         } catch (_: NoSuchElementException) {

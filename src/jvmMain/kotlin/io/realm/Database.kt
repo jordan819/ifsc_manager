@@ -45,6 +45,7 @@ object Database {
             yearOfBirth = climber.yearOfBirth
             country = climber.country
             federation = climber.federation
+            recordType = climber.recordType.name
         })
     }
 

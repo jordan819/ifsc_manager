@@ -14,4 +14,5 @@ class ClimberRealm : RealmObject {
     var yearOfBirth: Int? = null
     var country: String = ""
     var federation: String = ""
+    var recordType: String = ""
 }

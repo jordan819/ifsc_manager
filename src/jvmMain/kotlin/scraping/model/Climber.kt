@@ -9,10 +9,16 @@ data class Climber(
     var sex: Sex? = null,
     var yearOfBirth: Int? = 0,
     var country: String = "",
-    var federation: String = ""
+    var federation: String = "",
+    var recordType: RecordType
 )
 
 enum class Sex {
     MAN,
     WOMAN
+}
+
+enum class RecordType {
+    OFFICIAL,
+    UNOFFICIAL
 }

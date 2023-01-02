@@ -44,6 +44,8 @@ kotlin {
 
                 // Logger
                 api("com.ToxicBakery.logging:arbor-jvm:1.34.109")
+
+                implementation("com.afollestad.material-dialogs:core:3.3.0")
             }
         }
         val jvmTest by getting

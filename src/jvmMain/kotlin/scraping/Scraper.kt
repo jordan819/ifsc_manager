@@ -78,7 +78,7 @@ class Scraper {
                     (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
                 val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
-                val climber = Climber(climberId, name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
+                val climber = Climber(climberId.toString(), name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
                 Database.writeClimber(climber)
                 Arbor.d(climber.toString())
             } catch (_: NoSuchElementException) {
@@ -97,7 +97,7 @@ class Scraper {
         val oldClimbersIdList = Database.getAllClimbers().map { it.id }
         var climberId = 1
         while (climberId < MAX_CLIMBER_ID) {
-            if (climberId !in oldClimbersIdList) {
+            if (climberId.toString() !in oldClimbersIdList) {
                 fetchSingleClimber(climberId)
             }
             climberId++
@@ -130,7 +130,7 @@ class Scraper {
                 (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
             val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
 
-            val climber = Climber(climberId, name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
+            val climber = Climber(climberId.toString(), name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
             Database.writeClimber(climber)
             Arbor.d(climber.toString())
         } catch (_: NoSuchElementException) {

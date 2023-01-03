@@ -163,7 +163,7 @@ object Database {
     /**
      * Returns all the climbers saved in database.
      */
-    fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find().sortedBy { it.id }
+    fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find().sortedBy { it.id.toIntOrNull() }
 
     /**
      * Returns selected climber if exists.
@@ -192,7 +192,7 @@ object Database {
     /**
      * Deletes climber by its id.
      */
-    suspend fun deleteClimber(climberId: Int) {
+    suspend fun deleteClimber(climberId: String) {
         Arbor.d("Deleting user with id $climberId...")
         realm.write {
             val climber: ClimberRealm = this.query<ClimberRealm>("id == $0", climberId).find().first()

@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.realm.Database
+import io.realm.model.ClimberRealm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import scraping.Scraper
@@ -28,7 +29,7 @@ fun ClimberListScreen(
     scraper: Scraper,
     database: Database,
     onBackClick: () -> Unit,
-    navigateToClimberDetails: (climberId: Int) -> Unit,
+    navigateToClimberDetails: (climberId: String) -> Unit,
     coroutineScope: CoroutineScope,
 ) {
 
@@ -48,7 +49,7 @@ fun ClimberListScreen(
         isAddDialogVisible.value = true
     }
 
-    fun deleteUser(climberId: Int) = coroutineScope.launch {
+    fun deleteUser(climberId: String) = coroutineScope.launch {
         database.deleteClimber(climberId)
         climberList = database.getAllClimbers()
     }
@@ -59,7 +60,14 @@ fun ClimberListScreen(
         }
     }
 
-    fun onFilterListUpdated() {
+    fun sortClimberList(climbers: List<ClimberRealm>) = when (sortOption.value) {
+        ClimberSortOption.ID -> climbers.sortedBy { it.id }
+        ClimberSortOption.NAME -> climbers.sortedBy { it.name }
+        ClimberSortOption.YEAR -> climbers.sortedBy { it.yearOfBirth }
+        ClimberSortOption.COUNTRY -> climbers.sortedBy { it.country }
+    }
+
+    fun updateListDisplay() {
         val selectedSex = mutableListOf<String>()
         if (isMaleChecked.value) {
             selectedSex.add(Sex.MAN.name)
@@ -88,17 +96,8 @@ fun ClimberListScreen(
             filteredClimberList
         }
 
-        climberList = filteredClimberList
+        climberList = sortClimberList(filteredClimberList)
 
-    }
-
-    fun onSortOptionUpdated() {
-        climberList = when (sortOption.value) {
-            ClimberSortOption.ID -> Database.getAllClimbers().sortedBy { it.id }
-            ClimberSortOption.NAME -> Database.getAllClimbers().sortedBy { it.name }
-            ClimberSortOption.YEAR -> Database.getAllClimbers().sortedBy { it.yearOfBirth }
-            ClimberSortOption.COUNTRY -> Database.getAllClimbers().sortedBy { it.country }
-        }
     }
 
     MaterialTheme {
@@ -140,7 +139,9 @@ fun ClimberListScreen(
             if (isAddDialogVisible.value) {
                 Dialog(
                     title = "Dodawanie zawodnika",
-                    content = DialogContentAddClimber(database, coroutineScope),
+                    content = DialogContentAddClimber(database, coroutineScope) {
+                            climberList = database.getAllClimbers()
+                    },
                     onCloseRequest = { isAddDialogVisible.value = false },
                 )
             }
@@ -160,7 +161,7 @@ fun ClimberListScreen(
                     checked = isOfficialChecked.value,
                     onCheckedChange = {
                         isOfficialChecked.value = it
-                        onFilterListUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -175,7 +176,7 @@ fun ClimberListScreen(
                     checked = isUnofficialChecked.value,
                     onCheckedChange = {
                         isUnofficialChecked.value = it
-                        onFilterListUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -190,7 +191,7 @@ fun ClimberListScreen(
                     checked = isMaleChecked.value,
                     onCheckedChange = {
                         isMaleChecked.value = it
-                        onFilterListUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -205,7 +206,7 @@ fun ClimberListScreen(
                     checked = isFemaleChecked.value,
                     onCheckedChange = {
                         isFemaleChecked.value = it
-                        onFilterListUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -223,7 +224,7 @@ fun ClimberListScreen(
                     checked = sortOption.value == ClimberSortOption.ID,
                     onCheckedChange = {
                         sortOption.value = ClimberSortOption.ID
-                        onSortOptionUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -237,7 +238,7 @@ fun ClimberListScreen(
                     checked = sortOption.value == ClimberSortOption.NAME,
                     onCheckedChange = {
                         sortOption.value = ClimberSortOption.NAME
-                        onSortOptionUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -251,7 +252,7 @@ fun ClimberListScreen(
                     checked = sortOption.value == ClimberSortOption.YEAR,
                     onCheckedChange = {
                         sortOption.value = ClimberSortOption.YEAR
-                        onSortOptionUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -265,7 +266,7 @@ fun ClimberListScreen(
                     checked = sortOption.value == ClimberSortOption.COUNTRY,
                     onCheckedChange = {
                         sortOption.value = ClimberSortOption.COUNTRY
-                        onSortOptionUpdated()
+                        updateListDisplay()
                     },
                 )
             }
@@ -298,7 +299,7 @@ fun ClimberListScreen(
                         else -> "-"
                     }
                     Row(Modifier.fillMaxWidth().clickable { navigateToClimberDetails(it.id) }) {
-                        TableCell(text = it.id.toString(), weight = column1Weight)
+                        TableCell(text = it.id, weight = column1Weight)
                         TableCell(text = it.name, weight = column2Weight)
                         TableCell(text = sex, weight = column3Weight)
                         TableCell(text = it.yearOfBirth?.toString() ?: "-", weight = column4Weight)

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Climber(
-    var climberId: Int = 0,
+    var climberId: String,
     var name: String = "",
     var sex: Sex? = null,
     var yearOfBirth: Int? = 0,

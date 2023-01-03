@@ -13,7 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun ClimberDetailsScreen(
-    climberId: Int,
+    climberId: String,
     database: Database,
     onBackClick: () -> Unit,
     coroutineScope: CoroutineScope,

@@ -19,7 +19,8 @@ import scraping.model.Sex
 @Composable
 fun DialogContentAddClimber(
     database: Database,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    onConfirmButtonClicked: () -> Unit,
 ): @Composable () -> Unit {
 
     return {
@@ -33,8 +34,10 @@ fun DialogContentAddClimber(
 
         // TODO: add validation
         fun addClimber() = coroutineScope.launch {
+            val id =
+                (database.getAllClimbers().lastOrNull { it.id.contains("M") }?.id?.split("-")?.get(0)?.toInt() ?: 0) + 1
             val climber = Climber(
-                climberId = database.getAllClimbers().last().id + 1,
+                climberId = "${id}-M",
                 name = name.value,
                 sex = when (selectedOption) {
                     "Mężczyzna" -> Sex.MAN
@@ -46,6 +49,7 @@ fun DialogContentAddClimber(
                 recordType = RecordType.UNOFFICIAL
             )
             database.writeClimber(climber)
+            onConfirmButtonClicked()
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

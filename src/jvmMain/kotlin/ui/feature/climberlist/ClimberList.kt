@@ -9,7 +9,7 @@ class ClimberList(
     val scraper: Scraper,
     val database: Database,
     val onBackClick: () -> Unit,
-    val navigateToClimberDetails: (climberId: Int) -> Unit,
+    val navigateToClimberDetails: (climberId: String) -> Unit,
     val coroutineScope: CoroutineScope,
 )
 

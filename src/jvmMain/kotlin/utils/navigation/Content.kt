@@ -56,7 +56,7 @@ class Root(
             coroutineScope = coroutineScope,
         ).asContent { ClimberListUi(it) }
 
-    private fun climberDetails(climberId: Int): Content =
+    private fun climberDetails(climberId: String): Content =
         ClimberDetails(
             climberId = climberId,
             database = database,

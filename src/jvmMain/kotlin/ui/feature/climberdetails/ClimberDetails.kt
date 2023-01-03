@@ -5,7 +5,7 @@ import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 
 class ClimberDetails(
-    val climberId: Int,
+    val climberId: String,
     val database: Database,
     val onBackClick: () -> Unit,
     val coroutineScope: CoroutineScope,

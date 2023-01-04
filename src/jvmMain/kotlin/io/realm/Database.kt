@@ -1,5 +1,6 @@
 package io.realm
 
+import com.toxicbakery.logging.Arbor
 import io.realm.model.BoulderResultRealm
 import io.realm.model.ClimberRealm
 import io.realm.model.LeadResultRealm
@@ -33,7 +34,7 @@ object Database {
      */
     suspend fun writeClimber(climber: Climber) = realm.write {
         if (!this.query<ClimberRealm>("id == $0", climber.climberId).find().isEmpty()) {
-            System.err.println("Climber with id ${climber.climberId} already exists - skipping")
+            Arbor.e("Climber with id ${climber.climberId} already exists - skipping")
             return@write
         }
 
@@ -44,6 +45,7 @@ object Database {
             yearOfBirth = climber.yearOfBirth
             country = climber.country
             federation = climber.federation
+            recordType = climber.recordType.name
         })
     }
 
@@ -64,7 +66,7 @@ object Database {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<LeadResultRealm>("id == $0", resultId).find().isEmpty()) {
-                System.err.println("Lead result with id $resultId already exists - skipping")
+                Arbor.e("Lead result with id $resultId already exists - skipping")
                 return@write
             }
             this.copyToRealm(LeadResultRealm().apply {
@@ -89,7 +91,7 @@ object Database {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
-                System.err.println("Lead result with id $resultId already exists - skipping")
+                Arbor.e("Lead result with id $resultId already exists - skipping")
                 return@write
             }
             this.copyToRealm(BoulderResultRealm().apply {
@@ -122,7 +124,7 @@ object Database {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
-                System.err.println("Speed result with id $resultId already exists - skipping")
+                Arbor.e("Speed result with id $resultId already exists - skipping")
                 return@write
             }
             this.copyToRealm(SpeedResultRealm().apply {
@@ -161,7 +163,7 @@ object Database {
     /**
      * Returns all the climbers saved in database.
      */
-    fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find()
+    fun getAllClimbers(): List<ClimberRealm> = realm.query<ClimberRealm>().find().sortedBy { it.id.toIntOrNull() }
 
     /**
      * Returns selected climber if exists.
@@ -190,8 +192,12 @@ object Database {
     /**
      * Deletes climber by its id.
      */
-    fun deleteClimber(id: Int) {
-
+    suspend fun deleteClimber(climberId: String) {
+        Arbor.d("Deleting user with id $climberId...")
+        realm.write {
+            val climber: ClimberRealm = this.query<ClimberRealm>("id == $0", climberId).find().first()
+            delete(climber)
+        }
     }
 
     /**

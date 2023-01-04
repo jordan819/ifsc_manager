@@ -33,6 +33,19 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("io.realm.kotlin:library-base:0.10.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
+
+                // Decompose
+                val decomposeVersion = "0.2.5"
+                implementation("com.arkivanov.decompose:decompose-jvm:$decomposeVersion")
+                implementation("com.arkivanov.decompose:extensions-compose-jetbrains-jvm:$decomposeVersion")
+
+                // Navigation
+                implementation("androidx.navigation:navigation-compose:2.5.3")
+
+                // Logger
+                api("com.ToxicBakery.logging:arbor-jvm:1.34.109")
+
+                implementation("com.afollestad.material-dialogs:core:3.3.0")
             }
         }
         val jvmTest by getting
@@ -44,7 +57,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ifsc_manager"
+            packageName = "IFSC Manager"
             packageVersion = "1.0.0"
         }
     }

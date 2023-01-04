@@ -6,6 +6,8 @@ import io.realm.model.ClimberRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import scraping.model.Climber
+import scraping.model.RecordType
+import scraping.model.Sex
 import scraping.model.boulder.BoulderGeneral
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
@@ -169,9 +171,41 @@ object Database {
      * Returns selected climber if exists.
      *
      * @param[id] id of the user to be returned
-     * @return selected [climber][ClimberRealm] if exists, null otherwise
+     * @return selected [climber][Climber] if exists, null otherwise
      */
-    fun getClimberById(id: Int): ClimberRealm? = realm.query<ClimberRealm>("id==$0", id).first().find()
+    fun getClimberById(id: String): Climber? {
+        val climberRealm = realm.query<ClimberRealm>("id==$0", id).first().find() ?: return null
+        return Climber(
+            climberId = climberRealm.id,
+            name = climberRealm.name,
+            sex = when (climberRealm.sex) {
+                Sex.MAN.name -> Sex.MAN
+                Sex.WOMAN.name -> Sex.WOMAN
+                else -> null
+            },
+            yearOfBirth = climberRealm.yearOfBirth,
+            country = climberRealm.country,
+            federation = climberRealm.federation,
+            recordType = when (climberRealm.recordType) {
+                RecordType.OFFICIAL.name -> RecordType.OFFICIAL
+                RecordType.UNOFFICIAL.name -> RecordType.UNOFFICIAL
+                else -> RecordType.OFFICIAL
+            }
+        )
+    }
+
+    suspend fun updateClimber(id: String, newValue: Climber): Boolean {
+        Arbor.d("Updating user with id $id...")
+        var result = false
+        realm.write {
+            val climber = this.query<ClimberRealm>("id == $0", id).first().find() ?: return@write
+            climber.name = newValue.name
+            climber.yearOfBirth = newValue.yearOfBirth
+            climber.country = newValue.country
+            result = true
+        }
+        return result
+    }
 
     /**
      * Returns selected lead result if exists.

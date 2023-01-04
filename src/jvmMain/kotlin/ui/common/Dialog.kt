@@ -1,4 +1,4 @@
-package ui.feature.climberlist
+package ui.common
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*

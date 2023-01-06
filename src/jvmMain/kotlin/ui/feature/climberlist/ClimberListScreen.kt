@@ -9,6 +9,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 import scraping.Scraper
 import scraping.model.RecordType
 import scraping.model.Sex
+import ui.common.Dialog
 import ui.common.TableCell
 import ui.common.TableCellImage
 
@@ -45,8 +47,14 @@ fun ClimberListScreen(
 
     val isAddDialogVisible = remember { mutableStateOf(false) }
 
+    val isEditDialogVisible = remember { mutableStateOf(false to "0") }
+
     fun showAddClimberDialog() {
         isAddDialogVisible.value = true
+    }
+
+    fun showEditClimberDialog(climberId: String) {
+        isEditDialogVisible.value = true to climberId
     }
 
     fun deleteUser(climberId: String) = coroutineScope.launch {
@@ -109,6 +117,21 @@ fun ClimberListScreen(
                     climberList = database.getAllClimbers()
                 },
                 onCloseRequest = { isAddDialogVisible.value = false },
+            )
+        }
+
+        if (isEditDialogVisible.value.first) {
+            Dialog(
+                title = "Aktualizacja zawodnika",
+                content = DialogContentEditClimber(
+                    climberId = isEditDialogVisible.value.second,
+                    database = database,
+                    coroutineScope = coroutineScope,
+                ) {
+                    climberList = database.getAllClimbers()
+                    isEditDialogVisible.value = false to "0"
+                },
+                onCloseRequest = { isEditDialogVisible.value = false to "0" },
             )
         }
 
@@ -312,6 +335,7 @@ fun ClimberListScreen(
                         TableCell(text = "Rok urodzenia", weight = column4Weight)
                         TableCell(text = "Kraj", weight = column5Weight)
                         TableCell(text = "X", weight = column6Weight)
+                        TableCell(text = "EDIT", weight = column6Weight)
                     }
                 }
                 // Here are all the lines of your table.
@@ -328,10 +352,13 @@ fun ClimberListScreen(
                         TableCell(text = it.yearOfBirth?.toString() ?: "-", weight = column4Weight)
                         TableCell(text = it.country, weight = column5Weight)
                         TableCellImage(
+                            image = Icons.Default.Edit,
+                            weight = column6Weight,
+                            onClick = { showEditClimberDialog(it.id) })
+                        TableCellImage(
                             image = Icons.Default.Delete,
                             weight = column6Weight,
                             onClick = { deleteUser(it.id) })
-
                     }
                 }
 

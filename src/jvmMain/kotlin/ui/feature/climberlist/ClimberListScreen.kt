@@ -24,7 +24,6 @@ import scraping.model.RecordType
 import scraping.model.Sex
 import ui.common.Dialog
 import ui.common.TableCell
-import ui.common.TableCellImage
 
 @Composable
 fun ClimberListScreen(
@@ -351,11 +350,11 @@ fun ClimberListScreen(
                         TableCell(text = sex, weight = column3Weight)
                         TableCell(text = it.yearOfBirth?.toString() ?: "-", weight = column4Weight)
                         TableCell(text = it.country, weight = column5Weight)
-                        TableCellImage(
+                        TableCell(
                             image = Icons.Default.Edit,
                             weight = column6Weight,
                             onClick = { showEditClimberDialog(it.id) })
-                        TableCellImage(
+                        TableCell(
                             image = Icons.Default.Delete,
                             weight = column6Weight,
                             onClick = { deleteUser(it.id) })

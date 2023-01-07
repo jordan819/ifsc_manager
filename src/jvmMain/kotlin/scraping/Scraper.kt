@@ -52,7 +52,7 @@ class Scraper {
     suspend fun fetchAllClimbers() {
         Arbor.d("Fetching all climbers...")
         val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
-        var climberId = 6330 // TODO: remove this
+        var climberId = 0
         val start = System.currentTimeMillis()
         val driver = ChromeDriver(driverOptions)
         loop@ while (climberId < MAX_CLIMBER_ID) {

@@ -52,33 +52,14 @@ class Scraper {
     suspend fun fetchAllClimbers() {
         Arbor.d("Fetching all climbers...")
         val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
-        var climberId = 0
+        var climberId = 6330 // TODO: remove this
         val start = System.currentTimeMillis()
         val driver = ChromeDriver(driverOptions)
         loop@ while (climberId < MAX_CLIMBER_ID) {
             try {
                 climberId++
                 driver.get(url + climberId)
-
-                val wait = WebDriverWait(driver, 30)
-                wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(By.className("name"))
-                )
-
-                val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: continue@loop
-                val country = driver.findElementByClassName("country").text
-                val federation = driver.findElementByClassName("federation").text
-
-                val sex =
-                    if (driver.pageSource.contains("WOMEN")) Sex.WOMAN
-                    else if (driver.pageSource.contains("MEN")) Sex.MAN
-                    else null
-
-                val age =
-                    (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
-                val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
-
-                val climber = Climber(climberId.toString(), name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
+                val climber = getClimberDataFromTable(climberId, driver) ?: continue@loop
                 Database.writeClimber(climber)
                 Arbor.d(climber.toString())
             } catch (_: NoSuchElementException) {
@@ -111,32 +92,33 @@ class Scraper {
         val driver = ChromeDriver(driverOptions)
         try {
             driver.get(url + climberId)
-
-            val wait = WebDriverWait(driver, 30)
-            wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.className("name"))
-            )
-
-            val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: return
-            val country = driver.findElementByClassName("country").text
-            val federation = driver.findElementByClassName("federation").text
-
-            val sex =
-                if (driver.pageSource.contains("WOMEN")) Sex.WOMAN
-                else if (driver.pageSource.contains("MEN")) Sex.MAN
-                else null
-
-            val age =
-                (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
-            val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
-
-            val climber = Climber(climberId.toString(), name, sex, yearOfBirth, country, federation, recordType = RecordType.OFFICIAL)
+            val climber = getClimberDataFromTable(climberId, driver) ?: return
             Database.writeClimber(climber)
             Arbor.d(climber.toString())
         } catch (_: NoSuchElementException) {
             Arbor.e("Climber with id $climberId could not be fetched")
         }
         driver.close()
+    }
+
+    private fun getClimberDataFromTable(climberId: Int, driver: ChromeDriver): Climber? {
+        val wait = WebDriverWait(driver, 30)
+        wait.until(
+            ExpectedConditions.visibilityOfElementLocated(By.className("name"))
+        )
+        val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: return null
+        val country = driver.findElementByClassName("country").text
+        val federation = driver.findElementByClassName("federation").text
+
+        val sex =
+            if (driver.pageSource.contains("WOMEN")) Sex.WOMAN
+            else if (driver.pageSource.contains("MEN")) Sex.MAN
+            else null
+
+        val age =
+            (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
+        val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
+        return Climber(climberId.toString(), name, sex, yearOfBirth, country, federation, RecordType.OFFICIAL)
     }
 
     /**
@@ -150,7 +132,7 @@ class Scraper {
         val driver = ChromeDriver(driverOptions)
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
-        var currentYear: Int? = null
+        var currentYear: Int? = 2010
 
         do {
             driver.get(url)
@@ -213,8 +195,7 @@ class Scraper {
 
         when (type) {
             BOULDER_AND_LEAD, COMBINED -> {
-                // TODO: implement
-                Arbor.d("$type - skipping $url")
+                Arbor.d("$type is not supported yet - skipping $url")
                 return
             }
 

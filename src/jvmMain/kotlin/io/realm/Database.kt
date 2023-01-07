@@ -76,7 +76,7 @@ object Database {
                 this.year = year
                 this.competitionId = competitionId
                 rank = result.rank
-                climberId = result.climberId
+                climberId = result.climberId.toString()
                 qualification = result.qualification
                 semiFinal = result.semiFinal
                 final = result.final
@@ -101,7 +101,7 @@ object Database {
                 this.year = year
                 this.competitionId = competitionId
                 rank = result.rank
-                climberId = result.climberId
+                climberId = result.climberId.toString()
                 qualification = result.qualification
                 semiFinal = result.semiFinal
                 final = result.final
@@ -133,7 +133,7 @@ object Database {
                 id = resultId
                 this.year = year
                 rank = result.rank
-                climberId = result.climberId
+                climberId = result.climberId.toString()
                 laneA = result.laneA
                 laneB = result.laneB
                 oneEighth = result.oneEighth
@@ -208,20 +208,31 @@ object Database {
     }
 
     /**
-     * Returns selected lead result if exists.
+     * Returns list of lead results for certain climber.
      *
-     * @param[id] id of the user to be returned
-     * @return selected [lead][LeadResultRealm] result if exists, null otherwise
+     * @param[climberId] id of the user to be returned
+     * @return list of [lead results][LeadResultRealm] result if any exists, empty list otherwise
      */
-    fun getLeadResultById(id: Int): LeadResultRealm? = realm.query<LeadResultRealm>("id==$0", id).first().find()
+    fun getLeadResultsByClimberId(climberId: String): List<LeadResultRealm> =
+        realm.query<LeadResultRealm>("climberId==$0", climberId).find()
 
     /**
-     * Returns selected speed result if exists.
+     * Returns list of boulder results for certain climber.
      *
-     * @param[id] id of the user to be returned
-     * @return selected [speed][SpeedResult] result if exists, null otherwise
+     * @param[climberId] id of the user to be returned
+     * @return list of [boulder results][BoulderResultRealm] result if any exists, empty list otherwise
      */
-    fun getSpeedResultById(id: Int): SpeedResultRealm? = realm.query<SpeedResultRealm>("id==$0", id).first().find()
+    fun getBoulderResultsByClimberId(climberId: String): List<BoulderResultRealm> =
+        realm.query<BoulderResultRealm>("climberId==$0", climberId).find()
+
+    /**
+     * Returns list of speed results for certain climber.
+     *
+     * @param[climberId] id of the user to be returned
+     * @return list of [speed results][SpeedResultRealm] result if any exists, empty list otherwise
+     */
+    fun getSpeedResultsByClimberId(climberId: String): List<SpeedResultRealm> =
+        realm.query<SpeedResultRealm>("climberId==$0", climberId).find()
 
     /**
      * Deletes climber by its id.

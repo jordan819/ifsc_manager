@@ -12,7 +12,7 @@ class LeadResultRealm : RealmObject {
     var year: Int = 0
     var competitionId: String = ""
     var rank: Int? = null
-    var climberId: Int = 0
+    var climberId: String = "0"
     var qualification: String = ""
     var semiFinal: String? = null
     var final: String? = null

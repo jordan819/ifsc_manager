@@ -11,7 +11,7 @@ class SpeedResultRealm : RealmObject {
     var id: String = ""
     var year: Int = 0
     var rank: Int? = null
-    var climberId = 0
+    var climberId: String = "0"
     var laneA: String? = null
     var laneB: String? = null
     var oneEighth: String? = null

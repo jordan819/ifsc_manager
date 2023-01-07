@@ -37,6 +37,7 @@ fun ClimberListScreen(
     var climberList by remember { mutableStateOf(Database.getAllClimbers()) }
 
     // Filter List
+    val hasAnyResultChecked = remember { mutableStateOf(true) }
     val isMaleChecked = remember { mutableStateOf(false) }
     val isFemaleChecked = remember { mutableStateOf(false) }
     val isOfficialChecked = remember { mutableStateOf(false) }
@@ -68,7 +69,7 @@ fun ClimberListScreen(
     }
 
     fun sortClimberList(climbers: List<ClimberRealm>) = when (sortOption.value) {
-        ClimberSortOption.ID -> climbers.sortedBy { it.id }
+        ClimberSortOption.ID -> climbers.sortedBy { it.id.toIntOrNull() }
         ClimberSortOption.NAME -> climbers.sortedBy { it.name }
         ClimberSortOption.YEAR -> climbers.sortedBy { it.yearOfBirth }
         ClimberSortOption.COUNTRY -> climbers.sortedBy { it.country }
@@ -103,10 +104,21 @@ fun ClimberListScreen(
             filteredClimberList
         }
 
-        climberList = sortClimberList(filteredClimberList)
+        filteredClimberList = if (hasAnyResultChecked.value) {
+            filteredClimberList.filter { climber ->
+                val leads = Database.getLeadResultsByClimberId(climber.id)
+                val speeds = Database.getSpeedResultsByClimberId(climber.id)
+                val boulders = Database.getBoulderResultsByClimberId(climber.id)
+                leads.isNotEmpty() || speeds.isNotEmpty() || boulders.isNotEmpty()
+            }
+        } else {
+            filteredClimberList
+        }
 
+        climberList = sortClimberList(filteredClimberList)
     }
 
+    updateListDisplay()
     MaterialTheme {
 
         if (isAddDialogVisible.value) {
@@ -181,6 +193,23 @@ fun ClimberListScreen(
                     Text(
                         text = "Filtrowanie"
                     )
+
+                    Row {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Brał udział w zawodach"
+                            )
+                            Checkbox(
+                                checked = hasAnyResultChecked.value,
+                                onCheckedChange = {
+                                    hasAnyResultChecked.value = it
+                                    updateListDisplay()
+                                },
+                            )
+                        }
+                    }
 
                     Row {
                         Row(

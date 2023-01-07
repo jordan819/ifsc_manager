@@ -74,7 +74,32 @@ fun ClimberDetailsScreen(
 
     @Composable
     fun BoulderTable() {
-        Text("Tabela Boulder")
+        val column1Weight = .1f
+        val column2Weight = .1f
+        val column3Weight = .2f
+        val column4Weight = .2f
+        val column5Weight = .2f
+        LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
+            item {
+                Row(Modifier.background(Color.Gray)) {
+                    TableCell(text = "Rok", weight = column1Weight)
+                    TableCell(text = "Pozycja w zawodach", weight = column2Weight)
+                    TableCell(text = "Kwalifikacje", weight = column3Weight)
+                    TableCell(text = "Półfinał", weight = column4Weight)
+                    TableCell(text = "Finał", weight = column5Weight)
+                }
+            }
+            items(boulderResults) {
+                Row(Modifier.fillMaxWidth()) {
+                    TableCell(text = it.year.toString(), weight = column1Weight)
+                    TableCell(text = it.rank?.toString() ?: "-", weight = column2Weight)
+                    TableCell(text = it.qualification, weight = column3Weight)
+                    TableCell(text = it.semiFinal ?: "-", weight = column4Weight)
+                    TableCell(text = it.final ?: "-", weight = column5Weight)
+                }
+            }
+
+        }
     }
 
     @Composable

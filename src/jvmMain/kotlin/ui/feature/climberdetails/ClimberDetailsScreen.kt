@@ -39,28 +39,25 @@ fun ClimberDetailsScreen(
 
     @Composable
     fun LeadTable() {
-        val column1Weight = .1f
-        val column2Weight = .1f
-        val column3Weight = .2f
-        val column4Weight = .2f
-        val column5Weight = .2f
+        val weight1 = .1f
+        val weight2 = .2f
         LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
             item {
                 Row(Modifier.background(Color.Gray)) {
-                    TableCell(text = "Rok", weight = column1Weight)
-                    TableCell(text = "Pozycja w zawodach", weight = column2Weight)
-                    TableCell(text = "Kwalifikacje", weight = column3Weight)
-                    TableCell(text = "Półfinał", weight = column4Weight)
-                    TableCell(text = "Finał", weight = column5Weight)
+                    TableCell(text = "Rok", weight = weight1)
+                    TableCell(text = "Pozycja w zawodach", weight = weight1)
+                    TableCell(text = "Kwalifikacje", weight = weight2)
+                    TableCell(text = "Półfinał", weight = weight2)
+                    TableCell(text = "Finał", weight = weight2)
                 }
             }
             items(leadResults) {
                 Row(Modifier.fillMaxWidth()) {
-                    TableCell(text = it.year.toString(), weight = column1Weight)
-                    TableCell(text = it.rank?.toString() ?: "-", weight = column2Weight)
-                    TableCell(text = it.qualification, weight = column3Weight)
-                    TableCell(text = it.semiFinal ?: "-", weight = column4Weight)
-                    TableCell(text = it.final ?: "-", weight = column5Weight)
+                    TableCell(text = it.year.toString(), weight = weight1)
+                    TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
+                    TableCell(text = it.qualification, weight = weight2)
+                    TableCell(text = it.semiFinal ?: "-", weight = weight2)
+                    TableCell(text = it.final ?: "-", weight = weight2)
                 }
             }
 
@@ -69,33 +66,65 @@ fun ClimberDetailsScreen(
 
     @Composable
     fun SpeedTable() {
-        Text("Tabela SPEED")
+        val weight1 = .1f
+        val weight2 = .2f
+        LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
+            item {
+                Row(Modifier.background(Color.Gray)) {
+                    TableCell(text = "", weight = weight1 * 2)
+                    TableCell(text = "Kwalifikacje", weight = weight1 * 2)
+                    TableCell(text = "Finały", weight = weight1 * 3 + weight2 * 2)
+                }
+                Row(Modifier.background(Color.Gray)) {
+                    TableCell(text = "Rok", weight = weight1)
+                    TableCell(text = "Pozycja w zawodach", weight = weight1)
+                    TableCell(text = "Tor A", weight = weight1)
+                    TableCell(text = "Tor B", weight = weight1)
+                    TableCell(text = "1/8", weight = weight1)
+                    TableCell(text = "1/4", weight = weight1)
+                    TableCell(text = "Półfinał", weight = weight1)
+                    TableCell(text = "Mały finał", weight = weight2)
+                    TableCell(text = "Finał", weight = weight2)
+                }
+            }
+            items(speedResults) {
+                Row(Modifier.fillMaxWidth()) {
+                    TableCell(text = it.year.toString(), weight = weight1)
+                    TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
+                    TableCell(text = it.laneA ?: "-", weight = weight1)
+                    TableCell(text = it.laneB ?: "-", weight = weight1)
+                    TableCell(text = it.oneEighth ?: "-", weight = weight1)
+                    TableCell(text = it.quarter ?: "-", weight = weight1)
+                    TableCell(text = it.semiFinal ?: "-", weight = weight1)
+                    TableCell(text = it.smallFinal ?: "-", weight = weight2)
+                    TableCell(text = it.final ?: "-", weight = weight2)
+                }
+            }
+
+        }
     }
 
     @Composable
     fun BoulderTable() {
-        val column1Weight = .1f
-        val column2Weight = .1f
-        val column3Weight = .2f
-        val column4Weight = .2f
-        val column5Weight = .2f
+        val weight1 = .1f
+        val weight2 = .2f
         LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
             item {
                 Row(Modifier.background(Color.Gray)) {
-                    TableCell(text = "Rok", weight = column1Weight)
-                    TableCell(text = "Pozycja w zawodach", weight = column2Weight)
-                    TableCell(text = "Kwalifikacje", weight = column3Weight)
-                    TableCell(text = "Półfinał", weight = column4Weight)
-                    TableCell(text = "Finał", weight = column5Weight)
+                    TableCell(text = "Rok", weight = weight1)
+                    TableCell(text = "Pozycja w zawodach", weight = weight1)
+                    TableCell(text = "Kwalifikacje", weight = weight2)
+                    TableCell(text = "Półfinał", weight = weight2)
+                    TableCell(text = "Finał", weight = weight2)
                 }
             }
             items(boulderResults) {
                 Row(Modifier.fillMaxWidth()) {
-                    TableCell(text = it.year.toString(), weight = column1Weight)
-                    TableCell(text = it.rank?.toString() ?: "-", weight = column2Weight)
-                    TableCell(text = it.qualification, weight = column3Weight)
-                    TableCell(text = it.semiFinal ?: "-", weight = column4Weight)
-                    TableCell(text = it.final ?: "-", weight = column5Weight)
+                    TableCell(text = it.year.toString(), weight = weight1)
+                    TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
+                    TableCell(text = it.qualification, weight = weight2)
+                    TableCell(text = it.semiFinal ?: "-", weight = weight2)
+                    TableCell(text = it.final ?: "-", weight = weight2)
                 }
             }
 

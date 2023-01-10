@@ -46,6 +46,9 @@ kotlin {
                 api("com.ToxicBakery.logging:arbor-jvm:1.34.109")
 
                 implementation("com.afollestad.material-dialogs:core:3.3.0")
+
+                // Charts
+                implementation("org.knowm.xchart:xchart:3.8.3")
             }
         }
         val jvmTest by getting

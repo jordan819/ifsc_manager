@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,10 +20,12 @@ import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import kotlinx.coroutines.CoroutineScope
-import scraping.Scraper.Companion.BOULDER
-import scraping.Scraper.Companion.LEAD
-import scraping.Scraper.Companion.SPEED
+import scraping.Scraper
 import ui.common.TableCell
+import ui.feature.climberdetails.ContentType.ANALYSIS
+import ui.feature.climberdetails.ContentType.BOULDER
+import ui.feature.climberdetails.ContentType.LEAD
+import ui.feature.climberdetails.ContentType.SPEED
 
 @Composable
 fun ClimberDetailsScreen(
@@ -36,6 +39,8 @@ fun ClimberDetailsScreen(
 ) {
 
     val selectedResultType = remember { mutableStateOf<String?>(null) }
+
+    val isDropdownExpanded = remember { mutableStateOf(false) }
 
     @Composable
     fun LeadTable() {
@@ -132,7 +137,69 @@ fun ClimberDetailsScreen(
     }
 
     @Composable
-    fun SelectTypeButton(onClick: () -> Unit, text: String) {
+    fun Analysis() {
+        Column {
+            IconButton(onClick = { isDropdownExpanded.value = true }) {
+                Icon(Icons.Default.MoreVert, "")
+            }
+            DropdownMenu(
+                expanded = isDropdownExpanded.value,
+                onDismissRequest = { isDropdownExpanded.value = false }
+            ) {
+                Button(onClick = {}) {
+                    Text("val 1")
+                }
+                Button(onClick = {}) {
+                    Text("val 2")
+                }
+                Button(onClick = {}) {
+                    Text("val 3")
+                }
+                Button(onClick = {}) {
+                    Text("val 4")
+                }
+            }
+        }
+
+//        val testX = Random.nextDouble(2010.0, 2020.0)
+//        val xData = doubleArrayOf(testX, testX + 2, testX + 3, testX + 4, testX + 5, testX + 6)
+//        val yData = doubleArrayOf(
+//            Random.nextDouble(20.0, 30.0),
+//            Random.nextDouble(20.0, 30.0),
+//            Random.nextDouble(20.0, 30.0),
+//            Random.nextDouble(20.0, 30.0),
+//            Random.nextDouble(20.0, 30.0),
+//            Random.nextDouble(20.0, 30.0),
+//        )
+//        val chart1 = QuickChart.getChart("Postęp zawodnika w czasie", "Rok", "Wynik", "Wynik od czasu", xData, yData)
+//        val image1 = BitmapEncoder.getBufferedImage(chart1).toComposeImageBitmap()
+//
+//        val chart2 = PieChart(PieChartBuilder())
+//        if (leadResults.isNotEmpty()) chart2.addSeries("LEAD", leadResults.size)
+//        if (speedResults.isNotEmpty()) chart2.addSeries("SPEED", speedResults.size)
+//        if (boulderResults.isNotEmpty()) chart2.addSeries("BOULDER", boulderResults.size)
+//        val image2 = BitmapEncoder.getBufferedImage(chart2).toComposeImageBitmap()
+//
+//        val chart3 = CategoryChart(CategoryChartBuilder())
+//        chart3.addSeries("1", intArrayOf(1, 2, 3), intArrayOf(4, 5, 6))
+//        val image3 = BitmapEncoder.getBufferedImage(chart3).toComposeImageBitmap()
+//
+//        Row {
+//            Image(
+//                bitmap = image1,
+//                contentDescription = null,
+//            )
+//        }
+//        Row {
+//            Image(
+//                bitmap = image2,
+//                contentDescription = null,
+//            )
+//        }
+    }
+
+    @Composable
+    fun SelectContentButton(onClick: () -> Unit, text: String) {
         Button(
             onClick = onClick
         ) {
@@ -186,21 +253,27 @@ fun ClimberDetailsScreen(
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
                 if (leadResults.isNotEmpty()) {
-                    SelectTypeButton(
+                    SelectContentButton(
                         onClick = { selectedResultType.value = LEAD },
                         text = "LEAD"
                     )
                 }
                 if (speedResults.isNotEmpty()) {
-                    SelectTypeButton(
+                    SelectContentButton(
                         onClick = { selectedResultType.value = SPEED },
                         text = "SPEED"
                     )
                 }
                 if (boulderResults.isNotEmpty()) {
-                    SelectTypeButton(
+                    SelectContentButton(
                         onClick = { selectedResultType.value = BOULDER },
                         text = "BOULDER"
+                    )
+                }
+                if (leadResults.isNotEmpty() || speedResults.isNotEmpty() || boulderResults.isNotEmpty()) {
+                    SelectContentButton(
+                        onClick = { selectedResultType.value = ANALYSIS },
+                        text = "Analiza wyników"
                     )
                 }
             }
@@ -210,8 +283,16 @@ fun ClimberDetailsScreen(
                 LEAD -> LeadTable()
                 SPEED -> SpeedTable()
                 BOULDER -> BoulderTable()
+                ANALYSIS -> Analysis()
             }
         }
     }
 
+}
+
+object ContentType {
+    const val LEAD = Scraper.LEAD
+    const val SPEED = Scraper.SPEED
+    const val BOULDER = Scraper.BOULDER
+    const val ANALYSIS = "ANALYSIS"
 }

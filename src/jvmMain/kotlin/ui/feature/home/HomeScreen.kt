@@ -9,6 +9,10 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import scraping.Scraper
 
 @Composable
 fun HomeScreen(navigateToClimberList: () -> Unit) {
@@ -23,6 +27,20 @@ fun HomeScreen(navigateToClimberList: () -> Unit) {
                 navigateToClimberList()
             }) {
                 Text("Zawodnicy")
+            }
+            Button(onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    Scraper().fetchEvents()
+                }
+            }) {
+                Text("Pobierz eventy")
+            }
+            Button(onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    Scraper().fetchAllClimbers()
+                }
+            }) {
+                Text("Pobierz zawodników")
             }
         }
     }

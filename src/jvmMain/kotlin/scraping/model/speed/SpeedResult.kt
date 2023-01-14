@@ -5,7 +5,7 @@ package scraping.model.speed
  */
 data class SpeedResult(
     val rank: Int?,
-    val climberId: Int,
+    val climberId: String,
     val laneA: String?,
     val laneB: String?,
     val oneEighth: String?,

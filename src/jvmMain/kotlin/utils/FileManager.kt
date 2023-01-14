@@ -1,10 +1,13 @@
 package utils
 
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import scraping.model.Climber
 import scraping.model.RecordType
+import scraping.model.Sex
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
+import java.io.File
 
 /**
  * Class that allows to write or read from CSV file.
@@ -16,6 +19,10 @@ class FileManager {
         nullCode = "null"
         lineTerminator = "\n"
         outputLastLineTerminator = true
+    }
+
+    private val reader = csvReader {
+        delimiter = ','
     }
 
     /**
@@ -69,17 +76,33 @@ class FileManager {
      * @return list of all available climbers
      */
     fun readClimbers(pathName: String = DEFAULT_CLIMBERS_FILE_PATH): List<Climber> {
-        return listOf(
-            Climber(
-                "1",
-                "",
-                null,
-                null,
-                "",
-                "",
-                RecordType.UNOFFICIAL
+        val file = File(pathName)
+        val rows = reader.readAll(file)
+
+        val climberList = mutableListOf<Climber>()
+
+        rows.forEach { row ->
+            climberList.add(
+                Climber(
+                    climberId = row[0],
+                    name = row[1],
+                    sex = when (row[2]) {
+                        Sex.MAN.name -> Sex.MAN
+                        Sex.WOMAN.name -> Sex.WOMAN
+                        else -> null
+                    },
+                    yearOfBirth = row[3].toIntOrNull(),
+                    country = row[4],
+                    federation = row[5],
+                    recordType = when (row[6]) {
+                        RecordType.OFFICIAL.name -> RecordType.OFFICIAL
+                        RecordType.UNOFFICIAL.name -> RecordType.UNOFFICIAL
+                        else -> RecordType.UNOFFICIAL
+                    },
+                )
             )
-        )
+        }
+        return climberList
     }
 
     /**

@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 
 class FileManagerTest {
 
-    lateinit var fileManager: FileManager
+    private lateinit var fileManager: FileManager
 
     @BeforeTest
     fun setup() {
@@ -53,25 +53,10 @@ class FileManagerTest {
         assertTrue(File(pathName).exists())
     }
 
-    @Test
-    fun `write climber data to file`(@TempDir tempDir: File) {
+    @ParameterizedTest
+    @ArgumentsSource(ClimberArgumentProvider::class)
+    fun `write climber data to file`(climber: Climber, @TempDir tempDir: File) {
         // arrange
-        val id = "123"
-        val name = "John Doe"
-        val sex = Sex.MAN
-        val yearOfBirth = 1998
-        val country = "USA"
-        val federation = "USAC"
-        val recordType = RecordType.OFFICIAL
-        val climber = Climber(
-            id,
-            name,
-            sex,
-            yearOfBirth,
-            country,
-            federation,
-            recordType
-        )
         val pathName = "$tempDir/climbers.csv"
 
         // act
@@ -80,39 +65,7 @@ class FileManagerTest {
         // assert
         val writtenContent = File(pathName).readText()
         assertEquals(
-            "$id,$name,$sex,$yearOfBirth,$country,$federation,$recordType\n",
-            writtenContent
-        )
-    }
-
-    @Test
-    fun `write climber data with nullable fields set to null to file`(@TempDir tempDir: File) {
-        // arrange
-        val id = "123"
-        val name = "John Doe"
-        val sex = null
-        val yearOfBirth = null
-        val country = "USA"
-        val federation = "USAC"
-        val recordType = RecordType.UNOFFICIAL
-        val climber = Climber(
-            id,
-            name,
-            sex,
-            yearOfBirth,
-            country,
-            federation,
-            recordType
-        )
-        val pathName = "$tempDir/climbers.csv"
-
-        // act
-        fileManager.writeClimber(climber, pathName)
-
-        // assert
-        val writtenContent = File(pathName).readText()
-        assertEquals(
-            "$id,$name,$sex,$yearOfBirth,$country,$federation,$recordType\n",
+            "${climber.climberId},${climber.name},${climber.sex},${climber.yearOfBirth},${climber.country},${climber.federation},${climber.recordType}\n",
             writtenContent
         )
     }

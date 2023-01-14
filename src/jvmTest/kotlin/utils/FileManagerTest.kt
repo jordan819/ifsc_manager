@@ -74,7 +74,7 @@ class FileManagerTest {
         // assert
         val writtenContent = File(pathName).readText()
         assertEquals(
-            "climberId, name, age, country, federation\n$id, $name, $yearOfBirth, $country, $federation\n",
+            "$id,$name,$sex,$yearOfBirth,$country,$federation,$recordType\n",
             writtenContent
         )
     }
@@ -106,7 +106,7 @@ class FileManagerTest {
         // assert
         val writtenContent = File(pathName).readText()
         assertEquals(
-            "climberId, name, age, country, federation\n$id, $name, $yearOfBirth, $country, $federation\n",
+            "$id,$name,$sex,$yearOfBirth,$country,$federation,$recordType\n",
             writtenContent
         )
     }

@@ -1,5 +1,6 @@
 package utils
 
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import scraping.model.Climber
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
@@ -9,13 +10,34 @@ import scraping.model.speed.SpeedResult
  */
 class FileManager {
 
+    private val writer = csvWriter {
+        delimiter = ','
+        nullCode = "null"
+        lineTerminator = "\n"
+        outputLastLineTerminator = true
+    }
+
     /**
      * Writes climber to CSV file.
      *
      * @param[climber] climber to be saved
      */
     fun writeClimber(climber: Climber, pathName: String = "src/jvmMain/resources/climbers.csv") {
-
+        writer.writeAll(
+            rows = listOf(
+                listOf(
+                    climber.climberId,
+                    climber.name,
+                    climber.sex,
+                    climber.yearOfBirth,
+                    climber.country,
+                    climber.federation,
+                    climber.recordType,
+                )
+            ),
+            targetFileName = pathName,
+            append = true
+        )
     }
 
     /**

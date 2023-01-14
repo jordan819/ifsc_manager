@@ -48,7 +48,13 @@ kotlin {
                 implementation("com.afollestad.material-dialogs:core:3.3.0")
             }
         }
-        val jvmTest by getting
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.junit.jupiter:junit-jupiter:5.9.2")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+            }
+        }
     }
 }
 
@@ -65,4 +71,8 @@ compose.desktop {
 
 dependencies {
     dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.7.20")
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }

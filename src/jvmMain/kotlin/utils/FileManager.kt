@@ -17,12 +17,11 @@ class FileManager {
      *
      * @param[climber] climber to be saved
      */
-    fun writeClimber(climber: Climber) {
-        val pathName = "src/jvmMain/resources/climbers.csv"
+    fun writeClimber(climber: Climber, pathName: String = "src/jvmMain/resources/climbers.csv") {
         if (!File(pathName).exists()) {
             File(pathName).writeText("climberId, name, age, country, federation\n")
         }
-        File("src/jvmMain/resources/climbers").appendText(
+        File(pathName).appendText(
             "${climber.climberId}, ${climber.name}, ${climber.yearOfBirth}, ${climber.country}, ${climber.federation}\n"
         )
     }

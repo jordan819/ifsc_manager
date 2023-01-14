@@ -2,6 +2,7 @@ package utils
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import scraping.model.Climber
+import scraping.model.RecordType
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
 
@@ -22,7 +23,7 @@ class FileManager {
      *
      * @param[climber] climber to be saved
      */
-    fun writeClimber(climber: Climber, pathName: String = "src/jvmMain/resources/climbers.csv") {
+    fun writeClimber(climber: Climber, pathName: String = DEFAULT_CLIMBERS_FILE_PATH) {
         writer.writeAll(
             rows = listOf(
                 listOf(
@@ -67,8 +68,18 @@ class FileManager {
      *
      * @return list of all available climbers
      */
-    fun readClimbers(): List<Climber> {
-        return emptyList()
+    fun readClimbers(pathName: String = DEFAULT_CLIMBERS_FILE_PATH): List<Climber> {
+        return listOf(
+            Climber(
+                "1",
+                "",
+                null,
+                null,
+                "",
+                "",
+                RecordType.UNOFFICIAL
+            )
+        )
     }
 
     /**
@@ -87,5 +98,9 @@ class FileManager {
      */
     fun readSpeeds(): List<SpeedResult> {
         return emptyList()
+    }
+
+    companion object {
+        const val DEFAULT_CLIMBERS_FILE_PATH = "src/jvmMain/resources/climbers.csv"
     }
 }

@@ -110,8 +110,19 @@ class FileManager {
      *
      * @return list of all available lead results
      */
-    fun readLeads(): List<LeadGeneral> {
-        return emptyList()
+    fun readLeads(pathName: String = DEFAULT_LEADS_FILE_PATH): List<LeadResultRealm> {
+        return listOf(
+            LeadResultRealm().apply {
+                id = ""
+                year = 0
+                competitionId = ""
+                rank = null
+                climberId = "0"
+                qualification = ""
+                semiFinal = null
+                final = null
+            }
+        )
     }
 
     /**
@@ -125,5 +136,6 @@ class FileManager {
 
     companion object {
         const val DEFAULT_CLIMBERS_FILE_PATH = "src/jvmMain/resources/climbers.csv"
+        const val DEFAULT_LEADS_FILE_PATH = "src/jvmMain/resources/leads.csv"
     }
 }

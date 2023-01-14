@@ -79,14 +79,14 @@ class FileManagerTest {
             "$climberId,$name,$sex,$yearOfBirth,$country,$federation,$recordType"
         }
         val pathName = "$tempDir/climbers.csv"
-
-        // act
         File(pathName).writeText(row)
 
-        // assert
+        // act
         val writtenContent = with(fileManager.readClimbers(pathName).first()) {
             "$climberId,$name,$sex,$yearOfBirth,$country,$federation,$recordType"
         }
+
+        // assert
         assertEquals(
             row,
             writtenContent
@@ -118,15 +118,43 @@ class FileManagerTest {
         // assert
         var expectedContent = ""
         results.forEach { result ->
-            expectedContent += "${result.id},${result.rank},${result.year},${result.competitionId},${result.rank},${result.climberId},${result.qualification},${result.semiFinal},${result.final}\n"
+            with(result) {
+                expectedContent += "$id,$rank,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+            }
         }
-
         val writtenContent = File(pathName).readText()
         assertEquals(
             expectedContent,
             writtenContent
         )
+    }
 
+    @ParameterizedTest
+    @ArgumentsSource(ClimberArgumentProvider::class)
+    fun `read lead results data`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
+        // arrange
+        var expectedContent = ""
+        results.forEach { result ->
+            with(result) {
+                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+            }
+        }
+        val pathName = "$tempDir/climbers.csv"
+        File(pathName).writeText(expectedContent)
+
+        // act
+        var writtenContent = ""
+        fileManager.readLeads(pathName).forEach { result ->
+            with(result) {
+                writtenContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final"
+            }
+        }
+
+        // assert
+        assertEquals(
+            expectedContent,
+            writtenContent
+        )
     }
 
     internal class ClimberArgumentProvider : ArgumentsProvider {

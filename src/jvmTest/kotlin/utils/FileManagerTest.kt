@@ -1,5 +1,6 @@
 package utils
 
+import io.realm.model.LeadResultRealm
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -92,6 +93,42 @@ class FileManagerTest {
         )
     }
 
+    @ParameterizedTest
+    @ArgumentsSource(LeadResultArgumentProvider::class)
+    fun `create new file if not exists`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
+        //arrange
+        val fileName = "$tempDir/leads.csv"
+
+        // act
+        fileManager.writeLeads(results, fileName)
+
+        // assert
+        assertTrue(File(fileName).exists())
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(LeadResultArgumentProvider::class)
+    fun `write lead results data to file`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
+        // arrange
+        val pathName = "$tempDir/leads.csv"
+
+        // act
+        fileManager.writeLeads(results, pathName)
+
+        // assert
+        var expectedContent = ""
+        results.forEach { result ->
+            expectedContent += "${result.id},${result.rank},${result.year},${result.competitionId},${result.rank},${result.climberId},${result.qualification},${result.semiFinal},${result.final}\n"
+        }
+
+        val writtenContent = File(pathName).readText()
+        assertEquals(
+            expectedContent,
+            writtenContent
+        )
+
+    }
+
     internal class ClimberArgumentProvider : ArgumentsProvider {
         @Throws(Exception::class)
         override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
@@ -127,6 +164,62 @@ class FileManagerTest {
                         "FRA",
                         "Federation Française de la Montagne et de l'Escalade",
                         RecordType.OFFICIAL
+                    )
+                ),
+            )
+        }
+    }
+
+    internal class LeadResultArgumentProvider : ArgumentsProvider {
+        @Throws(Exception::class)
+        override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
+            return Stream.of(
+                Arguments.of(
+                    listOf(
+                        LeadResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            competitionId = "321"
+                            rank = null
+                            climberId = "235-f"
+                            qualification = "12"
+                            semiFinal = null
+                            final = null
+                        }
+                    )
+                ),
+                Arguments.of(
+                    listOf(
+                        LeadResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            competitionId = "321"
+                            rank = null
+                            climberId = "235-f"
+                            qualification = "12"
+                            semiFinal = null
+                            final = null
+                        },
+                        LeadResultRealm().apply {
+                            id = "1353"
+                            year = 2020
+                            competitionId = "321"
+                            rank = 1
+                            climberId = "235-f"
+                            qualification = "12"
+                            semiFinal = "13"
+                            final = "11.1"
+                        },
+                        LeadResultRealm().apply {
+                            id = "1356"
+                            year = 2021
+                            competitionId = "321"
+                            rank = 2
+                            climberId = "235-f"
+                            qualification = "11"
+                            semiFinal = "12"
+                            final = "fall"
+                        }
                     )
                 ),
             )

@@ -2,6 +2,7 @@ package utils
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import io.realm.model.LeadResultRealm
 import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
@@ -52,10 +53,9 @@ class FileManager {
      * Writes [lead results][LeadGeneral] to CSV file.
      *
      * @param[results] lead results to be saved
-     * @param[year] year in which competition took place
      * @param[fileName] name of the target file
      */
-    fun writeLeads(results: List<LeadGeneral>, year: String, fileName: String) {
+    fun writeLeads(results: List<LeadResultRealm>, fileName: String) {
 
     }
 

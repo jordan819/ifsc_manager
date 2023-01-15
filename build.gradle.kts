@@ -49,9 +49,18 @@ kotlin {
 
                 // Charts
                 implementation("org.knowm.xchart:xchart:3.8.3")
+
+                // CSV files support
+                implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
             }
         }
-        val jvmTest by getting
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.junit.jupiter:junit-jupiter:5.9.2")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+            }
+        }
     }
 }
 
@@ -68,4 +77,8 @@ compose.desktop {
 
 dependencies {
     dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.7.20")
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }

@@ -251,7 +251,7 @@ class Scraper {
                         row.findElements(By.className("number")).firstOrNull()?.text.takeUnless { it.isNullOrBlank() }
                     val laneB =
                         row.findElements(By.className("number")).lastOrNull()?.text.takeUnless { it.isNullOrBlank() }
-                    qualificationResults.add(SpeedQualification(climberId, laneA, laneB))
+                    qualificationResults.add(SpeedQualification(climberId.toString(), laneA, laneB))
                 }
 
                 driver.findElementsByClassName("link").last().click()
@@ -269,13 +269,13 @@ class Scraper {
                     val semiFinal = results.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
                     val smallFinal = results.getOrNull(3)?.text.takeUnless { it.isNullOrBlank() }
                     val final = results.getOrNull(4)?.text.takeUnless { it.isNullOrBlank() }
-                    finalResults.add(SpeedFinal(rank, climberId, oneEighth, quarter, semiFinal, smallFinal, final))
+                    finalResults.add(SpeedFinal(rank, climberId.toString(), oneEighth, quarter, semiFinal, smallFinal, final))
                 }
 
                 val results = qualificationResults.map { qualificationResult ->
                     val finalResult = finalResults.find { it.climberId == qualificationResult.climberId }
                     SpeedResult(
-                        ranks[qualificationResult.climberId],
+                        ranks[qualificationResult.climberId.toInt()],
                         qualificationResult.climberId,
                         qualificationResult.laneA,
                         qualificationResult.laneB,
@@ -327,7 +327,7 @@ class Scraper {
         val qualification = scores[0].text
         val semiFinal = scores.getOrNull(1)?.text.takeUnless { it.isNullOrBlank() }
         val final = scores.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
-        return BasicResult(rank, climberId, qualification, semiFinal, final)
+        return BasicResult(rank, climberId.toString(), qualification, semiFinal, final)
     }
 
     /**

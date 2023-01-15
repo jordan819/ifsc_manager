@@ -76,7 +76,7 @@ object Database {
                 this.year = year
                 this.competitionId = competitionId
                 rank = result.rank
-                climberId = result.climberId.toString()
+                climberId = result.climberId
                 qualification = result.qualification
                 semiFinal = result.semiFinal
                 final = result.final
@@ -101,7 +101,7 @@ object Database {
                 this.year = year
                 this.competitionId = competitionId
                 rank = result.rank
-                climberId = result.climberId.toString()
+                climberId = result.climberId
                 qualification = result.qualification
                 semiFinal = result.semiFinal
                 final = result.final
@@ -133,7 +133,7 @@ object Database {
                 id = resultId
                 this.year = year
                 rank = result.rank
-                climberId = result.climberId.toString()
+                climberId = result.climberId
                 laneA = result.laneA
                 laneB = result.laneB
                 oneEighth = result.oneEighth
@@ -145,7 +145,7 @@ object Database {
         }
     }
 
-    private fun generateResultId(competitionId: String, climberId: Int) = competitionId + "_" + climberId
+    private fun generateResultId(competitionId: String, climberId: String) = competitionId + "_" + climberId
 
     /**
      * Returns all the lead results saved in database.

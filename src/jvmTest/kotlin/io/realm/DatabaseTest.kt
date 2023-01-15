@@ -301,7 +301,7 @@ internal class DatabaseTest {
             null,
         )
         database.writeLeadResults(listOf(leadResult), 2000, "123_S")
-        val competitionId = database.getAllLeads().first().competitionId
+        val competitionId = database.getAllLeads().first().id
 
 
         //act
@@ -346,7 +346,7 @@ internal class DatabaseTest {
 
         //assert
         assertAll(
-            { assertFalse(database.getAllClimbers().isEmpty()) },
+            { assertFalse(database.getAllLeads().isEmpty()) },
             { assertFalse(competitionId in database.getAllLeads().map { it.id }) },
         )
     }

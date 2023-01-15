@@ -253,8 +253,12 @@ class Database(
     /**
      * Deletes lead result by its id.
      */
-    fun deleteLeadResult(id: String) {
-
+    suspend fun deleteLeadResult(id: String) {
+        Arbor.d("Deleting lead result with id $id...")
+        realm.write {
+            val leadResult: LeadResultRealm = this.query<LeadResultRealm>("id == $0", id).find().first()
+            delete(leadResult)
+        }
     }
 
     /**

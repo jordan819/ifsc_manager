@@ -56,7 +56,24 @@ class FileManager {
      * @param[fileName] name of the target file
      */
     fun writeLeads(results: List<LeadResultRealm>, fileName: String) {
-
+        results.forEach { result ->
+            writer.writeAll(
+                rows = listOf(
+                    listOf(
+                        result.id,
+                        result.year,
+                        result.competitionId,
+                        result.rank,
+                        result.climberId,
+                        result.qualification,
+                        result.semiFinal,
+                        result.final,
+                    )
+                ),
+                targetFileName = fileName,
+                append = true
+            )
+        }
     }
 
     /**

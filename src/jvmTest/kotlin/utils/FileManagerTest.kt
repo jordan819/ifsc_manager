@@ -119,7 +119,7 @@ class FileManagerTest {
         var expectedContent = ""
         results.forEach { result ->
             with(result) {
-                expectedContent += "$id,$rank,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
         val writtenContent = File(pathName).readText()

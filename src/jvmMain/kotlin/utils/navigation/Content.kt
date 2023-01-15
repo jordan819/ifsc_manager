@@ -61,7 +61,6 @@ class Root(
             climberId = climberId,
             database = database,
             onBackClick = router::pop,
-            coroutineScope = coroutineScope,
         ).asContent { ClimberDetailsUi(it) }
 
 }

@@ -263,4 +263,8 @@ class Database(
 
     }
 
+    fun close() {
+        realm.close()
+    }
+
 }

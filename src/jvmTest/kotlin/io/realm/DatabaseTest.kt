@@ -20,6 +20,7 @@ import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
 import java.io.File
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class DatabaseTest {
@@ -219,7 +220,7 @@ internal class DatabaseTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `delete climber`() = runTest {
+    fun `delete the only climber`() = runTest {
         //arrange
         val climberId = "1"
         val climber = Climber(
@@ -238,7 +239,55 @@ internal class DatabaseTest {
 
         //assert
         assertTrue(database.getAllClimbers().isEmpty())
-
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete one climber from many`() = runTest {
+        //arrange
+        val climberId1 = "1"
+        val climberId2 = "2"
+        val climberId3 = "3"
+        val climber1 = Climber(
+            climberId1,
+            "John",
+            Sex.MAN,
+            null,
+            "USA",
+            "USAC",
+            RecordType.OFFICIAL,
+        )
+        val climber2 = Climber(
+            climberId2,
+            "Eleonora",
+            Sex.WOMAN,
+            2000,
+            "USA",
+            "USAC",
+            RecordType.OFFICIAL,
+        )
+        val climber3 = Climber(
+            climberId3,
+            "John",
+            Sex.MAN,
+            null,
+            "USA",
+            "USAC",
+            RecordType.OFFICIAL,
+        )
+        database.writeClimber(climber1)
+        database.writeClimber(climber2)
+        database.writeClimber(climber3)
+
+        //act
+        database.deleteClimber(climberId1)
+
+        //assert
+        assertAll(
+            { assertFalse(database.getAllClimbers().isEmpty()) },
+            { assertFalse(climberId1 in database.getAllClimbers().map { it.id }) },
+        )
+    }
+
 
 }

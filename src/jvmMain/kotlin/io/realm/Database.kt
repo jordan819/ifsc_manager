@@ -253,14 +253,21 @@ class Database(
     /**
      * Deletes lead result by its id.
      */
-    fun deleteLeadResult(id: Int) {
+    fun deleteLeadResult(id: String) {
 
     }
 
     /**
      * Deletes speed result by its id.
      */
-    fun deleteSpeedResult(id: Int) {
+    fun deleteSpeedResult(id: String) {
+
+    }
+
+    /**
+     * Deletes boulder result by its id.
+     */
+    fun deleteBoulderResult(id: String) {
 
     }
 

@@ -206,6 +206,7 @@ class Database(
             climber.name = newValue.name
             climber.yearOfBirth = newValue.yearOfBirth
             climber.country = newValue.country
+            climber.recordType = newValue.recordType.toString()
             result = true
         }
         return result

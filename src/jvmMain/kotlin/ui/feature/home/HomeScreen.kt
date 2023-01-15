@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,16 +29,17 @@ fun HomeScreen(navigateToClimberList: () -> Unit) {
             }) {
                 Text("Zawodnicy")
             }
+            // TODO: probably remove the following buttons
             Button(onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    Scraper().fetchEvents()
+                    Scraper(Database()).fetchEvents()
                 }
             }) {
                 Text("Pobierz eventy")
             }
             Button(onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    Scraper().fetchAllClimbers()
+                    Scraper(Database()).fetchAllClimbers()
                 }
             }) {
                 Text("Pobierz zawodników")

@@ -28,7 +28,9 @@ import kotlin.NoSuchElementException
 /**
  * Class that allows to fetch data from web page, without dedicated API.
  */
-class Scraper {
+class Scraper(
+    val database: Database
+) {
 
     private val driverOptions = ChromeOptions()
 
@@ -60,7 +62,7 @@ class Scraper {
                 climberId++
                 driver.get(url + climberId)
                 val climber = getClimberDataFromTable(climberId, driver) ?: continue@loop
-                Database.writeClimber(climber)
+                database.writeClimber(climber)
                 Arbor.d(climber.toString())
             } catch (_: NoSuchElementException) {
                 Arbor.d("Successfully fetched ${climberId - 1} climbers")
@@ -75,7 +77,7 @@ class Scraper {
 
     suspend fun fetchNewClimbers() {
         Arbor.d("Fetching new climbers only...")
-        val oldClimbersIdList = Database.getAllClimbers().map { it.id }
+        val oldClimbersIdList = database.getAllClimbers().map { it.id }
         var climberId = 1
         while (climberId < MAX_CLIMBER_ID) {
             if (climberId.toString() !in oldClimbersIdList) {
@@ -93,7 +95,7 @@ class Scraper {
         try {
             driver.get(url + climberId)
             val climber = getClimberDataFromTable(climberId, driver) ?: return
-            Database.writeClimber(climber)
+            database.writeClimber(climber)
             Arbor.d(climber.toString())
         } catch (_: NoSuchElementException) {
             Arbor.e("Climber with id $climberId could not be fetched")
@@ -219,7 +221,7 @@ class Scraper {
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                Database.writeBoulderResults(results, currentYear.toInt(), competitionId)
+                database.writeBoulderResults(results, currentYear.toInt(), competitionId)
             }
 
             SPEED -> {
@@ -287,7 +289,7 @@ class Scraper {
                     )
                 }
                 val competitionId = generateCompetitionId(url)
-                Database.writeSpeedResults(results, currentYear.toInt(), competitionId)
+                database.writeSpeedResults(results, currentYear.toInt(), competitionId)
             }
 
             LEAD -> {
@@ -310,7 +312,7 @@ class Scraper {
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                Database.writeLeadResults(results, currentYear.toInt(), competitionId)
+                database.writeLeadResults(results, currentYear.toInt(), competitionId)
             }
 
             else -> {

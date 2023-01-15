@@ -32,10 +32,11 @@ fun main() {
 private fun root(): Root =
     // The rememberRootComponent function provides the root ComponentContext and remembers the instance or Root
     rememberRootComponent { componentContext ->
+        val database = Database()
         Root(
             componentContext = componentContext,
-            scraper = Scraper(),
-            database = Database,
+            scraper = Scraper(database),
+            database = database,
             coroutineScope = CoroutineScope(Dispatchers.IO),
         )
     }

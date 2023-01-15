@@ -17,8 +17,10 @@ import scraping.model.speed.SpeedResult
  *
  * User may write some data to database, and later read that from it. Once saved data may also be edited, or even deleted.
  */
-object Database {
-    private val configuration = RealmConfiguration.with(
+class Database(
+    databaseName: String = "default.realm",
+) {
+    private val configuration = RealmConfiguration.Builder(
         schema = setOf(
             ClimberRealm::class,
             BoulderResultRealm::class,
@@ -26,6 +28,8 @@ object Database {
             SpeedResultRealm::class
         )
     )
+        .name(databaseName)
+        .build()
     private val realm = Realm.open(configuration)
 
     /**

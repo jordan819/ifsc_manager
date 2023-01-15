@@ -34,7 +34,7 @@ fun ClimberListScreen(
     coroutineScope: CoroutineScope,
 ) {
 
-    var climberList by remember { mutableStateOf(Database.getAllClimbers()) }
+    var climberList by remember { mutableStateOf(database.getAllClimbers()) }
 
     // Filter List
     val hasAnyResultChecked = remember { mutableStateOf(true) }

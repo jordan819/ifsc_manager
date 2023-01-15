@@ -1,6 +1,5 @@
 package provider
 
-import io.realm.model.BoulderResultRealm
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider

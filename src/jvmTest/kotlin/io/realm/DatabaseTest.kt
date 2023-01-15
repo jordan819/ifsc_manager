@@ -2,6 +2,7 @@ package io.realm
 
 import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
+import io.realm.model.SpeedResultRealm
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -13,6 +14,7 @@ import provider.*
 import scraping.model.Climber
 import scraping.model.boulder.BoulderGeneral
 import scraping.model.lead.LeadGeneral
+import scraping.model.speed.SpeedResult
 import java.io.File
 import kotlin.test.assertEquals
 
@@ -129,6 +131,49 @@ internal class DatabaseTest {
                 { assertEquals(expectedResult.rank, savedResult.rank) },
                 { assertEquals(expectedResult.climberId, savedResult.climberId) },
                 { assertEquals(expectedResult.qualification, savedResult.qualification) },
+                { assertEquals(expectedResult.semiFinal, savedResult.semiFinal) },
+                { assertEquals(expectedResult.final, savedResult.final) },
+            )
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @ParameterizedTest
+    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    fun `write and read speed results`(results: List<SpeedResult>) = runTest {
+        //arrange
+        val year = 2020
+        val competitionId = "1385_12"
+
+        //act
+        database.writeSpeedResults(results, year, competitionId)
+
+        //assert
+        val savedResults = database.getAllSpeeds()
+        savedResults.forEachIndexed { index, savedResult ->
+            val expectedResult = SpeedResultRealm().apply {
+                this.id = competitionId + "_" + results[index].climberId
+                this.year = year
+                this.rank = results[index].rank
+                this.climberId = results[index].climberId
+                this.laneA = results[index].laneA
+                this.laneB = results[index].laneB
+                this.oneEighth = results[index].oneEighth
+                this.quarter = results[index].quarter
+                this.semiFinal = results[index].semiFinal
+                this.smallFinal = results[index].smallFinal
+                this.final = results[index].final
+            }
+            assertAll(
+                { assertEquals(expectedResult.id, savedResult.id) },
+                { assertEquals(expectedResult.year, savedResult.year) },
+                { assertEquals(expectedResult.rank, savedResult.rank) },
+                { assertEquals(expectedResult.climberId, savedResult.climberId) },
+                { assertEquals(expectedResult.laneA, savedResult.laneA) },
+                { assertEquals(expectedResult.laneB, savedResult.laneB) },
+                { assertEquals(expectedResult.oneEighth, savedResult.oneEighth) },
+                { assertEquals(expectedResult.quarter, savedResult.quarter) },
+                { assertEquals(expectedResult.smallFinal, savedResult.smallFinal) },
                 { assertEquals(expectedResult.semiFinal, savedResult.semiFinal) },
                 { assertEquals(expectedResult.final, savedResult.final) },
             )

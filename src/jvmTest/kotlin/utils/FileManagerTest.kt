@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 import provider.BoulderResultRealmArgumentProvider
 import provider.ClimberArgumentProvider
 import provider.LeadResultRealmArgumentProvider
-import provider.SpeedResultArgumentProvider
+import provider.SpeedResultRealmArgumentProvider
 import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
@@ -224,7 +224,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `create new file for speed results if not exists`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         //arrange
         val fileName = "$tempDir/speeds.csv"
@@ -237,7 +237,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `write speed results data to file`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         // arrange
         val pathName = "$tempDir/speeds.csv"
@@ -260,7 +260,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `read speed results data`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         // arrange
         var expectedContent = ""

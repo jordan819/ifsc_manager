@@ -301,10 +301,10 @@ internal class DatabaseTest {
             null,
         )
         database.writeLeadResults(listOf(leadResult), 2000, "123_S")
-        val competitionId = database.getAllLeads().first().id
+        val resultId = database.getAllLeads().first().id
 
         //act
-        database.deleteLeadResult(competitionId)
+        database.deleteLeadResult(resultId)
 
         //assert
         assertTrue(database.getAllLeads().isEmpty())
@@ -338,15 +338,15 @@ internal class DatabaseTest {
             )
         )
         database.writeLeadResults(leadResults, 1999, "MS-1")
-        val competitionId = database.getAllLeads()[1].id
+        val resultId = database.getAllLeads()[1].id
 
         //act
-        database.deleteLeadResult(competitionId)
+        database.deleteLeadResult(resultId)
 
         //assert
         assertAll(
             { assertFalse(database.getAllLeads().isEmpty()) },
-            { assertFalse(competitionId in database.getAllLeads().map { it.id }) },
+            { assertFalse(resultId in database.getAllLeads().map { it.id }) },
         )
     }
 
@@ -362,10 +362,10 @@ internal class DatabaseTest {
             null,
         )
         database.writeBoulderResults(listOf(boulderResult), 2000, "123_S")
-        val competitionId = database.getAllBoulders().first().id
+        val resultId = database.getAllBoulders().first().id
 
         //act
-        database.deleteBoulderResult(competitionId)
+        database.deleteBoulderResult(resultId)
 
         //assert
         assertTrue(database.getAllBoulders().isEmpty())
@@ -399,15 +399,92 @@ internal class DatabaseTest {
             )
         )
         database.writeBoulderResults(boulderResults, 1999, "MS-1")
-        val competitionId = database.getAllBoulders()[1].id
+        val resultId = database.getAllBoulders()[1].id
 
         //act
-        database.deleteBoulderResult(competitionId)
+        database.deleteBoulderResult(resultId)
 
         //assert
         assertAll(
             { assertFalse(database.getAllBoulders().isEmpty()) },
-            { assertFalse(competitionId in database.getAllBoulders().map { it.id }) },
+            { assertFalse(resultId in database.getAllBoulders().map { it.id }) },
+        )
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete the only speed result`() = runTest {
+        //arrange
+        val speedResult = SpeedResult(
+            1,
+            "123",
+            "12",
+            "11",
+            "11.1",
+            "13",
+            "10",
+            "13",
+            null,
+        )
+        database.writeSpeedResults(listOf(speedResult), 2000, "123_S")
+        val resultId = database.getAllSpeeds().first().id
+
+        //act
+        database.deleteSpeedResult(resultId)
+
+        //assert
+        assertTrue(database.getAllSpeeds().isEmpty())
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete one speed result from many`() = runTest {
+        //arrange
+        val speedResults = listOf(
+            SpeedResult(
+                1,
+                "1",
+                "12",
+                "11",
+                "11.1",
+                "13",
+                "10",
+                "13",
+                null,
+            ),
+            SpeedResult(
+                1,
+                "2",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ),
+            SpeedResult(
+                1,
+                "3",
+                "12",
+                "11",
+                "11.1",
+                "13",
+                "10",
+                "13",
+                "10.1",
+            )
+        )
+        database.writeSpeedResults(speedResults, 1999, "MS-1")
+        val resultId = database.getAllSpeeds()[1].id
+
+        //act
+        database.deleteSpeedResult(resultId)
+
+        //assert
+        assertAll(
+            { assertFalse(database.getAllSpeeds().isEmpty()) },
+            { assertFalse(resultId in database.getAllSpeeds().map { it.id }) },
         )
     }
 

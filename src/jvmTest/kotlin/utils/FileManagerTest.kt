@@ -146,7 +146,7 @@ class FileManagerTest {
         var writtenContent = ""
         fileManager.readLeads(pathName).forEach { result ->
             with(result) {
-                writtenContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final"
+                writtenContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
 

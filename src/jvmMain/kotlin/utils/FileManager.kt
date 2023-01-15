@@ -128,18 +128,27 @@ class FileManager {
      * @return list of all available lead results
      */
     fun readLeads(pathName: String = DEFAULT_LEADS_FILE_PATH): List<LeadResultRealm> {
-        return listOf(
-            LeadResultRealm().apply {
-                id = ""
-                year = 0
-                competitionId = ""
-                rank = null
-                climberId = "0"
-                qualification = ""
-                semiFinal = null
-                final = null
-            }
-        )
+
+        val file = File(pathName)
+        val rows = reader.readAll(file)
+
+        val leadList = mutableListOf<LeadResultRealm>()
+
+        rows.forEach { row ->
+            leadList.add(
+                LeadResultRealm().apply {
+                    id = row[0]
+                    year = row[1].toInt()
+                    competitionId = row[2]
+                    rank = row[3].toIntOrNull()
+                    climberId = row[4]
+                    qualification = row[5]
+                    semiFinal = row[6]
+                    final = row[7]
+                }
+            )
+        }
+        return leadList
     }
 
     /**

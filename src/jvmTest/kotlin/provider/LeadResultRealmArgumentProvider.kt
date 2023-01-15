@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import java.util.stream.Stream
 
-internal class LeadResultArgumentProvider : ArgumentsProvider {
+internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
     @Throws(Exception::class)
     override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
         return Stream.of(

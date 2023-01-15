@@ -59,6 +59,9 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation("org.junit.jupiter:junit-jupiter:5.9.2")
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+
+                // Coroutines
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.3")
             }
         }
     }

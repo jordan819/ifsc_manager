@@ -10,7 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import provider.BoulderResultArgumentProvider
 import provider.ClimberArgumentProvider
-import provider.LeadResultArgumentProvider
+import provider.LeadResultRealmArgumentProvider
 import provider.SpeedResultArgumentProvider
 import scraping.model.Climber
 import scraping.model.RecordType
@@ -96,7 +96,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(LeadResultArgumentProvider::class)
+    @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `create new file for lead results if not exists`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         //arrange
         val fileName = "$tempDir/leads.csv"
@@ -109,7 +109,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(LeadResultArgumentProvider::class)
+    @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `write lead results data to file`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         // arrange
         val pathName = "$tempDir/leads.csv"
@@ -132,7 +132,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(LeadResultArgumentProvider::class)
+    @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `read lead results data`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         // arrange
         var expectedContent = ""

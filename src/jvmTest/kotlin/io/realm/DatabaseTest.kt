@@ -1,23 +1,24 @@
 package io.realm
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import io.realm.model.LeadResultRealm
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import provider.ClimberArgumentProvider
 import provider.ClimberListArgumentProvider
+import provider.LeadGeneralArgumentProvider
 import scraping.model.Climber
+import scraping.model.lead.LeadGeneral
 import java.io.File
 import kotlin.test.assertEquals
 
 internal class DatabaseTest {
 
     private lateinit var database: Database
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     @BeforeEach
     fun setUp() {
@@ -32,97 +33,69 @@ internal class DatabaseTest {
         File("test.realm.lock").delete()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @ParameterizedTest
     @ArgumentsSource(ClimberArgumentProvider::class)
-    fun `write and read single climber to database`(climber: Climber) {
+    fun `write and read single climber`(climber: Climber) = runTest {
         // act
-        coroutineScope.launch {
+        database.writeClimber(climber)
+
+        //assert
+        val savedClimber = database.getClimberById(climber.climberId)
+        assertEquals(climber, savedClimber)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @ParameterizedTest
+    @ArgumentsSource(ClimberListArgumentProvider::class)
+    fun `write and read multiple climbers`(climbers: List<Climber>) = runTest {
+        // act
+        climbers.forEach { climber ->
             database.writeClimber(climber)
         }
 
         //assert
-        coroutineScope.launch {
+        climbers.forEach { climber ->
             val savedClimber = database.getClimberById(climber.climberId)
             assertEquals(climber, savedClimber)
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @ParameterizedTest
-    @ArgumentsSource(ClimberListArgumentProvider::class)
-    fun `write and read multiple climbers to database`(climbers: List<Climber>) {
-        // act
-        coroutineScope.launch {
-            climbers.forEach { climber ->
-                database.writeClimber(climber)
-            }
-        }
+    @ArgumentsSource(LeadGeneralArgumentProvider::class)
+    fun `write and read lead results`(results: List<LeadGeneral>) = runTest {
+        //arrange
+        val year = 2020
+        val competitionId = "1385_12"
+
+        //act
+        database.writeLeadResults(results, year, competitionId)
 
         //assert
-        coroutineScope.launch {
-            climbers.forEach { climber ->
-                val savedClimber = database.getClimberById(climber.climberId)
-                assertEquals(climber, savedClimber)
+        val savedResults = database.getAllLeads()
+        savedResults.forEachIndexed { index, savedResult ->
+            val expectedResult = LeadResultRealm().apply {
+                this.id = competitionId + "_" + results[index].climberId
+                this.year = year
+                this.competitionId = competitionId
+                this.rank = results[index].rank
+                this.climberId = results[index].climberId
+                this.qualification = results[index].qualification
+                this.semiFinal = results[index].semiFinal
+                this.final = results[index].final
             }
+            assertAll(
+                { assertEquals(expectedResult.id, savedResult.id) },
+                { assertEquals(expectedResult.year, savedResult.year) },
+                { assertEquals(expectedResult.competitionId, savedResult.competitionId) },
+                { assertEquals(expectedResult.rank, savedResult.rank) },
+                { assertEquals(expectedResult.climberId, savedResult.climberId) },
+                { assertEquals(expectedResult.qualification, savedResult.qualification) },
+                { assertEquals(expectedResult.semiFinal, savedResult.semiFinal) },
+                { assertEquals(expectedResult.final, savedResult.final) },
+            )
         }
     }
 
-    @Test
-    fun writeLeadResults() {
-    }
-
-    @Test
-    fun writeBoulderResults() {
-    }
-
-    @Test
-    fun writeSpeedResults() {
-    }
-
-    @Test
-    fun getAllLeads() {
-    }
-
-    @Test
-    fun getAllSpeeds() {
-    }
-
-    @Test
-    fun getAllBoulders() {
-    }
-
-    @Test
-    fun getAllClimbers() {
-    }
-
-    @Test
-    fun getClimberById() {
-    }
-
-    @Test
-    fun updateClimber() {
-    }
-
-    @Test
-    fun getLeadResultsByClimberId() {
-    }
-
-    @Test
-    fun getBoulderResultsByClimberId() {
-    }
-
-    @Test
-    fun getSpeedResultsByClimberId() {
-    }
-
-    @Test
-    fun deleteClimber() {
-    }
-
-    @Test
-    fun deleteLeadResult() {
-    }
-
-    @Test
-    fun deleteSpeedResult() {
-    }
 }

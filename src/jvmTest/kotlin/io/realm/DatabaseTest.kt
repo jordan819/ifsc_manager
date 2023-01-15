@@ -289,5 +289,67 @@ internal class DatabaseTest {
         )
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete the only lead result`() = runTest {
+        //arrange
+        val leadResult = LeadGeneral(
+            1,
+            "123",
+            "12",
+            "11",
+            null,
+        )
+        database.writeLeadResults(listOf(leadResult), 2000, "123_S")
+        val competitionId = database.getAllLeads().first().competitionId
+
+
+        //act
+        database.deleteLeadResult(competitionId)
+
+        //assert
+        assertTrue(database.getAllLeads().isEmpty())
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete one lead result from many`() = runTest {
+        //arrange
+        val leadResults = listOf(
+            LeadGeneral(
+                1,
+                "1",
+                "12",
+                "11",
+                null,
+            ),
+            LeadGeneral(
+                2,
+                "2",
+                "12",
+                "11",
+                null,
+            ),
+            LeadGeneral(
+                3,
+                "3",
+                "12",
+                "11",
+                null,
+            )
+        )
+        database.writeLeadResults(leadResults, 1999, "MS-1")
+        val competitionId = database.getAllLeads()[1].id
+
+        //act
+        database.deleteLeadResult(competitionId)
+
+        //assert
+        assertAll(
+            { assertFalse(database.getAllClimbers().isEmpty()) },
+            { assertFalse(competitionId in database.getAllLeads().map { it.id }) },
+        )
+    }
+
 
 }

@@ -2,11 +2,11 @@ package utils
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
-import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
 import java.io.File
 
@@ -50,12 +50,12 @@ class FileManager {
     }
 
     /**
-     * Writes [lead results][LeadGeneral] to CSV file.
+     * Writes [lead results][LeadResultRealm] to CSV file.
      *
      * @param[results] lead results to be saved
      * @param[fileName] name of the target file
      */
-    fun writeLeads(results: List<LeadResultRealm>, fileName: String) {
+    fun writeLeads(results: List<LeadResultRealm>, fileName: String = DEFAULT_LEADS_FILE_PATH) {
         results.forEach { result ->
             writer.writeAll(
                 rows = listOf(
@@ -74,6 +74,15 @@ class FileManager {
                 append = true
             )
         }
+    }
+
+    /**
+     * Writes [boulder results][BoulderResultRealm] to CSV file.
+     *
+     * @param[results] boulder results to be saved
+     * @param[fileName] name of the target file
+     */
+    fun writeBoulders(results: List<BoulderResultRealm>, fileName: String = DEFAULT_BOULDERS_FILE_PATH) {
     }
 
     /**
@@ -123,7 +132,7 @@ class FileManager {
     }
 
     /**
-     * Reads [lead][LeadGeneral] results data from CSV file
+     * Reads [lead][LeadResultRealm] results data from CSV file
      *
      * @return list of all available lead results
      */
@@ -152,6 +161,15 @@ class FileManager {
     }
 
     /**
+     * Reads [boulder][BoulderResultRealm] results data from CSV file
+     *
+     * @return list of all available lead results
+     */
+    fun readBoulders(pathName: String = DEFAULT_BOULDERS_FILE_PATH): List<BoulderResultRealm> {
+        return emptyList()
+    }
+
+    /**
      * Reads [speed][SpeedResult] results data from CSV file
      *
      * @return list of all available speed results
@@ -163,5 +181,6 @@ class FileManager {
     companion object {
         const val DEFAULT_CLIMBERS_FILE_PATH = "src/jvmMain/resources/climbers.csv"
         const val DEFAULT_LEADS_FILE_PATH = "src/jvmMain/resources/leads.csv"
+        const val DEFAULT_BOULDERS_FILE_PATH = "src/jvmMain/resources/boulders.csv"
     }
 }

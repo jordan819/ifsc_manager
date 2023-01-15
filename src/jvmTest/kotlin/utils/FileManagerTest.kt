@@ -1,5 +1,6 @@
 package utils
 
+import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class FileManagerTest {
     }
 
     @Test
-    fun `create new file if not exists`(@TempDir tempDir: File) {
+    fun `create new file for climbers if not exists`(@TempDir tempDir: File) {
         // arrange
         val id = "123"
         val name = "John Doe"
@@ -95,7 +96,7 @@ class FileManagerTest {
 
     @ParameterizedTest
     @ArgumentsSource(LeadResultArgumentProvider::class)
-    fun `create new file if not exists`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
+    fun `create new file for lead results if not exists`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         //arrange
         val fileName = "$tempDir/leads.csv"
 
@@ -145,6 +146,70 @@ class FileManagerTest {
         // act
         var writtenContent = ""
         fileManager.readLeads(pathName).forEach { result ->
+            with(result) {
+                writtenContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+            }
+        }
+
+        // assert
+        assertEquals(
+            expectedContent,
+            writtenContent
+        )
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    fun `create new file for boulder results if not exists`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
+        //arrange
+        val fileName = "$tempDir/leads.csv"
+
+        // act
+        fileManager.writeBoulders(results, fileName)
+
+        // assert
+        assertTrue(File(fileName).exists())
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    fun `write boulder results data to file`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
+        // arrange
+        val pathName = "$tempDir/boulders.csv"
+
+        // act
+        fileManager.writeBoulders(results, pathName)
+
+        // assert
+        var expectedContent = ""
+        results.forEach { result ->
+            with(result) {
+                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+            }
+        }
+        val writtenContent = File(pathName).readText()
+        assertEquals(
+            expectedContent,
+            writtenContent
+        )
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    fun `read boulder results data`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
+        // arrange
+        var expectedContent = ""
+        results.forEach { result ->
+            with(result) {
+                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+            }
+        }
+        val pathName = "$tempDir/boulder.csv"
+        File(pathName).writeText(expectedContent)
+
+        // act
+        var writtenContent = ""
+        fileManager.readBoulders(pathName).forEach { result ->
             with(result) {
                 writtenContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
@@ -239,6 +304,62 @@ class FileManagerTest {
                             final = "11.1"
                         },
                         LeadResultRealm().apply {
+                            id = "1356"
+                            year = 2021
+                            competitionId = "321"
+                            rank = 2
+                            climberId = "235-f"
+                            qualification = "11"
+                            semiFinal = "12"
+                            final = "fall"
+                        }
+                    )
+                ),
+            )
+        }
+    }
+
+    internal class BoulderResultArgumentProvider : ArgumentsProvider {
+        @Throws(Exception::class)
+        override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
+            return Stream.of(
+                Arguments.of(
+                    listOf(
+                        BoulderResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            competitionId = "321"
+                            rank = null
+                            climberId = "235-f"
+                            qualification = "12"
+                            semiFinal = null
+                            final = null
+                        },
+                    )
+                ),
+                Arguments.of(
+                    listOf(
+                        BoulderResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            competitionId = "321"
+                            rank = null
+                            climberId = "235-f"
+                            qualification = "12"
+                            semiFinal = null
+                            final = null
+                        },
+                        BoulderResultRealm().apply {
+                            id = "1353"
+                            year = 2020
+                            competitionId = "321"
+                            rank = 1
+                            climberId = "235-f"
+                            qualification = "12"
+                            semiFinal = "13"
+                            final = "11.1"
+                        },
+                        BoulderResultRealm().apply {
                             id = "1356"
                             year = 2021
                             competitionId = "321"

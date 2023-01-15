@@ -271,8 +271,12 @@ class Database(
     /**
      * Deletes boulder result by its id.
      */
-    fun deleteBoulderResult(id: String) {
-
+    suspend fun deleteBoulderResult(id: String) {
+        Arbor.d("Deleting boulder result with id $id...")
+        realm.write {
+            val boulderResult: BoulderResultRealm = this.query<BoulderResultRealm>("id == $0", id).find().first()
+            delete(boulderResult)
+        }
     }
 
     fun close() {

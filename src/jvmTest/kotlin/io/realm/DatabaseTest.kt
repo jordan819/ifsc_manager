@@ -303,7 +303,6 @@ internal class DatabaseTest {
         database.writeLeadResults(listOf(leadResult), 2000, "123_S")
         val competitionId = database.getAllLeads().first().id
 
-
         //act
         database.deleteLeadResult(competitionId)
 
@@ -348,6 +347,67 @@ internal class DatabaseTest {
         assertAll(
             { assertFalse(database.getAllLeads().isEmpty()) },
             { assertFalse(competitionId in database.getAllLeads().map { it.id }) },
+        )
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete the only boulder result`() = runTest {
+        //arrange
+        val boulderResult = BoulderGeneral(
+            1,
+            "123",
+            "12",
+            "11",
+            null,
+        )
+        database.writeBoulderResults(listOf(boulderResult), 2000, "123_S")
+        val competitionId = database.getAllBoulders().first().id
+
+        //act
+        database.deleteBoulderResult(competitionId)
+
+        //assert
+        assertTrue(database.getAllBoulders().isEmpty())
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete one boulder result from many`() = runTest {
+        //arrange
+        val boulderResults = listOf(
+            BoulderGeneral(
+                1,
+                "1",
+                "12",
+                "11",
+                null,
+            ),
+            BoulderGeneral(
+                2,
+                "2",
+                "12",
+                "11",
+                null,
+            ),
+            BoulderGeneral(
+                3,
+                "3",
+                "12",
+                "11",
+                null,
+            )
+        )
+        database.writeBoulderResults(boulderResults, 1999, "MS-1")
+        val competitionId = database.getAllBoulders()[1].id
+
+        //act
+        database.deleteBoulderResult(competitionId)
+
+        //assert
+        assertAll(
+            { assertFalse(database.getAllBoulders().isEmpty()) },
+            { assertFalse(competitionId in database.getAllBoulders().map { it.id }) },
         )
     }
 

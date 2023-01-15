@@ -107,11 +107,30 @@ class FileManager {
      * Writes [lead results][SpeedResultRealm] to CSV file.
      *
      * @param[results] speed results to be saved
-     * @param[year] year in which competition took place
      * @param[fileName] name of the target file
      */
     fun writeSpeeds(results: List<SpeedResultRealm>, fileName: String = DEFAULT_SPEED_FILE_PATH) {
-
+        results.forEach { result ->
+            writer.writeAll(
+                rows = listOf(
+                    listOf(
+                        result.id,
+                        result.year,
+                        result.rank,
+                        result.climberId,
+                        result.laneA,
+                        result.laneB,
+                        result.oneEighth,
+                        result.quarter,
+                        result.semiFinal,
+                        result.smallFinal,
+                        result.final,
+                    )
+                ),
+                targetFileName = fileName,
+                append = true
+            )
+        }
     }
 
     /**
@@ -211,7 +230,29 @@ class FileManager {
      * @return list of all available speed results
      */
     fun readSpeeds(pathName: String = DEFAULT_SPEED_FILE_PATH): List<SpeedResultRealm> {
-        return emptyList()
+        val file = File(pathName)
+        val rows = reader.readAll(file)
+
+        val speedList = mutableListOf<SpeedResultRealm>()
+
+        rows.forEach { row ->
+            speedList.add(
+                SpeedResultRealm().apply {
+                    id = row[0]
+                    year = row[1].toInt()
+                    rank = row[2].toIntOrNull()
+                    climberId = row[3]
+                    laneA = row[4]
+                    laneB = row[5]
+                    oneEighth = row[6]
+                    quarter = row[7]
+                    semiFinal = row[8]
+                    smallFinal = row[9]
+                    final = row[10]
+                }
+            )
+        }
+        return speedList
     }
 
     companion object {

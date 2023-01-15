@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import provider.ClimberArgumentProvider
+import provider.ClimberListArgumentProvider
 import scraping.model.Climber
 import java.io.File
 import kotlin.test.assertEquals
@@ -43,6 +44,25 @@ internal class DatabaseTest {
         coroutineScope.launch {
             val savedClimber = database.getClimberById(climber.climberId)
             assertEquals(climber, savedClimber)
+        }
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(ClimberListArgumentProvider::class)
+    fun `write and read multiple climbers to database`(climbers: List<Climber>) {
+        // act
+        coroutineScope.launch {
+            climbers.forEach { climber ->
+                database.writeClimber(climber)
+            }
+        }
+
+        //assert
+        coroutineScope.launch {
+            climbers.forEach { climber ->
+                val savedClimber = database.getClimberById(climber.climberId)
+                assertEquals(climber, savedClimber)
+            }
         }
     }
 

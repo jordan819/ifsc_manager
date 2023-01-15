@@ -7,11 +7,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 import provider.*
 import scraping.model.Climber
+import scraping.model.RecordType
+import scraping.model.Sex
 import scraping.model.boulder.BoulderGeneral
 import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
@@ -178,6 +181,39 @@ internal class DatabaseTest {
                 { assertEquals(expectedResult.final, savedResult.final) },
             )
         }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `update climber data`() = runTest {
+        //arrange
+        val climberId = "1"
+        val climber = Climber(
+            climberId,
+            "John",
+            Sex.MAN,
+            null,
+            "USA",
+            "USAC",
+            RecordType.OFFICIAL,
+        )
+        val newClimber = Climber(
+            climberId,
+            "Alex Murphy",
+            Sex.MAN,
+            1998,
+            "USA",
+            "USAC",
+            RecordType.UNOFFICIAL,
+        )
+        database.writeClimber(climber)
+
+        //act
+        database.updateClimber(climberId, newClimber)
+
+        //assert
+        val savedClimber = database.getClimberById(climberId)
+        assertEquals(newClimber, savedClimber)
     }
 
 }

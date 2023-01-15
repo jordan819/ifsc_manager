@@ -37,6 +37,7 @@ fun ClimberListScreen(
     var climberList by remember { mutableStateOf(Database.getAllClimbers()) }
 
     // Filter List
+    val hasAnyResultChecked = remember { mutableStateOf(true) }
     val isMaleChecked = remember { mutableStateOf(false) }
     val isFemaleChecked = remember { mutableStateOf(false) }
     val isOfficialChecked = remember { mutableStateOf(false) }
@@ -56,19 +57,8 @@ fun ClimberListScreen(
         isEditDialogVisible.value = true to climberId
     }
 
-    fun deleteUser(climberId: String) = coroutineScope.launch {
-        database.deleteClimber(climberId)
-        climberList = database.getAllClimbers()
-    }
-
-    fun fetchNewClimbers() {
-        coroutineScope.launch {
-            scraper.fetchNewClimbers()
-        }
-    }
-
     fun sortClimberList(climbers: List<ClimberRealm>) = when (sortOption.value) {
-        ClimberSortOption.ID -> climbers.sortedBy { it.id }
+        ClimberSortOption.ID -> climbers.sortedBy { it.id.toIntOrNull() }
         ClimberSortOption.NAME -> climbers.sortedBy { it.name }
         ClimberSortOption.YEAR -> climbers.sortedBy { it.yearOfBirth }
         ClimberSortOption.COUNTRY -> climbers.sortedBy { it.country }
@@ -92,9 +82,9 @@ fun ClimberListScreen(
         }
 
         var filteredClimberList = if (selectedSex.isNotEmpty()) {
-            Database.getAllClimbers().filter { it.sex in selectedSex }
+            database.getAllClimbers().filter { it.sex in selectedSex }
         } else {
-            Database.getAllClimbers()
+            database.getAllClimbers()
         }
 
         filteredClimberList = if (selectedRecordType.isNotEmpty()) {
@@ -103,17 +93,39 @@ fun ClimberListScreen(
             filteredClimberList
         }
 
-        climberList = sortClimberList(filteredClimberList)
+        filteredClimberList = if (hasAnyResultChecked.value) {
+            filteredClimberList.filter { climber ->
+                val leads = database.getLeadResultsByClimberId(climber.id)
+                val speeds = database.getSpeedResultsByClimberId(climber.id)
+                val boulders = database.getBoulderResultsByClimberId(climber.id)
+                leads.isNotEmpty() || speeds.isNotEmpty() || boulders.isNotEmpty()
+            }
+        } else {
+            filteredClimberList
+        }
 
+        climberList = sortClimberList(filteredClimberList)
     }
 
+    fun deleteUser(climberId: String) = coroutineScope.launch {
+        database.deleteClimber(climberId)
+        updateListDisplay()
+    }
+
+    fun fetchNewClimbers() {
+        coroutineScope.launch {
+            scraper.fetchNewClimbers()
+        }
+    }
+
+    updateListDisplay()
     MaterialTheme {
 
         if (isAddDialogVisible.value) {
             Dialog(
                 title = "Dodawanie zawodnika",
                 content = DialogContentAddClimber(database, coroutineScope) {
-                    climberList = database.getAllClimbers()
+                    updateListDisplay()
                 },
                 onCloseRequest = { isAddDialogVisible.value = false },
             )
@@ -127,7 +139,7 @@ fun ClimberListScreen(
                     database = database,
                     coroutineScope = coroutineScope,
                 ) {
-                    climberList = database.getAllClimbers()
+                    updateListDisplay()
                     isEditDialogVisible.value = false to "0"
                 },
                 onCloseRequest = { isEditDialogVisible.value = false to "0" },
@@ -181,6 +193,23 @@ fun ClimberListScreen(
                     Text(
                         text = "Filtrowanie"
                     )
+
+                    Row {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Brał udział w zawodach"
+                            )
+                            Checkbox(
+                                checked = hasAnyResultChecked.value,
+                                onCheckedChange = {
+                                    hasAnyResultChecked.value = it
+                                    updateListDisplay()
+                                },
+                            )
+                        }
+                    }
 
                     Row {
                         Row(
@@ -333,8 +362,8 @@ fun ClimberListScreen(
                         TableCell(text = "Płeć", weight = column3Weight)
                         TableCell(text = "Rok urodzenia", weight = column4Weight)
                         TableCell(text = "Kraj", weight = column5Weight)
-                        TableCell(text = "X", weight = column6Weight)
                         TableCell(text = "EDIT", weight = column6Weight)
+                        TableCell(text = "X", weight = column6Weight)
                     }
                 }
                 // Here are all the lines of your table.

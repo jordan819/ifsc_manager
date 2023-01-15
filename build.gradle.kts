@@ -47,6 +47,9 @@ kotlin {
 
                 implementation("com.afollestad.material-dialogs:core:3.3.0")
 
+                // Charts
+                implementation("org.knowm.xchart:xchart:3.8.3")
+
                 // CSV files support
                 implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
             }

@@ -206,6 +206,7 @@ class Database(
             climber.name = newValue.name
             climber.yearOfBirth = newValue.yearOfBirth
             climber.country = newValue.country
+            climber.recordType = newValue.recordType.toString()
             result = true
         }
         return result
@@ -252,15 +253,38 @@ class Database(
     /**
      * Deletes lead result by its id.
      */
-    fun deleteLeadResult(id: Int) {
-
+    suspend fun deleteLeadResult(id: String) {
+        Arbor.d("Deleting lead result with id $id...")
+        realm.write {
+            val leadResult: LeadResultRealm = this.query<LeadResultRealm>("id == $0", id).find().first()
+            delete(leadResult)
+        }
     }
 
     /**
      * Deletes speed result by its id.
      */
-    fun deleteSpeedResult(id: Int) {
+    suspend fun deleteSpeedResult(id: String) {
+        Arbor.d("Deleting speed result with id $id...")
+        realm.write {
+            val speedResult: SpeedResultRealm = this.query<SpeedResultRealm>("id == $0", id).find().first()
+            delete(speedResult)
+        }
+    }
 
+    /**
+     * Deletes boulder result by its id.
+     */
+    suspend fun deleteBoulderResult(id: String) {
+        Arbor.d("Deleting boulder result with id $id...")
+        realm.write {
+            val boulderResult: BoulderResultRealm = this.query<BoulderResultRealm>("id == $0", id).find().first()
+            delete(boulderResult)
+        }
+    }
+
+    fun close() {
+        realm.close()
     }
 
 }

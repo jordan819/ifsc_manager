@@ -5,17 +5,17 @@ import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
+import provider.BoulderResultRealmArgumentProvider
+import provider.ClimberArgumentProvider
+import provider.LeadResultRealmArgumentProvider
+import provider.SpeedResultRealmArgumentProvider
 import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
 import java.io.File
-import java.util.stream.Stream
 import kotlin.test.BeforeTest
 import kotlin.test.assertTrue
 
@@ -96,7 +96,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(LeadResultArgumentProvider::class)
+    @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `create new file for lead results if not exists`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         //arrange
         val fileName = "$tempDir/leads.csv"
@@ -109,7 +109,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(LeadResultArgumentProvider::class)
+    @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `write lead results data to file`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         // arrange
         val pathName = "$tempDir/leads.csv"
@@ -132,7 +132,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(LeadResultArgumentProvider::class)
+    @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `read lead results data`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         // arrange
         var expectedContent = ""
@@ -160,7 +160,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `create new file for boulder results if not exists`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         //arrange
         val fileName = "$tempDir/leads.csv"
@@ -173,7 +173,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `write boulder results data to file`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         // arrange
         val pathName = "$tempDir/boulders.csv"
@@ -196,7 +196,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `read boulder results data`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         // arrange
         var expectedContent = ""
@@ -224,7 +224,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `create new file for speed results if not exists`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         //arrange
         val fileName = "$tempDir/speeds.csv"
@@ -237,7 +237,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `write speed results data to file`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         // arrange
         val pathName = "$tempDir/speeds.csv"
@@ -260,7 +260,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `read speed results data`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         // arrange
         var expectedContent = ""
@@ -285,227 +285,6 @@ class FileManagerTest {
             expectedContent,
             writtenContent
         )
-    }
-
-    internal class ClimberArgumentProvider : ArgumentsProvider {
-        @Throws(Exception::class)
-        override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
-            return Stream.of(
-                Arguments.of(
-                    Climber(
-                        "123",
-                        "John Doe",
-                        null,
-                        null,
-                        "USA",
-                        "USAC",
-                        RecordType.UNOFFICIAL
-                    )
-                ),
-                Arguments.of(
-                    Climber(
-                        "321",
-                        "Arkadiusz Justyński",
-                        Sex.MAN,
-                        1987,
-                        "POL",
-                        "Polska Federacja Wspinaczki Sportowej",
-                        RecordType.UNOFFICIAL
-                    )
-                ),
-                Arguments.of(
-                    Climber(
-                        "420",
-                        "Fanny Gibert",
-                        Sex.WOMAN,
-                        1998,
-                        "FRA",
-                        "Federation Française de la Montagne et de l'Escalade",
-                        RecordType.OFFICIAL
-                    )
-                ),
-            )
-        }
-    }
-
-    internal class LeadResultArgumentProvider : ArgumentsProvider {
-        @Throws(Exception::class)
-        override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
-            return Stream.of(
-                Arguments.of(
-                    listOf(
-                        LeadResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            competitionId = "321"
-                            rank = null
-                            climberId = "235-f"
-                            qualification = "12"
-                            semiFinal = null
-                            final = null
-                        }
-                    )
-                ),
-                Arguments.of(
-                    listOf(
-                        LeadResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            competitionId = "321"
-                            rank = null
-                            climberId = "235-f"
-                            qualification = "12"
-                            semiFinal = null
-                            final = null
-                        },
-                        LeadResultRealm().apply {
-                            id = "1353"
-                            year = 2020
-                            competitionId = "321"
-                            rank = 1
-                            climberId = "235-f"
-                            qualification = "12"
-                            semiFinal = "13"
-                            final = "11.1"
-                        },
-                        LeadResultRealm().apply {
-                            id = "1356"
-                            year = 2021
-                            competitionId = "321"
-                            rank = 2
-                            climberId = "235-f"
-                            qualification = "11"
-                            semiFinal = "12"
-                            final = "fall"
-                        }
-                    )
-                ),
-            )
-        }
-    }
-
-    internal class BoulderResultArgumentProvider : ArgumentsProvider {
-        @Throws(Exception::class)
-        override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
-            return Stream.of(
-                Arguments.of(
-                    listOf(
-                        BoulderResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            competitionId = "321"
-                            rank = null
-                            climberId = "235-f"
-                            qualification = "12"
-                            semiFinal = null
-                            final = null
-                        },
-                    )
-                ),
-                Arguments.of(
-                    listOf(
-                        BoulderResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            competitionId = "321"
-                            rank = null
-                            climberId = "235-f"
-                            qualification = "12"
-                            semiFinal = null
-                            final = null
-                        },
-                        BoulderResultRealm().apply {
-                            id = "1353"
-                            year = 2020
-                            competitionId = "321"
-                            rank = 1
-                            climberId = "235-f"
-                            qualification = "12"
-                            semiFinal = "13"
-                            final = "11.1"
-                        },
-                        BoulderResultRealm().apply {
-                            id = "1356"
-                            year = 2021
-                            competitionId = "321"
-                            rank = 2
-                            climberId = "235-f"
-                            qualification = "11"
-                            semiFinal = "12"
-                            final = "fall"
-                        }
-                    )
-                ),
-            )
-        }
-    }
-
-    internal class SpeedResultArgumentProvider : ArgumentsProvider {
-        @Throws(Exception::class)
-        override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
-            return Stream.of(
-                Arguments.of(
-                    listOf(
-                        SpeedResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            rank = null
-                            climberId = "235-f"
-                            laneA = null
-                            laneB = null
-                            oneEighth = null
-                            quarter = null
-                            semiFinal = null
-                            smallFinal = null
-                            final = null
-                        },
-                    )
-                ),
-                Arguments.of(
-                    listOf(
-                        SpeedResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            rank = null
-                            climberId = "235-f"
-                            laneA = null
-                            laneB = null
-                            oneEighth = null
-                            quarter = null
-                            semiFinal = null
-                            smallFinal = null
-                            final = null
-                        },
-                        SpeedResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            rank = null
-                            climberId = "235-f"
-                            laneA = null
-                            laneB = null
-                            oneEighth = null
-                            quarter = null
-                            semiFinal = null
-                            smallFinal = null
-                            final = null
-                        },
-                        SpeedResultRealm().apply {
-                            id = "1352"
-                            year = 2000
-                            rank = null
-                            climberId = "235-f"
-                            laneA = null
-                            laneB = null
-                            oneEighth = null
-                            quarter = null
-                            semiFinal = null
-                            smallFinal = null
-                            final = null
-                        },
-                    )
-                ),
-            )
-        }
     }
 
 }

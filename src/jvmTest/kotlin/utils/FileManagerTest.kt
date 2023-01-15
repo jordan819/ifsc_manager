@@ -130,7 +130,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(ClimberArgumentProvider::class)
+    @ArgumentsSource(LeadResultArgumentProvider::class)
     fun `read lead results data`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         // arrange
         var expectedContent = ""

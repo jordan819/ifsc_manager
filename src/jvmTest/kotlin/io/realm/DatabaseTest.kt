@@ -20,6 +20,7 @@ import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
 import java.io.File
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class DatabaseTest {
 
@@ -214,6 +215,30 @@ internal class DatabaseTest {
         //assert
         val savedClimber = database.getClimberById(climberId)
         assertEquals(newClimber, savedClimber)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `delete climber`() = runTest {
+        //arrange
+        val climberId = "1"
+        val climber = Climber(
+            climberId,
+            "John",
+            Sex.MAN,
+            null,
+            "USA",
+            "USAC",
+            RecordType.OFFICIAL,
+        )
+        database.writeClimber(climber)
+
+        //act
+        database.deleteClimber(climberId)
+
+        //assert
+        assertTrue(database.getAllClimbers().isEmpty())
+
     }
 
 }

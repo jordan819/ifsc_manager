@@ -83,6 +83,24 @@ class FileManager {
      * @param[fileName] name of the target file
      */
     fun writeBoulders(results: List<BoulderResultRealm>, fileName: String = DEFAULT_BOULDERS_FILE_PATH) {
+        results.forEach { result ->
+            writer.writeAll(
+                rows = listOf(
+                    listOf(
+                        result.id,
+                        result.year,
+                        result.competitionId,
+                        result.rank,
+                        result.climberId,
+                        result.qualification,
+                        result.semiFinal,
+                        result.final,
+                    )
+                ),
+                targetFileName = fileName,
+                append = true
+            )
+        }
     }
 
     /**
@@ -137,7 +155,6 @@ class FileManager {
      * @return list of all available lead results
      */
     fun readLeads(pathName: String = DEFAULT_LEADS_FILE_PATH): List<LeadResultRealm> {
-
         val file = File(pathName)
         val rows = reader.readAll(file)
 
@@ -166,7 +183,26 @@ class FileManager {
      * @return list of all available lead results
      */
     fun readBoulders(pathName: String = DEFAULT_BOULDERS_FILE_PATH): List<BoulderResultRealm> {
-        return emptyList()
+        val file = File(pathName)
+        val rows = reader.readAll(file)
+
+        val boulderList = mutableListOf<BoulderResultRealm>()
+
+        rows.forEach { row ->
+            boulderList.add(
+                BoulderResultRealm().apply {
+                    id = row[0]
+                    year = row[1].toInt()
+                    competitionId = row[2]
+                    rank = row[3].toIntOrNull()
+                    climberId = row[4]
+                    qualification = row[5]
+                    semiFinal = row[6]
+                    final = row[7]
+                }
+            )
+        }
+        return boulderList
     }
 
     /**

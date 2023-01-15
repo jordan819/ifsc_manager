@@ -264,8 +264,12 @@ class Database(
     /**
      * Deletes speed result by its id.
      */
-    fun deleteSpeedResult(id: String) {
-
+    suspend fun deleteSpeedResult(id: String) {
+        Arbor.d("Deleting speed result with id $id...")
+        realm.write {
+            val speedResult: SpeedResultRealm = this.query<SpeedResultRealm>("id == $0", id).find().first()
+            delete(speedResult)
+        }
     }
 
     /**

@@ -2,6 +2,7 @@ package utils
 
 import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
+import io.realm.model.SpeedResultRealm
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -222,6 +223,70 @@ class FileManagerTest {
         )
     }
 
+    @ParameterizedTest
+    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    fun `create new file for speed results if not exists`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
+        //arrange
+        val fileName = "$tempDir/speeds.csv"
+
+        // act
+        fileManager.writeSpeeds(results, fileName)
+
+        // assert
+        assertTrue(File(fileName).exists())
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    fun `write speed results data to file`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
+        // arrange
+        val pathName = "$tempDir/speeds.csv"
+
+        // act
+        fileManager.writeSpeeds(results, pathName)
+
+        // assert
+        var expectedContent = ""
+        results.forEach { result ->
+            with(result) {
+                expectedContent += "$id,$year,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
+            }
+        }
+        val writtenContent = File(pathName).readText()
+        assertEquals(
+            expectedContent,
+            writtenContent
+        )
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SpeedResultArgumentProvider::class)
+    fun `read speed results data`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
+        // arrange
+        var expectedContent = ""
+        results.forEach { result ->
+            with(result) {
+                expectedContent += "$id,$year,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
+            }
+        }
+        val pathName = "$tempDir/speeds.csv"
+        File(pathName).writeText(expectedContent)
+
+        // act
+        var writtenContent = ""
+        fileManager.readSpeeds(pathName).forEach { result ->
+            with(result) {
+                writtenContent += "$id,$year,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
+            }
+        }
+
+        // assert
+        assertEquals(
+            expectedContent,
+            writtenContent
+        )
+    }
+
     internal class ClimberArgumentProvider : ArgumentsProvider {
         @Throws(Exception::class)
         override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
@@ -369,6 +434,74 @@ class FileManagerTest {
                             semiFinal = "12"
                             final = "fall"
                         }
+                    )
+                ),
+            )
+        }
+    }
+
+    internal class SpeedResultArgumentProvider : ArgumentsProvider {
+        @Throws(Exception::class)
+        override fun provideArguments(context: ExtensionContext): Stream<out Arguments?> {
+            return Stream.of(
+                Arguments.of(
+                    listOf(
+                        SpeedResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            rank = null
+                            climberId = "235-f"
+                            laneA = null
+                            laneB = null
+                            oneEighth = null
+                            quarter = null
+                            semiFinal = null
+                            smallFinal = null
+                            final = null
+                        },
+                    )
+                ),
+                Arguments.of(
+                    listOf(
+                        SpeedResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            rank = null
+                            climberId = "235-f"
+                            laneA = null
+                            laneB = null
+                            oneEighth = null
+                            quarter = null
+                            semiFinal = null
+                            smallFinal = null
+                            final = null
+                        },
+                        SpeedResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            rank = null
+                            climberId = "235-f"
+                            laneA = null
+                            laneB = null
+                            oneEighth = null
+                            quarter = null
+                            semiFinal = null
+                            smallFinal = null
+                            final = null
+                        },
+                        SpeedResultRealm().apply {
+                            id = "1352"
+                            year = 2000
+                            rank = null
+                            climberId = "235-f"
+                            laneA = null
+                            laneB = null
+                            oneEighth = null
+                            quarter = null
+                            semiFinal = null
+                            smallFinal = null
+                            final = null
+                        },
                     )
                 ),
             )

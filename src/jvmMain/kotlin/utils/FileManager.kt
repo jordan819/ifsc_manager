@@ -4,10 +4,10 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
+import io.realm.model.SpeedResultRealm
 import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
-import scraping.model.speed.SpeedResult
 import java.io.File
 
 /**
@@ -104,13 +104,13 @@ class FileManager {
     }
 
     /**
-     * Writes [lead results][SpeedResult] to CSV file.
+     * Writes [lead results][SpeedResultRealm] to CSV file.
      *
      * @param[results] speed results to be saved
      * @param[year] year in which competition took place
      * @param[fileName] name of the target file
      */
-    fun writeSpeeds(results: List<SpeedResult>, year: String, fileName: String) {
+    fun writeSpeeds(results: List<SpeedResultRealm>, fileName: String = DEFAULT_SPEED_FILE_PATH) {
 
     }
 
@@ -206,11 +206,11 @@ class FileManager {
     }
 
     /**
-     * Reads [speed][SpeedResult] results data from CSV file
+     * Reads [speed][SpeedResultRealm] results data from CSV file
      *
      * @return list of all available speed results
      */
-    fun readSpeeds(): List<SpeedResult> {
+    fun readSpeeds(pathName: String = DEFAULT_SPEED_FILE_PATH): List<SpeedResultRealm> {
         return emptyList()
     }
 
@@ -218,5 +218,6 @@ class FileManager {
         const val DEFAULT_CLIMBERS_FILE_PATH = "src/jvmMain/resources/climbers.csv"
         const val DEFAULT_LEADS_FILE_PATH = "src/jvmMain/resources/leads.csv"
         const val DEFAULT_BOULDERS_FILE_PATH = "src/jvmMain/resources/boulders.csv"
+        const val DEFAULT_SPEED_FILE_PATH = "src/jvmMain/resources/speeds.csv"
     }
 }

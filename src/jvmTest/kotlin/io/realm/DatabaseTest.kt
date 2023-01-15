@@ -1,5 +1,6 @@
 package io.realm
 
+import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -8,10 +9,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
-import provider.ClimberArgumentProvider
-import provider.ClimberListArgumentProvider
-import provider.LeadGeneralArgumentProvider
+import provider.*
 import scraping.model.Climber
+import scraping.model.boulder.BoulderGeneral
 import scraping.model.lead.LeadGeneral
 import java.io.File
 import kotlin.test.assertEquals
@@ -76,6 +76,43 @@ internal class DatabaseTest {
         val savedResults = database.getAllLeads()
         savedResults.forEachIndexed { index, savedResult ->
             val expectedResult = LeadResultRealm().apply {
+                this.id = competitionId + "_" + results[index].climberId
+                this.year = year
+                this.competitionId = competitionId
+                this.rank = results[index].rank
+                this.climberId = results[index].climberId
+                this.qualification = results[index].qualification
+                this.semiFinal = results[index].semiFinal
+                this.final = results[index].final
+            }
+            assertAll(
+                { assertEquals(expectedResult.id, savedResult.id) },
+                { assertEquals(expectedResult.year, savedResult.year) },
+                { assertEquals(expectedResult.competitionId, savedResult.competitionId) },
+                { assertEquals(expectedResult.rank, savedResult.rank) },
+                { assertEquals(expectedResult.climberId, savedResult.climberId) },
+                { assertEquals(expectedResult.qualification, savedResult.qualification) },
+                { assertEquals(expectedResult.semiFinal, savedResult.semiFinal) },
+                { assertEquals(expectedResult.final, savedResult.final) },
+            )
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @ParameterizedTest
+    @ArgumentsSource(BoulderGeneralArgumentProvider::class)
+    fun `write and read boulder results`(results: List<BoulderGeneral>) = runTest {
+        //arrange
+        val year = 2020
+        val competitionId = "1385_12"
+
+        //act
+        database.writeBoulderResults(results, year, competitionId)
+
+        //assert
+        val savedResults = database.getAllBoulders()
+        savedResults.forEachIndexed { index, savedResult ->
+            val expectedResult = BoulderResultRealm().apply {
                 this.id = competitionId + "_" + results[index].climberId
                 this.year = year
                 this.competitionId = competitionId

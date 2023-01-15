@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
-import provider.BoulderResultArgumentProvider
+import provider.BoulderResultRealmArgumentProvider
 import provider.ClimberArgumentProvider
 import provider.LeadResultRealmArgumentProvider
 import provider.SpeedResultArgumentProvider
@@ -160,7 +160,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `create new file for boulder results if not exists`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         //arrange
         val fileName = "$tempDir/leads.csv"
@@ -173,7 +173,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `write boulder results data to file`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         // arrange
         val pathName = "$tempDir/boulders.csv"
@@ -196,7 +196,7 @@ class FileManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BoulderResultArgumentProvider::class)
+    @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `read boulder results data`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         // arrange
         var expectedContent = ""

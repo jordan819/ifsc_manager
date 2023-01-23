@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -163,6 +164,11 @@ fun ClimberListScreen(
                             contentDescription = null
                         )
                     }
+                },
+                actions = {
+                    IconButton(onClick = { showAddClimberDialog() }) {
+                        Icon(Icons.Filled.Add, null)
+                    }
                 }
             )
 
@@ -180,11 +186,6 @@ fun ClimberListScreen(
                         fetchNewClimbers()
                     }) {
                         Text("Pobierz nowych zawodników")
-                    }
-                    Button(onClick = {
-                        showAddClimberDialog()
-                    }) {
-                        Text("Dodaj zawodnika")
                     }
                 }
                 Column(

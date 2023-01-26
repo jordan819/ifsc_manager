@@ -21,5 +21,6 @@ fun ClimberDetailsUi(climberDetails: ClimberDetails) {
         leadResults = climberDetails.leadResults,
         speedResults = climberDetails.speedResults,
         boulderResults = climberDetails.boulderResults,
+        database = climberDetails.database,
     )
 }

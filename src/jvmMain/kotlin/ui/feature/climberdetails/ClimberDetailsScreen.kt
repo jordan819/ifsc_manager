@@ -15,17 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import io.realm.Database
 import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import scraping.Scraper
 import ui.common.TableCell
 import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_INDIVIDUAL
+import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_COMPARATIVE
 import ui.feature.climberdetails.ContentType.ANALYSIS
 import ui.feature.climberdetails.ContentType.BOULDER
 import ui.feature.climberdetails.ContentType.LEAD
 import ui.feature.climberdetails.ContentType.SPEED
-import ui.feature.climberdetails.chart.SpeedProgressChart
+import ui.feature.climberdetails.chart.SpeedProgressComparativeChart
+import ui.feature.climberdetails.chart.SpeedProgressIndividualChart
 
 @Composable
 fun ClimberDetailsScreen(
@@ -34,6 +37,7 @@ fun ClimberDetailsScreen(
     leadResults: List<LeadResultRealm>,
     speedResults: List<SpeedResultRealm>,
     boulderResults: List<BoulderResultRealm>,
+    database: Database,
 ) {
 
     val selectedResultType = remember { mutableStateOf<String?>(null) }
@@ -139,7 +143,8 @@ fun ClimberDetailsScreen(
     @Composable
     fun Analysis() {
         when (chartSelected.value) {
-            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressChart(speedResults.sortedBy { it.year })
+            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.sortedBy { it.year })
+            SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climberId, database)
             else -> {}
         }
     }
@@ -234,6 +239,9 @@ fun ClimberDetailsScreen(
                             Button(onClick = {chartSelected.value = SPEED_PROGRESS_INDIVIDUAL}) {
                                 Text("Postęp w kategorii SPEED")
                             }
+                            Button(onClick = {chartSelected.value = SPEED_PROGRESS_COMPARATIVE}) {
+                                Text("Porównanie w kategorii SPEED")
+                            }
                         }
                     }
                 }
@@ -253,6 +261,7 @@ fun ClimberDetailsScreen(
 
 enum class ChartType {
     SPEED_PROGRESS_INDIVIDUAL,
+    SPEED_PROGRESS_COMPARATIVE,
 }
 
 object ContentType {

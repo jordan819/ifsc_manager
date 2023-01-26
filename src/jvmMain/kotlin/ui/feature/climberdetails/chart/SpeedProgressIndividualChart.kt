@@ -13,7 +13,7 @@ import org.knowm.xchart.style.markers.SeriesMarkers
 import java.awt.Toolkit
 
 @Composable
-fun SpeedProgressChart(
+fun SpeedProgressIndividualChart(
     speedResults: List<SpeedResultRealm>,
 ) {
     val oneEightResult = mutableListOf<Double?>()
@@ -35,7 +35,7 @@ fun SpeedProgressChart(
 
     val chart = XYChartBuilder()
         .xAxisTitle("Index")
-        .yAxisTitle("Wynik")
+        .yAxisTitle("Czas")
         .width(width.toInt())
         .build()
 
@@ -48,7 +48,7 @@ fun SpeedProgressChart(
     val image = BitmapEncoder.getBufferedImage(chart).toComposeImageBitmap()
 
     Column {
-        Text("Speed Progress Chart")
+        Text("Postęp zawodnika w czasie")
         Image(
             bitmap = image,
             contentDescription = null,

@@ -1,6 +1,5 @@
 package ui.feature.climberdetails
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,19 +14,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.unit.dp
+import io.realm.Database
 import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
-import org.knowm.xchart.*
 import scraping.Scraper
 import ui.common.TableCell
+import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_INDIVIDUAL
+import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_COMPARATIVE
 import ui.feature.climberdetails.ContentType.ANALYSIS
 import ui.feature.climberdetails.ContentType.BOULDER
 import ui.feature.climberdetails.ContentType.LEAD
 import ui.feature.climberdetails.ContentType.SPEED
-import kotlin.random.Random
+import ui.feature.climberdetails.chart.SpeedProgressComparativeChart
+import ui.feature.climberdetails.chart.SpeedProgressIndividualChart
 
 @Composable
 fun ClimberDetailsScreen(
@@ -36,11 +37,14 @@ fun ClimberDetailsScreen(
     leadResults: List<LeadResultRealm>,
     speedResults: List<SpeedResultRealm>,
     boulderResults: List<BoulderResultRealm>,
+    database: Database,
 ) {
 
     val selectedResultType = remember { mutableStateOf<String?>(null) }
 
     val isDropdownExpanded = remember { mutableStateOf(false) }
+
+    val chartSelected = remember { mutableStateOf<ChartType?>(null) }
 
     @Composable
     fun LeadTable() {
@@ -138,42 +142,10 @@ fun ClimberDetailsScreen(
 
     @Composable
     fun Analysis() {
-        Column {
-            IconButton(onClick = { isDropdownExpanded.value = true }) {
-                Icon(Icons.Default.MoreVert, "")
-            }
-        }
-
-        val testX = Random.nextDouble(2010.0, 2020.0)
-        val xData = doubleArrayOf(testX, testX + 2, testX + 3, testX + 4, testX + 5, testX + 6)
-        val yData = doubleArrayOf(
-            Random.nextDouble(20.0, 30.0),
-            Random.nextDouble(20.0, 30.0),
-            Random.nextDouble(20.0, 30.0),
-            Random.nextDouble(20.0, 30.0),
-            Random.nextDouble(20.0, 30.0),
-            Random.nextDouble(20.0, 30.0),
-        )
-        val chart1 = QuickChart.getChart("Postęp zawodnika w czasie", "Rok", "Wynik", "Wynik od czasu", xData, yData)
-        val image1 = BitmapEncoder.getBufferedImage(chart1).toComposeImageBitmap()
-
-        val chart2 = PieChart(PieChartBuilder())
-        if (leadResults.isNotEmpty()) chart2.addSeries("LEAD", leadResults.size)
-        if (speedResults.isNotEmpty()) chart2.addSeries("SPEED", speedResults.size)
-        if (boulderResults.isNotEmpty()) chart2.addSeries("BOULDER", boulderResults.size)
-        val image2 = BitmapEncoder.getBufferedImage(chart2).toComposeImageBitmap()
-
-        Row {
-            Image(
-                bitmap = image1,
-                contentDescription = null,
-            )
-        }
-        Row {
-            Image(
-                bitmap = image2,
-                contentDescription = null,
-            )
+        when (chartSelected.value) {
+            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.sortedBy { it.year })
+            SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climberId, database)
+            else -> {}
         }
     }
 
@@ -249,11 +221,29 @@ fun ClimberDetailsScreen(
                         text = "BOULDER"
                     )
                 }
+            }
+            Row {
                 if (leadResults.isNotEmpty() || speedResults.isNotEmpty() || boulderResults.isNotEmpty()) {
                     SelectContentButton(
                         onClick = { selectedResultType.value = ANALYSIS },
                         text = "Analiza wyników"
                     )
+                    Column {
+                        IconButton(onClick = { isDropdownExpanded.value = true }) {
+                            Icon(Icons.Default.MoreVert, "")
+                        }
+                        DropdownMenu(
+                            expanded = isDropdownExpanded.value,
+                            onDismissRequest = { isDropdownExpanded.value = false }
+                        ) {
+                            Button(onClick = {chartSelected.value = SPEED_PROGRESS_INDIVIDUAL}) {
+                                Text("Postęp w kategorii SPEED")
+                            }
+                            Button(onClick = {chartSelected.value = SPEED_PROGRESS_COMPARATIVE}) {
+                                Text("Porównanie w kategorii SPEED")
+                            }
+                        }
+                    }
                 }
             }
             Spacer(Modifier.height(10.dp))
@@ -267,6 +257,11 @@ fun ClimberDetailsScreen(
         }
     }
 
+}
+
+enum class ChartType {
+    SPEED_PROGRESS_INDIVIDUAL,
+    SPEED_PROGRESS_COMPARATIVE,
 }
 
 object ContentType {

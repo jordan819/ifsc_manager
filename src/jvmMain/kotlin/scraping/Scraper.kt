@@ -134,7 +134,7 @@ class Scraper(
         val driver = ChromeDriver(driverOptions)
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
-        var currentYear: Int? = 2010
+        var currentYear: Int? = null
 
         do {
             driver.get(url)

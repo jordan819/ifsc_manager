@@ -44,6 +44,7 @@ class Database(
             return@write
         }
 
+        Arbor.d("Writing climber with id ${climber.climberId} to database")
         this.copyToRealm(ClimberRealm().apply {
             id = climber.climberId
             sex = climber.sex?.name

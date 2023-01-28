@@ -2,13 +2,16 @@ package utils
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import com.toxicbakery.logging.Arbor
 import io.realm.model.BoulderResultRealm
+import io.realm.model.ClimberRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
 import java.io.File
+import java.nio.file.Path
 
 /**
  * Class that allows to write or read from CSV file.
@@ -30,12 +33,21 @@ class FileManager {
      * Writes climber to CSV file.
      *
      * @param[climber] climber to be saved
+     *
+     * @return absolute path to created file
      */
-    fun writeClimber(climber: Climber, pathName: String = DEFAULT_CLIMBERS_FILE_PATH) {
+    fun writeClimber(
+        climber: ClimberRealm,
+        pathName: String = DEFAULT_CLIMBERS_FILE_PATH,
+        fileName: String = DEFAULT_CLIMBERS_FILE_NAME
+    ): Path {
+        val fullPath = "$pathName$fileName.csv"
+
+        Arbor.d("Writing climber with id: ${climber.id} to $fullPath")
         writer.writeAll(
             rows = listOf(
                 listOf(
-                    climber.climberId,
+                    climber.id,
                     climber.name,
                     climber.sex,
                     climber.yearOfBirth,
@@ -44,9 +56,11 @@ class FileManager {
                     climber.recordType,
                 )
             ),
-            targetFileName = pathName,
+            targetFileName = fullPath,
             append = true
         )
+
+        return Path.of(fullPath).toAbsolutePath()
     }
 
     /**
@@ -138,8 +152,12 @@ class FileManager {
      *
      * @return list of all available climbers
      */
-    fun readClimbers(pathName: String = DEFAULT_CLIMBERS_FILE_PATH): List<Climber> {
-        val file = File(pathName)
+    fun readClimbers(
+        path: String = "$DEFAULT_CLIMBERS_FILE_PATH$DEFAULT_CLIMBERS_FILE_NAME.csv",
+    ): List<Climber> {
+        Arbor.d("Reading climbers from $path")
+
+        val file = File(path)
         val rows = reader.readAll(file)
 
         val climberList = mutableListOf<Climber>()
@@ -256,7 +274,9 @@ class FileManager {
     }
 
     companion object {
-        const val DEFAULT_CLIMBERS_FILE_PATH = "src/jvmMain/resources/climbers.csv"
+        const val DEFAULT_CLIMBERS_FILE_NAME = "climbers"
+        const val DEFAULT_CLIMBERS_FILE_PATH = "exported/"
+
         const val DEFAULT_LEADS_FILE_PATH = "src/jvmMain/resources/leads.csv"
         const val DEFAULT_BOULDERS_FILE_PATH = "src/jvmMain/resources/boulders.csv"
         const val DEFAULT_SPEED_FILE_PATH = "src/jvmMain/resources/speeds.csv"

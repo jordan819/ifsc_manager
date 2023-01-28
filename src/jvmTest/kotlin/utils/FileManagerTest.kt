@@ -1,6 +1,7 @@
 package utils
 
 import io.realm.model.BoulderResultRealm
+import io.realm.model.ClimberRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -8,11 +9,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
+import provider.*
 import provider.BoulderResultRealmArgumentProvider
-import provider.ClimberArgumentProvider
+import provider.ClimberRealmArgumentProvider
 import provider.LeadResultRealmArgumentProvider
 import provider.SpeedResultRealmArgumentProvider
-import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
 import java.io.File
@@ -38,53 +39,56 @@ class FileManagerTest {
         val country = "USA"
         val federation = "USAC"
         val recordType = RecordType.OFFICIAL
-        val climber = Climber(
-            id,
-            name,
-            sex,
-            yearOfBirth,
-            country,
-            federation,
-            recordType
-        )
-        val pathName = "$tempDir/climbers.csv"
+        val climber = ClimberRealm().apply {
+            this.id = id
+            this.name = name
+            this.sex = sex.name
+            this.yearOfBirth = yearOfBirth
+            this.country = country
+            this.federation = federation
+            this.recordType = recordType.name
+        }
+        val fileName = "climbers"
+        val fullPath = "${tempDir.path}\\$fileName.csv"
 
         // act
-        fileManager.writeClimber(climber, pathName)
+        fileManager.writeClimber(climber, tempDir.path, fileName)
 
         //assert
-        assertTrue(File(pathName).exists())
+        assertTrue(File(fullPath).exists())
     }
 
     @ParameterizedTest
-    @ArgumentsSource(ClimberArgumentProvider::class)
-    fun `write climber data to file`(climber: Climber, @TempDir tempDir: File) {
+    @ArgumentsSource(ClimberRealmArgumentProvider::class)
+    fun `write climber data to file`(climber: ClimberRealm, @TempDir tempDir: File) {
         // arrange
-        val pathName = "$tempDir/climbers.csv"
+        val fileName = "climbers"
+        val fullPath = "${tempDir.path}\\$fileName.csv"
 
         // act
-        fileManager.writeClimber(climber, pathName)
+        fileManager.writeClimber(climber, tempDir.path, fileName)
 
         // assert
-        val writtenContent = File(pathName).readText()
+        val writtenContent = File(fullPath).readText()
         assertEquals(
-            "${climber.climberId},${climber.name},${climber.sex},${climber.yearOfBirth},${climber.country},${climber.federation},${climber.recordType}\n",
+            "${climber.id},${climber.name},${climber.sex},${climber.yearOfBirth},${climber.country},${climber.federation},${climber.recordType}\n",
             writtenContent
         )
     }
 
     @ParameterizedTest
-    @ArgumentsSource(ClimberArgumentProvider::class)
-    fun `read climber data`(climber: Climber, @TempDir tempDir: File) {
+    @ArgumentsSource(ClimberRealmArgumentProvider::class)
+    fun `read climber data`(climber: ClimberRealm, @TempDir tempDir: File) {
         // arrange
         val row = with(climber) {
-            "$climberId,$name,$sex,$yearOfBirth,$country,$federation,$recordType"
+            "$id,$name,$sex,$yearOfBirth,$country,$federation,$recordType"
         }
-        val pathName = "$tempDir/climbers.csv"
-        File(pathName).writeText(row)
+        val path = "$tempDir/climbers.csv"
+
+        File(path).writeText(row)
 
         // act
-        val writtenContent = with(fileManager.readClimbers(pathName).first()) {
+        val writtenContent = with(fileManager.readClimbers(path).first()) {
             "$climberId,$name,$sex,$yearOfBirth,$country,$federation,$recordType"
         }
 

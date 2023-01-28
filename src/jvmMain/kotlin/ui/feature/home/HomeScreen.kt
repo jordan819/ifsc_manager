@@ -47,7 +47,8 @@ fun HomeScreen(navigateToClimberList: () -> Unit) {
                     }
                 }
             } else {
-                Arbor.wtf("Ale szit")
+                // TODO: add support for MacOS
+                Arbor.wtf("Unknow OS")
             }
 
             isVisible = true

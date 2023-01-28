@@ -275,7 +275,7 @@ class FileManager {
 
     companion object {
         const val DEFAULT_CLIMBERS_FILE_NAME = "climbers"
-        const val DEFAULT_CLIMBERS_FILE_PATH = ""
+        const val DEFAULT_CLIMBERS_FILE_PATH = "exported/"
 
         const val DEFAULT_LEADS_FILE_PATH = "src/jvmMain/resources/leads.csv"
         const val DEFAULT_BOULDERS_FILE_PATH = "src/jvmMain/resources/boulders.csv"

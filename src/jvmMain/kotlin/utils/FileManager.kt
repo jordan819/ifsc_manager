@@ -41,7 +41,7 @@ class FileManager {
         pathName: String = DEFAULT_CLIMBERS_FILE_PATH,
         fileName: String = DEFAULT_CLIMBERS_FILE_NAME
     ): Path {
-        val fullPath = "$pathName/$fileName.csv"
+        val fullPath = "$pathName$fileName.csv"
 
         Arbor.d("Writing climber with id: ${climber.id} to $fullPath")
         writer.writeAll(
@@ -153,7 +153,7 @@ class FileManager {
      * @return list of all available climbers
      */
     fun readClimbers(
-        path: String = "$DEFAULT_CLIMBERS_FILE_PATH/$DEFAULT_CLIMBERS_FILE_NAME.csv",
+        path: String = "$DEFAULT_CLIMBERS_FILE_PATH$DEFAULT_CLIMBERS_FILE_NAME.csv",
     ): List<Climber> {
         Arbor.d("Reading climbers from $path")
 
@@ -275,7 +275,7 @@ class FileManager {
 
     companion object {
         const val DEFAULT_CLIMBERS_FILE_NAME = "climbers"
-        const val DEFAULT_CLIMBERS_FILE_PATH = "src/jvmMain/resources"
+        const val DEFAULT_CLIMBERS_FILE_PATH = ""
 
         const val DEFAULT_LEADS_FILE_PATH = "src/jvmMain/resources/leads.csv"
         const val DEFAULT_BOULDERS_FILE_PATH = "src/jvmMain/resources/boulders.csv"

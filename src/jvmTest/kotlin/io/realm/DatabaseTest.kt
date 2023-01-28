@@ -33,7 +33,7 @@ internal class DatabaseTest {
     }
 
     @AfterEach
-    internal fun tearDown() {
+    fun tearDown() {
         database.close()
         File("test.realm.management").delete()
         File("test.realm").delete()

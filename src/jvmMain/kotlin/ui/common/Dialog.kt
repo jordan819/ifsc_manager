@@ -1,7 +1,7 @@
 package ui.common
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
@@ -17,7 +17,7 @@ fun Dialog(
 ) {
 
     Dialog(
-        title = "",
+        title = title,
         state = DialogState(size = DpSize.Companion.Unspecified),
         onCloseRequest = onCloseRequest
     ) {
@@ -29,16 +29,9 @@ fun Dialog(
                     .padding(8.dp)
                     .height(IntrinsicSize.Min)
             ) {
-                ProvideTextStyle(MaterialTheme.typography.subtitle1) {
-                    Text(text = title)
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
                 Box(modifier = Modifier.weight(1F)) {
                     content()
                 }
-
             }
         }
     }

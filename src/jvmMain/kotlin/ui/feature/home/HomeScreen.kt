@@ -7,6 +7,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import scraping.Scraper
+import ui.common.ErrorDisplay
 import utils.CsvHelper
 import utils.FileHelper
 import java.nio.file.Path
@@ -25,6 +27,7 @@ import java.nio.file.Path
 fun HomeScreen(
     navigateToClimberList: () -> Unit,
     database: Database,
+    errorDisplay: MutableState<ErrorDisplay>,
 ) {
 
     val isAddDialogVisible = remember { mutableStateOf(false) }
@@ -84,6 +87,15 @@ fun HomeScreen(
                         }
                     }
                 }
+            }
+
+            Button(onClick = {
+                errorDisplay.value = ErrorDisplay(
+                    message = "Tu wchodzi dowolna treść wiadomości o błędzie dla użytkownika",
+                    isVisible = true
+                )
+            }) {
+                Text("Pokaż błąd")
             }
 
         }

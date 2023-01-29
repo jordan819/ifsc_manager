@@ -447,10 +447,7 @@ fun ClimberListScreen(
                             onClick = { deleteUser(it.id) })
                     }
                 }
-
             }
-
         }
     }
-
 }

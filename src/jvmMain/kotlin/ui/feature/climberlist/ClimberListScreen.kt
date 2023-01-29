@@ -15,16 +15,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import io.realm.Database
 import io.realm.model.ClimberRealm
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import scraping.Scraper
 import scraping.model.RecordType
 import scraping.model.Sex
 import ui.common.Dialog
+import ui.common.ErrorDisplay
 import ui.common.TableCell
+import utils.CsvHelper
+import utils.FileHelper
+import java.nio.file.Path
 
 @Composable
 fun ClimberListScreen(
@@ -33,6 +40,7 @@ fun ClimberListScreen(
     onBackClick: () -> Unit,
     navigateToClimberDetails: (climberId: String) -> Unit,
     coroutineScope: CoroutineScope,
+    errorDisplay: MutableState<ErrorDisplay>,
 ) {
 
     var climberList by remember { mutableStateOf(database.getAllClimbers()) }
@@ -47,8 +55,8 @@ fun ClimberListScreen(
     val sortOption = remember { mutableStateOf(ClimberSortOption.ID) }
 
     val isAddDialogVisible = remember { mutableStateOf(false) }
-
     val isEditDialogVisible = remember { mutableStateOf(false to "0") }
+    val isImportDialogVisible = remember { mutableStateOf(false) }
 
     fun showAddClimberDialog() {
         isAddDialogVisible.value = true
@@ -147,6 +155,28 @@ fun ClimberListScreen(
             )
         }
 
+        if (isImportDialogVisible.value) {
+            isImportDialogVisible.value = false
+            val file = FileHelper().selectCsvFile()
+            if (file != null) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val climbers = CsvHelper().readClimbers(file.path)
+                        climbers.forEach {
+                            database.writeClimber(it)
+                        }
+                    } catch (e: Exception) {
+                        errorDisplay.value = ErrorDisplay(
+                            message = "Wystąpił błąd podczas odczytu zawodników z pliku ${file.name}\n" +
+                                    "Upewnij się, że zawarte w nim dane są poprawne.",
+                            isVisible = true
+                        )
+                    }
+                    updateListDisplay()
+                }
+            }
+        }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -167,7 +197,34 @@ fun ClimberListScreen(
                 },
                 actions = {
                     IconButton(onClick = { showAddClimberDialog() }) {
-                        Icon(Icons.Filled.Add, null)
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = null,
+                            modifier = Modifier.height(35.dp),
+                        )
+                    }
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            val climbers = database.getAllClimbers()
+                            val path: Path = CsvHelper().writeClimbers(climbers)
+                            withContext(Dispatchers.IO) {
+                                Runtime.getRuntime()
+                                    .exec("explorer.exe /select,$path")
+                            }
+                        }
+                    }) {
+                        Icon(
+                            painter = painterResource("export.svg"),
+                            contentDescription = null,
+                            modifier = Modifier.height(35.dp),
+                        )
+                    }
+                    IconButton(onClick = { isImportDialogVisible.value = true }) {
+                        Icon(
+                            painter = painterResource("import.svg"),
+                            contentDescription = null,
+                            modifier = Modifier.height(35.dp),
+                        )
                     }
                 }
             )
@@ -390,10 +447,7 @@ fun ClimberListScreen(
                             onClick = { deleteUser(it.id) })
                     }
                 }
-
             }
-
         }
     }
-
 }

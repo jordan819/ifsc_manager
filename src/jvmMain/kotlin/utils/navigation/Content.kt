@@ -1,6 +1,7 @@
 package utils.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.extensions.compose.jetbrains.Children
 import com.arkivanov.decompose.pop
@@ -9,6 +10,7 @@ import com.arkivanov.decompose.router
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import scraping.Scraper
+import ui.common.ErrorDisplay
 import ui.feature.climberdetails.ClimberDetails
 import ui.feature.climberdetails.ClimberDetailsUi
 import ui.feature.climberlist.ClimberList
@@ -25,6 +27,7 @@ class Root(
     private val scraper: Scraper,
     private val database: Database,
     private val coroutineScope: CoroutineScope,
+    private val errorDisplay: MutableState<ErrorDisplay>,
 ) : ComponentContext by componentContext {
 
     private val router =
@@ -44,7 +47,8 @@ class Root(
 
     private fun home(): Content =
         Home(
-            navigateToClimberList = { router.push(Configuration.ClimberList) }
+            navigateToClimberList = { router.push(Configuration.ClimberList) },
+            database = database,
         ).asContent { HomeUi(it) }
 
     private fun climberList(): Content =
@@ -54,6 +58,7 @@ class Root(
             onBackClick = router::pop,
             navigateToClimberDetails = { router.push(Configuration.ClimberDetails(climberId = it)) },
             coroutineScope = coroutineScope,
+            errorDisplay = errorDisplay,
         ).asContent { ClimberListUi(it) }
 
     private fun climberDetails(climberId: String): Content =

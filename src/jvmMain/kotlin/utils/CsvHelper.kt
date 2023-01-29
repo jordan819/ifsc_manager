@@ -16,7 +16,14 @@ import java.nio.file.Path
 /**
  * Class that allows to write or read from CSV file.
  */
-class FileManager {
+class CsvHelper {
+
+    init {
+        val directory = File("exported")
+        if (!directory.exists()) {
+            directory.mkdir()
+        }
+    }
 
     private val writer = csvWriter {
         delimiter = ','
@@ -30,22 +37,22 @@ class FileManager {
     }
 
     /**
-     * Writes climber to CSV file.
+     * Writes climbers to CSV file.
      *
-     * @param[climber] climber to be saved
+     * @param[climbers] climbers list to be saved
      *
      * @return absolute path to created file
      */
-    fun writeClimber(
-        climber: ClimberRealm,
+    fun writeClimbers(
+        climbers: List<ClimberRealm>,
         pathName: String = DEFAULT_CLIMBERS_FILE_PATH,
         fileName: String = DEFAULT_CLIMBERS_FILE_NAME
     ): Path {
-        val fullPath = "$pathName$fileName.csv"
+        val fullPath = Path.of("$pathName$fileName.csv").toAbsolutePath()
 
-        Arbor.d("Writing climber with id: ${climber.id} to $fullPath")
+        Arbor.d("Writing ${climbers.size} climbers to $fullPath")
         writer.writeAll(
-            rows = listOf(
+            rows = climbers.map { climber ->
                 listOf(
                     climber.id,
                     climber.name,
@@ -53,14 +60,14 @@ class FileManager {
                     climber.yearOfBirth,
                     climber.country,
                     climber.federation,
-                    climber.recordType,
+                    climber.recordType
                 )
-            ),
-            targetFileName = fullPath,
-            append = true
+            },
+            targetFileName = fullPath.toString(),
+            append = false
         )
 
-        return Path.of(fullPath).toAbsolutePath()
+        return fullPath
     }
 
     /**

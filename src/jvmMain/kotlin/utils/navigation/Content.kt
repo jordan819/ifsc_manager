@@ -44,7 +44,8 @@ class Root(
 
     private fun home(): Content =
         Home(
-            navigateToClimberList = { router.push(Configuration.ClimberList) }
+            navigateToClimberList = { router.push(Configuration.ClimberList) },
+            database = database,
         ).asContent { HomeUi(it) }
 
     private fun climberList(): Content =

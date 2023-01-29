@@ -26,7 +26,10 @@ import java.io.File
 import java.nio.file.Path
 
 @Composable
-fun HomeScreen(navigateToClimberList: () -> Unit) {
+fun HomeScreen(
+    navigateToClimberList: () -> Unit,
+    database: Database,
+) {
 
     val isAddDialogVisible = remember { mutableStateOf(false) }
 
@@ -34,7 +37,7 @@ fun HomeScreen(navigateToClimberList: () -> Unit) {
         window: ComposeWindow? = null,
         title: String = "",
         allowedExtensions: List<String> = listOf("csv")
-    ): Set<File> {
+    ): File? {
         return FileDialog(window, title, FileDialog.LOAD).apply {
             isMultipleMode = false
 
@@ -48,11 +51,11 @@ fun HomeScreen(navigateToClimberList: () -> Unit) {
                 }
             } else {
                 // TODO: add support for MacOS
-                Arbor.wtf("Unknow OS")
+                Arbor.wtf("Unknown OS")
             }
 
             isVisible = true
-        }.files.toSet()
+        }.files.firstOrNull()
     }
 
     MaterialTheme {
@@ -69,21 +72,21 @@ fun HomeScreen(navigateToClimberList: () -> Unit) {
             // TODO: probably remove the following buttons
             Button(onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    Scraper(Database()).fetchEvents()
+                    Scraper(database).fetchEvents()
                 }
             }) {
                 Text("Pobierz eventy")
             }
             Button(onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    Scraper(Database()).fetchAllClimbers()
+                    Scraper(database).fetchAllClimbers()
                 }
             }) {
                 Text("Pobierz zawodników")
             }
             Button(onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val climbers = Database().getAllClimbers()
+                    val climbers = database.getAllClimbers()
                     var path = Path.of("")
                     climbers.forEach { climber ->
                         path = FileManager().writeClimber(climber)
@@ -104,12 +107,13 @@ fun HomeScreen(navigateToClimberList: () -> Unit) {
 
             if (isAddDialogVisible.value) {
                 isAddDialogVisible.value = false
-                val set = selectCsvFile()
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    val climbers = FileManager().readClimbers(set.first().path)
-                    climbers.forEach {
-                        Database().writeClimber(it)
+                val file = selectCsvFile()
+                if (file != null) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val climbers = FileManager().readClimbers(file.path)
+                        climbers.forEach {
+                            database.writeClimber(it)
+                        }
                     }
                 }
             }

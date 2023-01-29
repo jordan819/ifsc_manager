@@ -18,6 +18,13 @@ import java.nio.file.Path
  */
 class CsvHelper {
 
+    init {
+        val directory = File("exported")
+        if (!directory.exists()) {
+            directory.mkdir()
+        }
+    }
+
     private val writer = csvWriter {
         delimiter = ','
         nullCode = "null"
@@ -41,7 +48,7 @@ class CsvHelper {
         pathName: String = DEFAULT_CLIMBERS_FILE_PATH,
         fileName: String = DEFAULT_CLIMBERS_FILE_NAME
     ): Path {
-        val fullPath = "$pathName$fileName.csv"
+        val fullPath = Path.of("$pathName$fileName.csv").toAbsolutePath()
 
         Arbor.d("Writing ${climbers.size} climbers to $fullPath")
         writer.writeAll(
@@ -56,11 +63,11 @@ class CsvHelper {
                     climber.recordType
                 )
             },
-            targetFileName = fullPath,
-            append = true
+            targetFileName = fullPath.toString(),
+            append = false
         )
 
-        return Path.of(fullPath).toAbsolutePath()
+        return fullPath
     }
 
     /**

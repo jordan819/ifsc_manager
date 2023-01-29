@@ -50,3 +50,5 @@ chromedriver.exe
 default.realm
 default.realm.lock
 default.realm.management
+
+/exported

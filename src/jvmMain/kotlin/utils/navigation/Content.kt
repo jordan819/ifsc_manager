@@ -49,7 +49,6 @@ class Root(
         Home(
             navigateToClimberList = { router.push(Configuration.ClimberList) },
             database = database,
-            errorDisplay = errorDisplay,
         ).asContent { HomeUi(it) }
 
     private fun climberList(): Content =
@@ -59,6 +58,7 @@ class Root(
             onBackClick = router::pop,
             navigateToClimberDetails = { router.push(Configuration.ClimberDetails(climberId = it)) },
             coroutineScope = coroutineScope,
+            errorDisplay = errorDisplay,
         ).asContent { ClimberListUi(it) }
 
     private fun climberDetails(climberId: String): Content =

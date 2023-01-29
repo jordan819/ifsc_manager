@@ -46,6 +46,7 @@ kotlin {
                 api("com.ToxicBakery.logging:arbor-jvm:1.34.109")
 
                 implementation("com.afollestad.material-dialogs:core:3.3.0")
+                implementation("com.google.android.material:material:1.3.0-alpha01")
 
                 // Charts
                 implementation("org.knowm.xchart:xchart:3.8.3")

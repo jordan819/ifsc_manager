@@ -61,15 +61,15 @@ class Database(
      * In case record with given id already exists, operation will be skipped.
      *
      * @param[results] list of lead results to be saved
-     * @param[year] year in which event happened - used to generate unique id for the result
+     * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeLeadResults(results: List<LeadGeneral>, year: Int, competitionId: String) =
+    suspend fun writeLeadResults(results: List<LeadGeneral>, date: String, competitionId: String) =
         results.forEach { result ->
-            writeLeadResult(result, year, competitionId)
+            writeLeadResult(result, date, competitionId)
         }
 
-    private suspend fun writeLeadResult(result: LeadGeneral, year: Int, competitionId: String) {
+    private suspend fun writeLeadResult(result: LeadGeneral, date: String, competitionId: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<LeadResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -78,7 +78,7 @@ class Database(
             }
             this.copyToRealm(LeadResultRealm().apply {
                 id = resultId
-                this.year = year
+                this.date = date
                 this.competitionId = competitionId
                 rank = result.rank
                 climberId = result.climberId
@@ -89,12 +89,12 @@ class Database(
         }
     }
 
-    suspend fun writeBoulderResults(results: List<BoulderGeneral>, year: Int, competitionId: String) =
+    suspend fun writeBoulderResults(results: List<BoulderGeneral>, date: String, competitionId: String) =
         results.forEach { result ->
-            writeBoulderResult(result, year, competitionId)
+            writeBoulderResult(result, date, competitionId)
         }
 
-    private suspend fun writeBoulderResult(result: BoulderGeneral, year: Int, competitionId: String) {
+    private suspend fun writeBoulderResult(result: BoulderGeneral, date: String, competitionId: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -103,7 +103,7 @@ class Database(
             }
             this.copyToRealm(BoulderResultRealm().apply {
                 id = resultId
-                this.year = year
+                this.date = date
                 this.competitionId = competitionId
                 rank = result.rank
                 climberId = result.climberId
@@ -119,15 +119,15 @@ class Database(
      * In case record with given id already exists, operation will be skipped.
      *
      * @param[results] list of speed results to be saved
-     * @param[year] year in which event happened - used to generate unique id for the result
+     * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeSpeedResults(results: List<SpeedResult>, year: Int, competitionId: String) =
+    suspend fun writeSpeedResults(results: List<SpeedResult>, date: String, competitionId: String) =
         results.forEach { result ->
-            writeSpeedResult(result, year, competitionId)
+            writeSpeedResult(result, date, competitionId)
         }
 
-    private suspend fun writeSpeedResult(result: SpeedResult, year: Int, competitionId: String) {
+    private suspend fun writeSpeedResult(result: SpeedResult, date: String, competitionId: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -136,7 +136,8 @@ class Database(
             }
             this.copyToRealm(SpeedResultRealm().apply {
                 id = resultId
-                this.year = year
+                this.date = date
+                this.competitionId = competitionId
                 rank = result.rank
                 climberId = result.climberId
                 laneA = result.laneA

@@ -21,6 +21,8 @@ import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedFinal
 import scraping.model.speed.SpeedQualification
 import scraping.model.speed.SpeedResult
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -158,26 +160,33 @@ class Scraper(
                 ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
             )
 
-            val tags = driver.findElementsByClassName("tag")
-            val competitions = mutableListOf<Pair<String, String>>()
-            tags.forEach {
-                // some tags are invalid and don't have hrefs - those need to be ignored
-                val href = (it as RemoteWebElement).findElementsByTagName("a").firstOrNull()?.getAttribute("href")
-                    ?: return@forEach
-                val type = it.text.split(" ").first()
-                competitions.add(href to type)
+            val tagsWithDates = driver.findElementsByClassName("competition")
+                .map { it.findElements(By.className("tag")) to it.findElement(By.className("date")).text }
+
+            val competitions = mutableListOf<CompetitionData>()
+            tagsWithDates.forEach { tagsWithDate ->
+                tagsWithDate.first.forEach { tag ->
+                    // some tags are invalid and don't have hrefs - those need to be ignored
+                    val href = (tag as RemoteWebElement).findElementsByTagName("a").firstOrNull()?.getAttribute("href")
+                        ?: return
+                    val type = tag.text.split(" ").first()
+                    val dateElements = tagsWithDate.second.split(" ")
+                    val date = dateElements[0] + " " + dateElements[1] + " " + dateElements.last()
+                    val formattedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("d MMMM yyyy")).toString()
+                    competitions.add(CompetitionData(href, type, formattedDate))
+                }
             }
             val competitionsDriver = ChromeDriver(driverOptions)
-            competitions.forEach {
+            competitions.forEach { data ->
                 try {
                     fetchTableContent(
-                        url = it.first,
-                        type = it.second,
-                        currentYear = currentYear.toString(),
+                        url = data.href,
+                        type = data.type,
+                        date = data.date,
                         driver = competitionsDriver
                     )
                 } catch (e: TimeoutException) {
-                    Arbor.e("Could not fetch data from ${it.first}")
+                    Arbor.e("Could not fetch data from $data.href")
                 }
             }
             competitionsDriver.close()
@@ -185,7 +194,7 @@ class Scraper(
         driver.close()
     }
 
-    private suspend fun fetchTableContent(url: String, type: String, currentYear: String, driver: ChromeDriver) {
+    private suspend fun fetchTableContent(url: String, type: String, date: String, driver: ChromeDriver) {
         driver.get(url)
         driver.switchTo().frame("calendar")
 
@@ -220,7 +229,7 @@ class Scraper(
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeBoulderResults(results, currentYear.toInt(), competitionId)
+                database.writeBoulderResults(results, date, competitionId)
             }
 
             SPEED -> {
@@ -304,7 +313,7 @@ class Scraper(
                     )
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeSpeedResults(results, currentYear.toInt(), competitionId)
+                database.writeSpeedResults(results, date, competitionId)
             }
 
             LEAD -> {
@@ -327,7 +336,7 @@ class Scraper(
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeLeadResults(results, currentYear.toInt(), competitionId)
+                database.writeLeadResults(results, date, competitionId)
             }
 
             else -> {

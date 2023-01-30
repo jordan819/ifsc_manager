@@ -82,7 +82,7 @@ class CsvHelper {
                 rows = listOf(
                     listOf(
                         result.id,
-                        result.year,
+                        result.date,
                         result.competitionId,
                         result.rank,
                         result.climberId,
@@ -109,7 +109,7 @@ class CsvHelper {
                 rows = listOf(
                     listOf(
                         result.id,
-                        result.year,
+                        result.date,
                         result.competitionId,
                         result.rank,
                         result.climberId,
@@ -136,7 +136,7 @@ class CsvHelper {
                 rows = listOf(
                     listOf(
                         result.id,
-                        result.year,
+                        result.date,
                         result.rank,
                         result.climberId,
                         result.laneA,
@@ -208,7 +208,7 @@ class CsvHelper {
             leadList.add(
                 LeadResultRealm().apply {
                     id = row[0]
-                    year = row[1].toInt()
+                    date = row[1]
                     competitionId = row[2]
                     rank = row[3].toIntOrNull()
                     climberId = row[4]
@@ -236,7 +236,7 @@ class CsvHelper {
             boulderList.add(
                 BoulderResultRealm().apply {
                     id = row[0]
-                    year = row[1].toInt()
+                    date = row[1]
                     competitionId = row[2]
                     rank = row[3].toIntOrNull()
                     climberId = row[4]
@@ -264,7 +264,7 @@ class CsvHelper {
             speedList.add(
                 SpeedResultRealm().apply {
                     id = row[0]
-                    year = row[1].toInt()
+                    date = row[1]
                     rank = row[2].toIntOrNull()
                     climberId = row[3]
                     laneA = row[4]

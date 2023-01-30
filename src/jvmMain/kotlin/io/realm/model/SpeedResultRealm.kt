@@ -9,7 +9,8 @@ import io.realm.annotations.PrimaryKey
 class SpeedResultRealm : RealmObject {
     @PrimaryKey
     var id: String = ""
-    var year: Int = 0
+    var date: String = ""
+    var competitionId: String = ""
     var rank: Int? = null
     var climberId: String = "0"
     var laneA: String? = null

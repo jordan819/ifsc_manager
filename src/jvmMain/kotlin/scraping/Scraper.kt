@@ -203,6 +203,13 @@ class Scraper(
             ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
         )
 
+        var eventTitle: String
+        var eventCity: String
+        driver.findElementsByClassName("event_title").first().text.split("-").let {
+            eventTitle = "${it[0]}-${it[1]}"
+            eventCity = it[2].split(" ").dropLast(1).reduce { acc, next -> "$acc $next" }
+        }
+
         when (type) {
             BOULDER_AND_LEAD, COMBINED -> {
                 Arbor.d("$type is not supported yet - skipping $url")
@@ -229,7 +236,7 @@ class Scraper(
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeBoulderResults(results, date, competitionId)
+                database.writeBoulderResults(results, date, competitionId, eventTitle, eventCity)
             }
 
             SPEED -> {
@@ -313,7 +320,7 @@ class Scraper(
                     )
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeSpeedResults(results, date, competitionId)
+                database.writeSpeedResults(results, date, competitionId, eventTitle, eventCity)
             }
 
             LEAD -> {
@@ -336,7 +343,7 @@ class Scraper(
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeLeadResults(results, date, competitionId)
+                database.writeLeadResults(results, date, competitionId, eventTitle, eventCity)
             }
 
             else -> {

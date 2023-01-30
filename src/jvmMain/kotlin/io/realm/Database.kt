@@ -64,12 +64,12 @@ class Database(
      * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeLeadResults(results: List<LeadGeneral>, date: String, competitionId: String) =
+    suspend fun writeLeadResults(results: List<LeadGeneral>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
         results.forEach { result ->
-            writeLeadResult(result, date, competitionId)
+            writeLeadResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeLeadResult(result: LeadGeneral, date: String, competitionId: String) {
+    private suspend fun writeLeadResult(result: LeadGeneral, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<LeadResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -80,6 +80,8 @@ class Database(
                 id = resultId
                 this.date = date
                 this.competitionId = competitionId
+                this.competitionTitle = competitionTitle
+                this.competitionCity = competitionCity
                 rank = result.rank
                 climberId = result.climberId
                 qualification = result.qualification
@@ -89,12 +91,12 @@ class Database(
         }
     }
 
-    suspend fun writeBoulderResults(results: List<BoulderGeneral>, date: String, competitionId: String) =
+    suspend fun writeBoulderResults(results: List<BoulderGeneral>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
         results.forEach { result ->
-            writeBoulderResult(result, date, competitionId)
+            writeBoulderResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeBoulderResult(result: BoulderGeneral, date: String, competitionId: String) {
+    private suspend fun writeBoulderResult(result: BoulderGeneral, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -105,6 +107,8 @@ class Database(
                 id = resultId
                 this.date = date
                 this.competitionId = competitionId
+                this.competitionTitle = competitionTitle
+                this.competitionCity = competitionCity
                 rank = result.rank
                 climberId = result.climberId
                 qualification = result.qualification
@@ -122,12 +126,12 @@ class Database(
      * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeSpeedResults(results: List<SpeedResult>, date: String, competitionId: String) =
+    suspend fun writeSpeedResults(results: List<SpeedResult>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
         results.forEach { result ->
-            writeSpeedResult(result, date, competitionId)
+            writeSpeedResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeSpeedResult(result: SpeedResult, date: String, competitionId: String) {
+    private suspend fun writeSpeedResult(result: SpeedResult, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -138,6 +142,8 @@ class Database(
                 id = resultId
                 this.date = date
                 this.competitionId = competitionId
+                this.competitionTitle = competitionTitle
+                this.competitionCity = competitionCity
                 rank = result.rank
                 climberId = result.climberId
                 laneA = result.laneA

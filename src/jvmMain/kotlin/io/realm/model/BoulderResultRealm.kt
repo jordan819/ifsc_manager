@@ -11,6 +11,8 @@ class BoulderResultRealm : RealmObject {
     var id: String = ""
     var date: String = ""
     var competitionId: String = ""
+    var competitionTitle: String = ""
+    var competitionCity: String = ""
     var rank: Int? = null
     var climberId: String = "0"
     var qualification: String = ""

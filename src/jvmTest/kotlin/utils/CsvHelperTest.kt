@@ -31,7 +31,7 @@ class CsvHelperTest {
         val id = "123"
         val name = "John Doe"
         val sex = Sex.MAN
-        val yearOfBirth = 1998
+        val dateOfBirth = "1998"
         val country = "USA"
         val federation = "USAC"
         val recordType = RecordType.OFFICIAL
@@ -40,7 +40,7 @@ class CsvHelperTest {
                 this.id = id
                 this.name = name
                 this.sex = sex.name
-                this.yearOfBirth = yearOfBirth
+                this.dateOfBirth = dateOfBirth
                 this.country = country
                 this.federation = federation
                 this.recordType = recordType.name
@@ -69,7 +69,7 @@ class CsvHelperTest {
         // assert
         val writtenContent = File(fullPath).readText()
         assertEquals(
-            "${climbers.first().id},${climbers.first().name},${climbers.first().sex},${climbers.first().yearOfBirth},${climbers.first().country},${climbers.first().federation},${climbers.first().recordType}\n",
+            "${climbers.first().id},${climbers.first().name},${climbers.first().sex},${climbers.first().dateOfBirth},${climbers.first().country},${climbers.first().federation},${climbers.first().recordType}\n",
             writtenContent
         )
     }
@@ -79,7 +79,7 @@ class CsvHelperTest {
     fun `read climber data`(climbers: List<ClimberRealm>, @TempDir tempDir: File) {
         // arrange
         val row = with(climbers.first()) {
-            "$id,$name,$sex,$yearOfBirth,$country,$federation,$recordType"
+            "$id,$name,$sex,$dateOfBirth,$country,$federation,$recordType"
         }
         val path = "$tempDir/climbers.csv"
 
@@ -87,7 +87,7 @@ class CsvHelperTest {
 
         // act
         val writtenContent = with(csvHelper.readClimbers(path).first()) {
-            "$climberId,$name,$sex,$yearOfBirth,$country,$federation,$recordType"
+            "$climberId,$name,$sex,$dateOfBirth,$country,$federation,$recordType"
         }
 
         // assert

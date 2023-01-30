@@ -49,7 +49,7 @@ class Database(
             id = climber.climberId
             sex = climber.sex?.name
             name = climber.name
-            yearOfBirth = climber.yearOfBirth
+            dateOfBirth = climber.dateOfBirth
             country = climber.country
             federation = climber.federation
             recordType = climber.recordType.name
@@ -189,7 +189,7 @@ class Database(
                 Sex.WOMAN.name -> Sex.WOMAN
                 else -> null
             },
-            yearOfBirth = climberRealm.yearOfBirth,
+            dateOfBirth = climberRealm.dateOfBirth,
             country = climberRealm.country,
             federation = climberRealm.federation,
             recordType = when (climberRealm.recordType) {
@@ -206,7 +206,7 @@ class Database(
         realm.write {
             val climber = this.query<ClimberRealm>("id == $0", id).first().find() ?: return@write
             climber.name = newValue.name
-            climber.yearOfBirth = newValue.yearOfBirth
+            climber.dateOfBirth = newValue.dateOfBirth
             climber.country = newValue.country
             climber.recordType = newValue.recordType.toString()
             result = true

@@ -120,8 +120,8 @@ class Scraper(
 
         val age =
             (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
-        val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
-        return Climber(climberId.toString(), name, sex, yearOfBirth, country, federation, RecordType.OFFICIAL)
+        val dateOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }.toString()
+        return Climber(climberId.toString(), name, sex, dateOfBirth, country, federation, RecordType.OFFICIAL)
     }
 
     /**

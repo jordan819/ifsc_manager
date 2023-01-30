@@ -28,7 +28,7 @@ internal class ClimberArgumentProvider : ArgumentsProvider {
                     "321",
                     "Arkadiusz Justyński",
                     Sex.MAN,
-                    1987,
+                    "1987",
                     "POL",
                     "Polska Federacja Wspinaczki Sportowej",
                     RecordType.UNOFFICIAL
@@ -39,7 +39,7 @@ internal class ClimberArgumentProvider : ArgumentsProvider {
                     "420",
                     "Fanny Gibert",
                     Sex.WOMAN,
-                    1998,
+                    "2000-07-14",
                     "FRA",
                     "Federation Française de la Montagne et de l'Escalade",
                     RecordType.OFFICIAL

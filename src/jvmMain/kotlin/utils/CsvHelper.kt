@@ -57,7 +57,7 @@ class CsvHelper {
                     climber.id,
                     climber.name,
                     climber.sex,
-                    climber.yearOfBirth,
+                    climber.dateOfBirth,
                     climber.country,
                     climber.federation,
                     climber.recordType
@@ -179,7 +179,7 @@ class CsvHelper {
                         Sex.WOMAN.name -> Sex.WOMAN
                         else -> null
                     },
-                    yearOfBirth = row[3].toIntOrNull(),
+                    dateOfBirth = row[3],
                     country = row[4],
                     federation = row[5],
                     recordType = when (row[6]) {

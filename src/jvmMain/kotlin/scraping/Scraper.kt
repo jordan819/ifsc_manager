@@ -23,7 +23,6 @@ import scraping.model.speed.SpeedQualification
 import scraping.model.speed.SpeedResult
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.NoSuchElementException
 
 /**
  * Class that allows to fetch data from web page, without dedicated API.
@@ -182,7 +181,7 @@ class Scraper(
                 }
             }
             competitionsDriver.close()
-        } while ((currentYear ?: 0) > 2007)
+        } while ((currentYear ?: 0) > 2010)
         driver.close()
     }
 
@@ -232,11 +231,14 @@ class Scraper(
                 val table = driver.findElementById("table_id")
                 val generalRows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
                 val ranks = mutableMapOf<Int, Int?>()
+                val qualificationGenerals = mutableMapOf<Int, String?>()
                 generalRows.forEach { row ->
                     val rank = row.findElements(By.className("rank")).firstOrNull()?.text?.toIntOrNull()
+                    val qualificationGeneral = row.findElements(By.className("tdAlignNormal")).firstOrNull()?.text
                     val climberId =
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
                     ranks[climberId] = rank
+                    qualificationGenerals[climberId] = qualificationGeneral
                 }
 
                 driver.findElementsByClassName("link").firstOrNull()?.click() ?: return
@@ -249,10 +251,13 @@ class Scraper(
                 rows.forEach { row ->
                     val climberId =
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
-                    val laneA =
+                    var laneA =
                         row.findElements(By.className("number")).firstOrNull()?.text.takeUnless { it.isNullOrBlank() }
                     val laneB =
                         row.findElements(By.className("number")).lastOrNull()?.text.takeUnless { it.isNullOrBlank() }
+                    if (laneA == null && laneB == null) {
+                        laneA = qualificationGenerals[climberId]
+                    }
                     qualificationResults.add(SpeedQualification(climberId.toString(), laneA, laneB))
                 }
 
@@ -271,7 +276,17 @@ class Scraper(
                     val semiFinal = results.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
                     val smallFinal = results.getOrNull(3)?.text.takeUnless { it.isNullOrBlank() }
                     val final = results.getOrNull(4)?.text.takeUnless { it.isNullOrBlank() }
-                    finalResults.add(SpeedFinal(rank, climberId.toString(), oneEighth, quarter, semiFinal, smallFinal, final))
+                    finalResults.add(
+                        SpeedFinal(
+                            rank,
+                            climberId.toString(),
+                            oneEighth,
+                            quarter,
+                            semiFinal,
+                            smallFinal,
+                            final
+                        )
+                    )
                 }
 
                 val results = qualificationResults.map { qualificationResult ->

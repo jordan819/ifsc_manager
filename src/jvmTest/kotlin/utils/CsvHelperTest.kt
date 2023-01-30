@@ -123,7 +123,7 @@ class CsvHelperTest {
         var expectedContent = ""
         results.forEach { result ->
             with(result) {
-                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+                expectedContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
         val writtenContent = File(pathName).readText()
@@ -140,7 +140,7 @@ class CsvHelperTest {
         var expectedContent = ""
         results.forEach { result ->
             with(result) {
-                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+                expectedContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
         val pathName = "$tempDir/climbers.csv"
@@ -150,7 +150,7 @@ class CsvHelperTest {
         var writtenContent = ""
         csvHelper.readLeads(pathName).forEach { result ->
             with(result) {
-                writtenContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+                writtenContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
 
@@ -187,7 +187,7 @@ class CsvHelperTest {
         var expectedContent = ""
         results.forEach { result ->
             with(result) {
-                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+                expectedContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
         val writtenContent = File(pathName).readText()
@@ -204,7 +204,7 @@ class CsvHelperTest {
         var expectedContent = ""
         results.forEach { result ->
             with(result) {
-                expectedContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+                expectedContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
         val pathName = "$tempDir/boulder.csv"
@@ -214,7 +214,7 @@ class CsvHelperTest {
         var writtenContent = ""
         csvHelper.readBoulders(pathName).forEach { result ->
             with(result) {
-                writtenContent += "$id,$year,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
+                writtenContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
 
@@ -251,7 +251,7 @@ class CsvHelperTest {
         var expectedContent = ""
         results.forEach { result ->
             with(result) {
-                expectedContent += "$id,$year,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
+                expectedContent += "$id,$date,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
             }
         }
         val writtenContent = File(pathName).readText()
@@ -268,7 +268,7 @@ class CsvHelperTest {
         var expectedContent = ""
         results.forEach { result ->
             with(result) {
-                expectedContent += "$id,$year,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
+                expectedContent += "$id,$date,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
             }
         }
         val pathName = "$tempDir/speeds.csv"
@@ -278,7 +278,7 @@ class CsvHelperTest {
         var writtenContent = ""
         csvHelper.readSpeeds(pathName).forEach { result ->
             with(result) {
-                writtenContent += "$id,$year,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
+                writtenContent += "$id,$date,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
             }
         }
 

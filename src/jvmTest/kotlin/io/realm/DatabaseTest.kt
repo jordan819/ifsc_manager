@@ -73,18 +73,18 @@ internal class DatabaseTest {
     @ArgumentsSource(LeadGeneralArgumentProvider::class)
     fun `write and read lead results`(results: List<LeadGeneral>) = runTest {
         //arrange
-        val year = 2020
+        val date = "2020-06-12"
         val competitionId = "1385_12"
 
         //act
-        database.writeLeadResults(results, year, competitionId)
+        database.writeLeadResults(results, date, competitionId)
 
         //assert
         val savedResults = database.getAllLeads()
         savedResults.forEachIndexed { index, savedResult ->
             val expectedResult = LeadResultRealm().apply {
                 this.id = competitionId + "_" + results[index].climberId
-                this.year = year
+                this.date = date
                 this.competitionId = competitionId
                 this.rank = results[index].rank
                 this.climberId = results[index].climberId
@@ -94,7 +94,7 @@ internal class DatabaseTest {
             }
             assertAll(
                 { assertEquals(expectedResult.id, savedResult.id) },
-                { assertEquals(expectedResult.year, savedResult.year) },
+                { assertEquals(expectedResult.date, savedResult.date) },
                 { assertEquals(expectedResult.competitionId, savedResult.competitionId) },
                 { assertEquals(expectedResult.rank, savedResult.rank) },
                 { assertEquals(expectedResult.climberId, savedResult.climberId) },
@@ -110,18 +110,18 @@ internal class DatabaseTest {
     @ArgumentsSource(BoulderGeneralArgumentProvider::class)
     fun `write and read boulder results`(results: List<BoulderGeneral>) = runTest {
         //arrange
-        val year = 2020
+        val date = "2020-06-12"
         val competitionId = "1385_12"
 
         //act
-        database.writeBoulderResults(results, year, competitionId)
+        database.writeBoulderResults(results, date, competitionId)
 
         //assert
         val savedResults = database.getAllBoulders()
         savedResults.forEachIndexed { index, savedResult ->
             val expectedResult = BoulderResultRealm().apply {
                 this.id = competitionId + "_" + results[index].climberId
-                this.year = year
+                this.date = date
                 this.competitionId = competitionId
                 this.rank = results[index].rank
                 this.climberId = results[index].climberId
@@ -131,7 +131,7 @@ internal class DatabaseTest {
             }
             assertAll(
                 { assertEquals(expectedResult.id, savedResult.id) },
-                { assertEquals(expectedResult.year, savedResult.year) },
+                { assertEquals(expectedResult.date, savedResult.date) },
                 { assertEquals(expectedResult.competitionId, savedResult.competitionId) },
                 { assertEquals(expectedResult.rank, savedResult.rank) },
                 { assertEquals(expectedResult.climberId, savedResult.climberId) },
@@ -147,18 +147,18 @@ internal class DatabaseTest {
     @ArgumentsSource(SpeedResultArgumentProvider::class)
     fun `write and read speed results`(results: List<SpeedResult>) = runTest {
         //arrange
-        val year = 2020
+        val date = "2020-06-12"
         val competitionId = "1385_12"
 
         //act
-        database.writeSpeedResults(results, year, competitionId)
+        database.writeSpeedResults(results, date, competitionId)
 
         //assert
         val savedResults = database.getAllSpeeds()
         savedResults.forEachIndexed { index, savedResult ->
             val expectedResult = SpeedResultRealm().apply {
                 this.id = competitionId + "_" + results[index].climberId
-                this.year = year
+                this.date = date
                 this.rank = results[index].rank
                 this.climberId = results[index].climberId
                 this.laneA = results[index].laneA
@@ -171,7 +171,7 @@ internal class DatabaseTest {
             }
             assertAll(
                 { assertEquals(expectedResult.id, savedResult.id) },
-                { assertEquals(expectedResult.year, savedResult.year) },
+                { assertEquals(expectedResult.date, savedResult.date) },
                 { assertEquals(expectedResult.rank, savedResult.rank) },
                 { assertEquals(expectedResult.climberId, savedResult.climberId) },
                 { assertEquals(expectedResult.laneA, savedResult.laneA) },
@@ -300,7 +300,7 @@ internal class DatabaseTest {
             "11",
             null,
         )
-        database.writeLeadResults(listOf(leadResult), 2000, "123_S")
+        database.writeLeadResults(listOf(leadResult), "2020-06-12", "123_S")
         val resultId = database.getAllLeads().first().id
 
         //act
@@ -337,7 +337,7 @@ internal class DatabaseTest {
                 null,
             )
         )
-        database.writeLeadResults(leadResults, 1999, "MS-1")
+        database.writeLeadResults(leadResults, "2020-06-12", "MS-1")
         val resultId = database.getAllLeads()[1].id
 
         //act
@@ -361,7 +361,7 @@ internal class DatabaseTest {
             "11",
             null,
         )
-        database.writeBoulderResults(listOf(boulderResult), 2000, "123_S")
+        database.writeBoulderResults(listOf(boulderResult), "2020-06-12", "123_S")
         val resultId = database.getAllBoulders().first().id
 
         //act
@@ -398,7 +398,7 @@ internal class DatabaseTest {
                 null,
             )
         )
-        database.writeBoulderResults(boulderResults, 1999, "MS-1")
+        database.writeBoulderResults(boulderResults, "2020-06-12", "MS-1")
         val resultId = database.getAllBoulders()[1].id
 
         //act
@@ -426,7 +426,7 @@ internal class DatabaseTest {
             "13",
             null,
         )
-        database.writeSpeedResults(listOf(speedResult), 2000, "123_S")
+        database.writeSpeedResults(listOf(speedResult), "2020-06-12", "123_S")
         val resultId = database.getAllSpeeds().first().id
 
         //act
@@ -475,7 +475,7 @@ internal class DatabaseTest {
                 "10.1",
             )
         )
-        database.writeSpeedResults(speedResults, 1999, "MS-1")
+        database.writeSpeedResults(speedResults, "2020-06-12", "MS-1")
         val resultId = database.getAllSpeeds()[1].id
 
         //act

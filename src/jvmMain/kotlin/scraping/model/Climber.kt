@@ -7,7 +7,7 @@ data class Climber(
     var climberId: String,
     var name: String = "",
     var sex: Sex? = null,
-    var yearOfBirth: Int? = 0,
+    var dateOfBirth: String?,
     var country: String = "",
     var federation: String = "",
     var recordType: RecordType

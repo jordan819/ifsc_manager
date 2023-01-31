@@ -18,7 +18,7 @@ internal class ClimberRealmListArgumentProvider : ArgumentsProvider {
                         id = "123"
                         name = "John Doe"
                         sex = null
-                        yearOfBirth = null
+                        dateOfBirth = null
                         country = "USA"
                         federation = "USAC"
                         recordType = RecordType.UNOFFICIAL.name
@@ -31,7 +31,7 @@ internal class ClimberRealmListArgumentProvider : ArgumentsProvider {
                         id = "321"
                         name = "Arkadiusz Justyński"
                         sex = Sex.MAN.name
-                        yearOfBirth = 1987
+                        dateOfBirth = "1987"
                         country = "POL"
                         federation = "Polska Federacja Wspinaczki Sportowej"
                         recordType = RecordType.UNOFFICIAL.name
@@ -44,7 +44,7 @@ internal class ClimberRealmListArgumentProvider : ArgumentsProvider {
                         id = "420"
                         name = "Fanny Gibert"
                         sex = Sex.WOMAN.name
-                        yearOfBirth = 1998
+                        dateOfBirth = "2000-07-14"
                         country = "FRA"
                         federation = "Federation Française de la Montagne et de l'Escalade"
                         recordType = RecordType.OFFICIAL.name

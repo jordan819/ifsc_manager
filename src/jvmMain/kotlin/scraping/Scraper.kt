@@ -21,9 +21,10 @@ import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedFinal
 import scraping.model.speed.SpeedQualification
 import scraping.model.speed.SpeedResult
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.NoSuchElementException
 
 /**
  * Class that allows to fetch data from web page, without dedicated API.
@@ -63,7 +64,6 @@ class Scraper(
                 driver.get(url + climberId)
                 val climber = getClimberDataFromTable(climberId, driver) ?: continue@loop
                 database.writeClimber(climber)
-                Arbor.d(climber.toString())
             } catch (_: NoSuchElementException) {
                 Arbor.d("Successfully fetched ${climberId - 1} climbers")
                 continue@loop
@@ -105,9 +105,14 @@ class Scraper(
 
     private fun getClimberDataFromTable(climberId: Int, driver: ChromeDriver): Climber? {
         val wait = WebDriverWait(driver, 30)
-        wait.until(
-            ExpectedConditions.visibilityOfElementLocated(By.className("name"))
-        )
+        try {
+            wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.className("name"))
+            )
+        } catch (e: Exception) {
+            Arbor.e("Climber with id $climberId could not be fetched")
+            return null
+        }
         val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: return null
         val country = driver.findElementByClassName("country").text
         val federation = driver.findElementByClassName("federation").text
@@ -119,8 +124,8 @@ class Scraper(
 
         val age =
             (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
-        val yearOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }
-        return Climber(climberId.toString(), name, sex, yearOfBirth, country, federation, RecordType.OFFICIAL)
+        val dateOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }.toString()
+        return Climber(climberId.toString(), name, sex, dateOfBirth, country, federation, RecordType.OFFICIAL)
     }
 
     /**
@@ -134,59 +139,87 @@ class Scraper(
         val driver = ChromeDriver(driverOptions)
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
-        var currentYear: Int? = null
+        val leaguesToFetch = listOf(
+            "World Cups and World Championships",
+            "IFSC Youth",
+            "IFSC Europe Youth",
+            "IFSC Europe Adults",
+            "Games",
+        )
 
-        do {
-            driver.get(url)
-            driver.switchTo().frame("calendar")
-            val wait = WebDriverWait(driver, 30)
-            wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
-            )
+        leaguesToFetch.forEach { leagueToFetch ->
+            var currentYear: Int? = 2023 // TODO: set to null in future
+            yearsLoop@ do {
+                driver.get(url)
+                driver.switchTo().frame("calendar")
+                val wait = WebDriverWait(driver, 20)
+                wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
+                )
 
-            val yearSelectDropdown = Select(driver.findElementById("yearSelect"))
+                val yearSelectDropdown = Select(driver.findElementById("yearSelect"))
+                val leagueSelectDropdown = Select(driver.findElementById("leaguesSelect"))
 
-            if (currentYear != null) {
-                yearSelectDropdown.selectByVisibleText((currentYear - 1).toString())
-            }
-
-            currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
-            Arbor.d("---------------- Fetching data for year $currentYear ----------------")
-
-            delay(1000)
-
-            wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
-            )
-
-            val tags = driver.findElementsByClassName("tag")
-            val competitions = mutableListOf<Pair<String, String>>()
-            tags.forEach {
-                // some tags are invalid and don't have hrefs - those need to be ignored
-                val href = (it as RemoteWebElement).findElementsByTagName("a").firstOrNull()?.getAttribute("href")
-                    ?: return@forEach
-                val type = it.text.split(" ").first()
-                competitions.add(href to type)
-            }
-            val competitionsDriver = ChromeDriver(driverOptions)
-            competitions.forEach {
-                try {
-                    fetchTableContent(
-                        url = it.first,
-                        type = it.second,
-                        currentYear = currentYear.toString(),
-                        driver = competitionsDriver
-                    )
-                } catch (e: TimeoutException) {
-                    Arbor.e("Could not fetch data from ${it.first}")
+                if (currentYear != null) {
+                    yearSelectDropdown.selectByVisibleText((currentYear - 1).toString())
                 }
-            }
-            competitionsDriver.close()
-        } while ((currentYear ?: 0) > 2007)
+
+                delay(1000)
+
+                leagueSelectDropdown.selectByVisibleText(leagueToFetch)
+
+                currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
+                Arbor.d("---------------- Fetching data for year: $currentYear, league: $leagueToFetch ----------------")
+
+                delay(1000)
+
+                try {
+                    wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
+                    )
+                } catch (e: Exception) {
+                    Arbor.e("Page is empty - skipping")
+                    continue@yearsLoop
+                }
+
+                val tagsWithDates = driver.findElementsByClassName("competition")
+                    .map { it.findElements(By.className("tag")) to it.findElement(By.className("date")).text }
+
+                val competitions = mutableListOf<CompetitionData>()
+                tagsWithDates.forEach { tagsWithDate ->
+                    tagsWithDate.first.forEach { tag ->
+                        // some tags are invalid and don't have hrefs - those need to be ignored
+                        val href =
+                            (tag as RemoteWebElement).findElementsByTagName("a").firstOrNull()?.getAttribute("href")
+                                ?: return@forEach
+                        val type = tag.text.split(" ").first()
+                        val dateElements = tagsWithDate.second.split(" ")
+                        val date = dateElements[0] + " " + dateElements[1] + " " + dateElements.last()
+                        val formattedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("d MMMM yyyy")).toString()
+                        competitions.add(CompetitionData(href, type, formattedDate))
+                    }
+                }
+                val competitionsDriver = ChromeDriver(driverOptions)
+                competitions.forEach { data ->
+                    try {
+                        fetchTableContent(
+                            url = data.href,
+                            type = data.type,
+                            date = data.date,
+                            driver = competitionsDriver
+                        )
+                    } catch (e: TimeoutException) {
+                        Arbor.e("Could not fetch data from ${data.href}")
+                    }
+                }
+                competitionsDriver.close()
+            } while ((currentYear ?: 0) > 2010)
+        }
         driver.close()
+        Arbor.d("All available events fetched")
     }
 
-    private suspend fun fetchTableContent(url: String, type: String, currentYear: String, driver: ChromeDriver) {
+    private suspend fun fetchTableContent(url: String, type: String, date: String, driver: ChromeDriver) {
         driver.get(url)
         driver.switchTo().frame("calendar")
 
@@ -194,6 +227,13 @@ class Scraper(
         wait.until(
             ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
         )
+
+        var eventTitle: String
+        var eventCity: String
+        driver.findElementsByClassName("event_title").first().text.split("-").let {
+            eventTitle = it.dropLast(1).reduce { acc, next -> "$acc $next" }
+            eventCity = it.last().split(" ").dropLast(1).reduce { acc, next -> "$acc $next" }
+        }
 
         when (type) {
             BOULDER_AND_LEAD, COMBINED -> {
@@ -221,7 +261,7 @@ class Scraper(
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeBoulderResults(results, currentYear.toInt(), competitionId)
+                database.writeBoulderResults(results, date, competitionId, eventTitle, eventCity)
             }
 
             SPEED -> {
@@ -232,11 +272,14 @@ class Scraper(
                 val table = driver.findElementById("table_id")
                 val generalRows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"))
                 val ranks = mutableMapOf<Int, Int?>()
+                val qualificationGenerals = mutableMapOf<Int, String?>()
                 generalRows.forEach { row ->
                     val rank = row.findElements(By.className("rank")).firstOrNull()?.text?.toIntOrNull()
+                    val qualificationGeneral = row.findElements(By.className("tdAlignNormal")).firstOrNull()?.text
                     val climberId =
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
                     ranks[climberId] = rank
+                    qualificationGenerals[climberId] = qualificationGeneral
                 }
 
                 driver.findElementsByClassName("link").firstOrNull()?.click() ?: return
@@ -249,10 +292,13 @@ class Scraper(
                 rows.forEach { row ->
                     val climberId =
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
-                    val laneA =
+                    var laneA =
                         row.findElements(By.className("number")).firstOrNull()?.text.takeUnless { it.isNullOrBlank() }
                     val laneB =
                         row.findElements(By.className("number")).lastOrNull()?.text.takeUnless { it.isNullOrBlank() }
+                    if (laneA == null && laneB == null) {
+                        laneA = qualificationGenerals[climberId]
+                    }
                     qualificationResults.add(SpeedQualification(climberId.toString(), laneA, laneB))
                 }
 
@@ -266,12 +312,22 @@ class Scraper(
                     val climberId =
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
                     val results = row.findElements(By.className("number"))
-                    val oneEighth = results[0].text
+                    val oneEighth = results.getOrNull(0)?.text.takeUnless { it.isNullOrBlank() }
                     val quarter = results.getOrNull(1)?.text.takeUnless { it.isNullOrBlank() }
                     val semiFinal = results.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
                     val smallFinal = results.getOrNull(3)?.text.takeUnless { it.isNullOrBlank() }
                     val final = results.getOrNull(4)?.text.takeUnless { it.isNullOrBlank() }
-                    finalResults.add(SpeedFinal(rank, climberId.toString(), oneEighth, quarter, semiFinal, smallFinal, final))
+                    finalResults.add(
+                        SpeedFinal(
+                            rank,
+                            climberId.toString(),
+                            oneEighth,
+                            quarter,
+                            semiFinal,
+                            smallFinal,
+                            final
+                        )
+                    )
                 }
 
                 val results = qualificationResults.map { qualificationResult ->
@@ -289,7 +345,7 @@ class Scraper(
                     )
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeSpeedResults(results, currentYear.toInt(), competitionId)
+                database.writeSpeedResults(results, date, competitionId, eventTitle, eventCity)
             }
 
             LEAD -> {
@@ -312,7 +368,7 @@ class Scraper(
                     }
                 }
                 val competitionId = generateCompetitionId(url)
-                database.writeLeadResults(results, currentYear.toInt(), competitionId)
+                database.writeLeadResults(results, date, competitionId, eventTitle, eventCity)
             }
 
             else -> {
@@ -333,7 +389,7 @@ class Scraper(
     }
 
     /**
-     * Generates unique competition cumber, based on event id and category (male or female).
+     * Generates unique competition number, based on event id and category (male or female).
      */
     private fun generateCompetitionId(url: String) =
         url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]

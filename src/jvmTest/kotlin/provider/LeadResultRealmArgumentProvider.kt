@@ -14,7 +14,7 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                 listOf(
                     LeadResultRealm().apply {
                         id = "1352"
-                        year = 2000
+                        date = "2020-06-12"
                         competitionId = "321"
                         rank = null
                         climberId = "235-f"
@@ -28,7 +28,7 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                 listOf(
                     LeadResultRealm().apply {
                         id = "1352"
-                        year = 2000
+                        date = "2020-06-12"
                         competitionId = "321"
                         rank = null
                         climberId = "235-f"
@@ -38,7 +38,7 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                     },
                     LeadResultRealm().apply {
                         id = "1353"
-                        year = 2020
+                        date = "2020-06-12"
                         competitionId = "321"
                         rank = 1
                         climberId = "235-f"
@@ -48,7 +48,7 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                     },
                     LeadResultRealm().apply {
                         id = "1356"
-                        year = 2021
+                        date = "2020-06-12"
                         competitionId = "321"
                         rank = 2
                         climberId = "235-f"

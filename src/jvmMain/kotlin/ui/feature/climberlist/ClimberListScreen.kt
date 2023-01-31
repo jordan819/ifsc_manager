@@ -69,7 +69,7 @@ fun ClimberListScreen(
     fun sortClimberList(climbers: List<ClimberRealm>) = when (sortOption.value) {
         ClimberSortOption.ID -> climbers.sortedBy { it.id.toIntOrNull() }
         ClimberSortOption.NAME -> climbers.sortedBy { it.name }
-        ClimberSortOption.YEAR -> climbers.sortedBy { it.yearOfBirth }
+        ClimberSortOption.YEAR -> climbers.sortedBy { it.dateOfBirth }
         ClimberSortOption.COUNTRY -> climbers.sortedBy { it.country }
     }
 
@@ -206,7 +206,13 @@ fun ClimberListScreen(
                     IconButton(onClick = {
                         coroutineScope.launch {
                             val climbers = database.getAllClimbers()
+                            val boulders = database.getAllBoulders()
+                            val leads = database.getAllLeads()
+                            val speeds = database.getAllSpeeds()
                             val path: Path = CsvHelper().writeClimbers(climbers)
+                            CsvHelper().writeBoulders(boulders)
+                            CsvHelper().writeLeads(leads)
+                            CsvHelper().writeSpeeds(speeds)
                             withContext(Dispatchers.IO) {
                                 Runtime.getRuntime()
                                     .exec("explorer.exe /select,$path")
@@ -373,7 +379,7 @@ fun ClimberListScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Rok urodzenia"
+                                text = "Data urodzenia"
                             )
                             Checkbox(
                                 checked = sortOption.value == ClimberSortOption.YEAR,
@@ -418,7 +424,7 @@ fun ClimberListScreen(
                         TableCell(text = "Id", weight = column1Weight)
                         TableCell(text = "Imię i nazwisko", weight = column2Weight)
                         TableCell(text = "Płeć", weight = column3Weight)
-                        TableCell(text = "Rok urodzenia", weight = column4Weight)
+                        TableCell(text = "Data urodzenia", weight = column4Weight)
                         TableCell(text = "Kraj", weight = column5Weight)
                         TableCell(text = "EDIT", weight = column6Weight)
                         TableCell(text = "X", weight = column6Weight)
@@ -435,7 +441,7 @@ fun ClimberListScreen(
                         TableCell(text = it.id, weight = column1Weight)
                         TableCell(text = it.name, weight = column2Weight)
                         TableCell(text = sex, weight = column3Weight)
-                        TableCell(text = it.yearOfBirth?.toString() ?: "-", weight = column4Weight)
+                        TableCell(text = it.dateOfBirth ?: "-", weight = column4Weight)
                         TableCell(text = it.country, weight = column5Weight)
                         TableCell(
                             image = Icons.Default.Edit,

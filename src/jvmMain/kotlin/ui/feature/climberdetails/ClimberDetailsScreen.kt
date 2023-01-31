@@ -21,8 +21,8 @@ import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import scraping.Scraper
 import ui.common.TableCell
-import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_INDIVIDUAL
 import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_COMPARATIVE
+import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_INDIVIDUAL
 import ui.feature.climberdetails.ContentType.ANALYSIS
 import ui.feature.climberdetails.ContentType.BOULDER
 import ui.feature.climberdetails.ContentType.LEAD
@@ -53,8 +53,10 @@ fun ClimberDetailsScreen(
         LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
             item {
                 Row(Modifier.background(Color.Gray)) {
-                    TableCell(text = "Rok", weight = weight1)
+                    TableCell(text = "Data", weight = weight1)
                     TableCell(text = "Pozycja w zawodach", weight = weight1)
+                    TableCell(text = "Miasto", weight = weight2)
+                    TableCell(text = "Nazwa zawodów", weight = weight2)
                     TableCell(text = "Kwalifikacje", weight = weight2)
                     TableCell(text = "Półfinał", weight = weight2)
                     TableCell(text = "Finał", weight = weight2)
@@ -62,8 +64,10 @@ fun ClimberDetailsScreen(
             }
             items(leadResults) {
                 Row(Modifier.fillMaxWidth()) {
-                    TableCell(text = it.year.toString(), weight = weight1)
+                    TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
+                    TableCell(text = it.competitionCity, weight = weight2)
+                    TableCell(text = it.competitionTitle, weight = weight2)
                     TableCell(text = it.qualification, weight = weight2)
                     TableCell(text = it.semiFinal ?: "-", weight = weight2)
                     TableCell(text = it.final ?: "-", weight = weight2)
@@ -80,33 +84,37 @@ fun ClimberDetailsScreen(
         LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
             item {
                 Row(Modifier.background(Color.Gray)) {
-                    TableCell(text = "", weight = weight1 * 2)
+                    TableCell(text = "", weight = (weight1 + weight2) * 2)
                     TableCell(text = "Kwalifikacje", weight = weight1 * 2)
-                    TableCell(text = "Finały", weight = weight1 * 3 + weight2 * 2)
+                    TableCell(text = "Finały", weight = weight1 * 5)
                 }
                 Row(Modifier.background(Color.Gray)) {
-                    TableCell(text = "Rok", weight = weight1)
+                    TableCell(text = "Data", weight = weight1)
                     TableCell(text = "Pozycja w zawodach", weight = weight1)
+                    TableCell(text = "Miasto", weight = weight2)
+                    TableCell(text = "Nazwa zawodów", weight = weight2)
                     TableCell(text = "Tor A", weight = weight1)
                     TableCell(text = "Tor B", weight = weight1)
                     TableCell(text = "1/8", weight = weight1)
                     TableCell(text = "1/4", weight = weight1)
                     TableCell(text = "Półfinał", weight = weight1)
-                    TableCell(text = "Mały finał", weight = weight2)
-                    TableCell(text = "Finał", weight = weight2)
+                    TableCell(text = "Mały finał", weight = weight1)
+                    TableCell(text = "Finał", weight = weight1)
                 }
             }
             items(speedResults) {
                 Row(Modifier.fillMaxWidth()) {
-                    TableCell(text = it.year.toString(), weight = weight1)
+                    TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
+                    TableCell(text = it.competitionCity, weight = weight2)
+                    TableCell(text = it.competitionTitle, weight = weight2)
                     TableCell(text = it.laneA ?: "-", weight = weight1)
                     TableCell(text = it.laneB ?: "-", weight = weight1)
                     TableCell(text = it.oneEighth ?: "-", weight = weight1)
                     TableCell(text = it.quarter ?: "-", weight = weight1)
                     TableCell(text = it.semiFinal ?: "-", weight = weight1)
-                    TableCell(text = it.smallFinal ?: "-", weight = weight2)
-                    TableCell(text = it.final ?: "-", weight = weight2)
+                    TableCell(text = it.smallFinal ?: "-", weight = weight1)
+                    TableCell(text = it.final ?: "-", weight = weight1)
                 }
             }
 
@@ -120,8 +128,10 @@ fun ClimberDetailsScreen(
         LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
             item {
                 Row(Modifier.background(Color.Gray)) {
-                    TableCell(text = "Rok", weight = weight1)
+                    TableCell(text = "Data", weight = weight1)
                     TableCell(text = "Pozycja w zawodach", weight = weight1)
+                    TableCell(text = "Miasto", weight = weight2)
+                    TableCell(text = "Nazwa zawodów", weight = weight2)
                     TableCell(text = "Kwalifikacje", weight = weight2)
                     TableCell(text = "Półfinał", weight = weight2)
                     TableCell(text = "Finał", weight = weight2)
@@ -129,8 +139,10 @@ fun ClimberDetailsScreen(
             }
             items(boulderResults) {
                 Row(Modifier.fillMaxWidth()) {
-                    TableCell(text = it.year.toString(), weight = weight1)
+                    TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
+                    TableCell(text = it.competitionCity, weight = weight2)
+                    TableCell(text = it.competitionTitle, weight = weight2)
                     TableCell(text = it.qualification, weight = weight2)
                     TableCell(text = it.semiFinal ?: "-", weight = weight2)
                     TableCell(text = it.final ?: "-", weight = weight2)
@@ -143,7 +155,7 @@ fun ClimberDetailsScreen(
     @Composable
     fun Analysis() {
         when (chartSelected.value) {
-            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.sortedBy { it.year })
+            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.sortedBy { it.date })
             SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climberId, database)
             else -> {}
         }
@@ -236,10 +248,10 @@ fun ClimberDetailsScreen(
                             expanded = isDropdownExpanded.value,
                             onDismissRequest = { isDropdownExpanded.value = false }
                         ) {
-                            Button(onClick = {chartSelected.value = SPEED_PROGRESS_INDIVIDUAL}) {
+                            Button(onClick = { chartSelected.value = SPEED_PROGRESS_INDIVIDUAL }) {
                                 Text("Postęp w kategorii SPEED")
                             }
-                            Button(onClick = {chartSelected.value = SPEED_PROGRESS_COMPARATIVE}) {
+                            Button(onClick = { chartSelected.value = SPEED_PROGRESS_COMPARATIVE }) {
                                 Text("Porównanie w kategorii SPEED")
                             }
                         }

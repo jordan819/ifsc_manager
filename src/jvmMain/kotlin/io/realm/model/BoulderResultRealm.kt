@@ -9,8 +9,10 @@ import io.realm.annotations.PrimaryKey
 class BoulderResultRealm : RealmObject {
     @PrimaryKey
     var id: String = ""
-    var year: Int = 0
+    var date: String = ""
     var competitionId: String = ""
+    var competitionTitle: String = ""
+    var competitionCity: String = ""
     var rank: Int? = null
     var climberId: String = "0"
     var qualification: String = ""

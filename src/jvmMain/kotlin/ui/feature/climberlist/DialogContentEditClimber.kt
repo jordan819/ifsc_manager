@@ -26,7 +26,7 @@ fun DialogContentEditClimber(
         val isClimberUnofficial = climber.recordType == RecordType.UNOFFICIAL
 
         val name = remember { mutableStateOf(climber.name) }
-        val year = remember { mutableStateOf(climber.yearOfBirth?.toString() ?: "") }
+        val date = remember { mutableStateOf(climber.dateOfBirth ?: "") }
         val country = remember { mutableStateOf(climber.country) }
 
         fun updateClimber() = coroutineScope.launch {
@@ -34,7 +34,7 @@ fun DialogContentEditClimber(
                 climberId = climberId,
                 name = name.value,
                 sex = climber.sex,
-                yearOfBirth = year.value.toIntOrNull() ?: climber.yearOfBirth,
+                dateOfBirth = date.value,
                 country = country.value,
                 federation = climber.federation,
                 recordType = climber.recordType
@@ -57,10 +57,10 @@ fun DialogContentEditClimber(
 
                 TextField(
                     enabled = true,
-                    label = { Text("Rok urodzenia") },
-                    value = year.value,
+                    label = { Text("Data urodzenia") },
+                    value = date.value,
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = { year.value = it },
+                    onValueChange = { date.value = it },
                 )
 
                 TextField(

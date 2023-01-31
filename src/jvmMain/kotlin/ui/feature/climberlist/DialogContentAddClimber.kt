@@ -44,7 +44,7 @@ fun DialogContentAddClimber(
                     "Kobieta" -> Sex.WOMAN
                     else -> null
                 },
-                yearOfBirth = birthYear.value.toIntOrNull(),
+                dateOfBirth = birthYear.value,
                 country = country.value,
                 recordType = RecordType.UNOFFICIAL
             )
@@ -89,7 +89,7 @@ fun DialogContentAddClimber(
             }
 
             TextField(
-                label = { Text("Rok urodzenia") },
+                label = { Text("Data urodzenia") },
                 value = birthYear.value,
                 modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
                 onValueChange = { birthYear.value = it },

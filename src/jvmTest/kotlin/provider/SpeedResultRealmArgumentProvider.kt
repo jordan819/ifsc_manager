@@ -14,7 +14,7 @@ internal class SpeedResultRealmArgumentProvider : ArgumentsProvider {
                 listOf(
                     SpeedResultRealm().apply {
                         id = "1352"
-                        year = 2000
+                        date = "2020-06-12"
                         rank = null
                         climberId = "235-f"
                         laneA = null
@@ -31,7 +31,7 @@ internal class SpeedResultRealmArgumentProvider : ArgumentsProvider {
                 listOf(
                     SpeedResultRealm().apply {
                         id = "1352"
-                        year = 2000
+                        date = "2020-06-12"
                         rank = null
                         climberId = "235-f"
                         laneA = null
@@ -44,7 +44,7 @@ internal class SpeedResultRealmArgumentProvider : ArgumentsProvider {
                     },
                     SpeedResultRealm().apply {
                         id = "1352"
-                        year = 2000
+                        date = "2020-06-12"
                         rank = null
                         climberId = "235-f"
                         laneA = null
@@ -57,7 +57,7 @@ internal class SpeedResultRealmArgumentProvider : ArgumentsProvider {
                     },
                     SpeedResultRealm().apply {
                         id = "1352"
-                        year = 2000
+                        date = "2020-06-12"
                         rank = null
                         climberId = "235-f"
                         laneA = null

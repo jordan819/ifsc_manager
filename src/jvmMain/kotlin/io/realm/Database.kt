@@ -49,7 +49,7 @@ class Database(
             id = climber.climberId
             sex = climber.sex?.name
             name = climber.name
-            yearOfBirth = climber.yearOfBirth
+            dateOfBirth = climber.dateOfBirth
             country = climber.country
             federation = climber.federation
             recordType = climber.recordType.name
@@ -61,15 +61,15 @@ class Database(
      * In case record with given id already exists, operation will be skipped.
      *
      * @param[results] list of lead results to be saved
-     * @param[year] year in which event happened - used to generate unique id for the result
+     * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeLeadResults(results: List<LeadGeneral>, year: Int, competitionId: String) =
+    suspend fun writeLeadResults(results: List<LeadGeneral>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
         results.forEach { result ->
-            writeLeadResult(result, year, competitionId)
+            writeLeadResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeLeadResult(result: LeadGeneral, year: Int, competitionId: String) {
+    private suspend fun writeLeadResult(result: LeadGeneral, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<LeadResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -78,8 +78,10 @@ class Database(
             }
             this.copyToRealm(LeadResultRealm().apply {
                 id = resultId
-                this.year = year
+                this.date = date
                 this.competitionId = competitionId
+                this.competitionTitle = competitionTitle
+                this.competitionCity = competitionCity
                 rank = result.rank
                 climberId = result.climberId
                 qualification = result.qualification
@@ -89,12 +91,12 @@ class Database(
         }
     }
 
-    suspend fun writeBoulderResults(results: List<BoulderGeneral>, year: Int, competitionId: String) =
+    suspend fun writeBoulderResults(results: List<BoulderGeneral>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
         results.forEach { result ->
-            writeBoulderResult(result, year, competitionId)
+            writeBoulderResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeBoulderResult(result: BoulderGeneral, year: Int, competitionId: String) {
+    private suspend fun writeBoulderResult(result: BoulderGeneral, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -103,8 +105,10 @@ class Database(
             }
             this.copyToRealm(BoulderResultRealm().apply {
                 id = resultId
-                this.year = year
+                this.date = date
                 this.competitionId = competitionId
+                this.competitionTitle = competitionTitle
+                this.competitionCity = competitionCity
                 rank = result.rank
                 climberId = result.climberId
                 qualification = result.qualification
@@ -119,15 +123,15 @@ class Database(
      * In case record with given id already exists, operation will be skipped.
      *
      * @param[results] list of speed results to be saved
-     * @param[year] year in which event happened - used to generate unique id for the result
+     * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeSpeedResults(results: List<SpeedResult>, year: Int, competitionId: String) =
+    suspend fun writeSpeedResults(results: List<SpeedResult>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
         results.forEach { result ->
-            writeSpeedResult(result, year, competitionId)
+            writeSpeedResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeSpeedResult(result: SpeedResult, year: Int, competitionId: String) {
+    private suspend fun writeSpeedResult(result: SpeedResult, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
@@ -136,7 +140,10 @@ class Database(
             }
             this.copyToRealm(SpeedResultRealm().apply {
                 id = resultId
-                this.year = year
+                this.date = date
+                this.competitionId = competitionId
+                this.competitionTitle = competitionTitle
+                this.competitionCity = competitionCity
                 rank = result.rank
                 climberId = result.climberId
                 laneA = result.laneA
@@ -188,7 +195,7 @@ class Database(
                 Sex.WOMAN.name -> Sex.WOMAN
                 else -> null
             },
-            yearOfBirth = climberRealm.yearOfBirth,
+            dateOfBirth = climberRealm.dateOfBirth,
             country = climberRealm.country,
             federation = climberRealm.federation,
             recordType = when (climberRealm.recordType) {
@@ -205,7 +212,7 @@ class Database(
         realm.write {
             val climber = this.query<ClimberRealm>("id == $0", id).first().find() ?: return@write
             climber.name = newValue.name
-            climber.yearOfBirth = newValue.yearOfBirth
+            climber.dateOfBirth = newValue.dateOfBirth
             climber.country = newValue.country
             climber.recordType = newValue.recordType.toString()
             result = true

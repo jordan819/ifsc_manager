@@ -101,23 +101,25 @@ class CsvHelperTest {
     @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `create new file for lead results if not exists`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         //arrange
-        val fileName = "$tempDir/leads.csv"
+        val pathName = "$tempDir/"
+        val fileName = "leads"
 
         // act
-        csvHelper.writeLeads(results, fileName)
+        val fullPath = csvHelper.writeLeads(results, pathName, fileName)
 
         // assert
-        assertTrue(File(fileName).exists())
+        assertTrue(File(fullPath.toString()).exists())
     }
 
     @ParameterizedTest
     @ArgumentsSource(LeadResultRealmArgumentProvider::class)
     fun `write lead results data to file`(results: List<LeadResultRealm>, @TempDir tempDir: File) {
         // arrange
-        val pathName = "$tempDir/leads.csv"
+        val pathName = "$tempDir/"
+        val fileName = "leads"
 
         // act
-        csvHelper.writeLeads(results, pathName)
+        val fullPath = csvHelper.writeLeads(results, pathName, fileName)
 
         // assert
         var expectedContent = ""
@@ -126,7 +128,7 @@ class CsvHelperTest {
                 expectedContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
-        val writtenContent = File(pathName).readText()
+        val writtenContent = File(fullPath.toString()).readText()
         assertEquals(
             expectedContent,
             writtenContent
@@ -165,23 +167,25 @@ class CsvHelperTest {
     @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `create new file for boulder results if not exists`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         //arrange
-        val fileName = "$tempDir/leads.csv"
+        val pathName = "$tempDir/"
+        val fileName = "leads"
 
         // act
-        csvHelper.writeBoulders(results, fileName)
+        val fullPath = csvHelper.writeBoulders(results, pathName, fileName)
 
         // assert
-        assertTrue(File(fileName).exists())
+        assertTrue(File(fullPath.toString()).exists())
     }
 
     @ParameterizedTest
     @ArgumentsSource(BoulderResultRealmArgumentProvider::class)
     fun `write boulder results data to file`(results: List<BoulderResultRealm>, @TempDir tempDir: File) {
         // arrange
-        val pathName = "$tempDir/boulders.csv"
+        val pathName = "$tempDir/"
+        val fileName = "boulders"
 
         // act
-        csvHelper.writeBoulders(results, pathName)
+        val fullPath = csvHelper.writeBoulders(results, pathName, fileName)
 
         // assert
         var expectedContent = ""
@@ -190,7 +194,7 @@ class CsvHelperTest {
                 expectedContent += "$id,$date,$competitionId,$rank,$climberId,$qualification,$semiFinal,$final\n"
             }
         }
-        val writtenContent = File(pathName).readText()
+        val writtenContent = File(fullPath.toString()).readText()
         assertEquals(
             expectedContent,
             writtenContent
@@ -229,23 +233,25 @@ class CsvHelperTest {
     @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `create new file for speed results if not exists`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         //arrange
-        val fileName = "$tempDir/speeds.csv"
+        val pathName = "$tempDir/"
+        val fileName = "speeds"
 
         // act
-        csvHelper.writeSpeeds(results, fileName)
+        val fullPath = csvHelper.writeSpeeds(results, pathName, fileName)
 
         // assert
-        assertTrue(File(fileName).exists())
+        assertTrue(File(fullPath.toString()).exists())
     }
 
     @ParameterizedTest
     @ArgumentsSource(SpeedResultRealmArgumentProvider::class)
     fun `write speed results data to file`(results: List<SpeedResultRealm>, @TempDir tempDir: File) {
         // arrange
-        val pathName = "$tempDir/speeds.csv"
+        val pathName = "$tempDir/"
+        val fileName = "speeds"
 
         // act
-        csvHelper.writeSpeeds(results, pathName)
+        val fullPath = csvHelper.writeSpeeds(results, pathName, fileName)
 
         // assert
         var expectedContent = ""
@@ -254,7 +260,7 @@ class CsvHelperTest {
                 expectedContent += "$id,$date,$rank,$climberId,$laneA,$laneB,$oneEighth,$quarter,$semiFinal,$smallFinal,$final\n"
             }
         }
-        val writtenContent = File(pathName).readText()
+        val writtenContent = File(fullPath.toString()).readText()
         assertEquals(
             expectedContent,
             writtenContent

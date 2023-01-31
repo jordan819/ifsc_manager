@@ -206,7 +206,13 @@ fun ClimberListScreen(
                     IconButton(onClick = {
                         coroutineScope.launch {
                             val climbers = database.getAllClimbers()
+                            val boulders = database.getAllBoulders()
+                            val leads = database.getAllLeads()
+                            val speeds = database.getAllSpeeds()
                             val path: Path = CsvHelper().writeClimbers(climbers)
+                            CsvHelper().writeBoulders(boulders)
+                            CsvHelper().writeLeads(leads)
+                            CsvHelper().writeSpeeds(speeds)
                             withContext(Dispatchers.IO) {
                                 Runtime.getRuntime()
                                     .exec("explorer.exe /select,$path")

@@ -64,7 +64,6 @@ class Scraper(
                 driver.get(url + climberId)
                 val climber = getClimberDataFromTable(climberId, driver) ?: continue@loop
                 database.writeClimber(climber)
-                Arbor.d(climber.toString())
             } catch (_: NoSuchElementException) {
                 Arbor.d("Successfully fetched ${climberId - 1} climbers")
                 continue@loop
@@ -106,9 +105,14 @@ class Scraper(
 
     private fun getClimberDataFromTable(climberId: Int, driver: ChromeDriver): Climber? {
         val wait = WebDriverWait(driver, 30)
-        wait.until(
-            ExpectedConditions.visibilityOfElementLocated(By.className("name"))
-        )
+        try {
+            wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.className("name"))
+            )
+        } catch (e: Exception) {
+            Arbor.e("Climber with id $climberId could not be fetched")
+            return null
+        }
         val name = driver.findElementByClassName("name").text.takeUnless { it.isBlank() } ?: return null
         val country = driver.findElementByClassName("country").text
         val federation = driver.findElementByClassName("federation").text

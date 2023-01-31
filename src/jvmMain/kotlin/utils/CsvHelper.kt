@@ -45,7 +45,7 @@ class CsvHelper {
      */
     fun writeClimbers(
         climbers: List<ClimberRealm>,
-        pathName: String = DEFAULT_CLIMBERS_FILE_PATH,
+        pathName: String = DEFAULT_EXPORT_DIRECTORY,
         fileName: String = DEFAULT_CLIMBERS_FILE_NAME
     ): Path {
         val fullPath = Path.of("$pathName$fileName.csv").toAbsolutePath()
@@ -76,25 +76,32 @@ class CsvHelper {
      * @param[results] lead results to be saved
      * @param[fileName] name of the target file
      */
-    fun writeLeads(results: List<LeadResultRealm>, fileName: String = DEFAULT_LEADS_FILE_PATH) {
-        results.forEach { result ->
-            writer.writeAll(
-                rows = listOf(
-                    listOf(
-                        result.id,
-                        result.date,
-                        result.competitionId,
-                        result.rank,
-                        result.climberId,
-                        result.qualification,
-                        result.semiFinal,
-                        result.final,
-                    )
-                ),
-                targetFileName = fileName,
-                append = true
-            )
-        }
+    fun writeLeads(
+        results: List<LeadResultRealm>,
+        pathName: String = DEFAULT_EXPORT_DIRECTORY,
+        fileName: String = DEFAULT_LEADS_FILE_PATH
+    ): Path {
+        val fullPath = Path.of("$pathName$fileName.csv").toAbsolutePath()
+        Arbor.d("Writing ${results.size} lead results to $fullPath")
+
+        writer.writeAll(
+            rows = results.map { result ->
+                listOf(
+                    result.id,
+                    result.date,
+                    result.competitionId,
+                    result.rank,
+                    result.climberId,
+                    result.qualification,
+                    result.semiFinal,
+                    result.final,
+                )
+            },
+            targetFileName = fullPath.toString(),
+            append = false
+        )
+
+        return fullPath
     }
 
     /**
@@ -103,25 +110,31 @@ class CsvHelper {
      * @param[results] boulder results to be saved
      * @param[fileName] name of the target file
      */
-    fun writeBoulders(results: List<BoulderResultRealm>, fileName: String = DEFAULT_BOULDERS_FILE_PATH) {
-        results.forEach { result ->
-            writer.writeAll(
-                rows = listOf(
-                    listOf(
-                        result.id,
-                        result.date,
-                        result.competitionId,
-                        result.rank,
-                        result.climberId,
-                        result.qualification,
-                        result.semiFinal,
-                        result.final,
-                    )
-                ),
-                targetFileName = fileName,
-                append = true
-            )
-        }
+    fun writeBoulders(
+        results: List<BoulderResultRealm>,
+        pathName: String = DEFAULT_EXPORT_DIRECTORY,
+        fileName: String = DEFAULT_BOULDERS_FILE_PATH
+    ): Path {
+        val fullPath = Path.of("$pathName$fileName.csv").toAbsolutePath()
+        Arbor.d("Writing ${results.size} boulder results to $fullPath")
+
+        writer.writeAll(
+            rows = results.map { result ->
+                listOf(
+                    result.id,
+                    result.date,
+                    result.competitionId,
+                    result.rank,
+                    result.climberId,
+                    result.qualification,
+                    result.semiFinal,
+                    result.final,
+                )
+            },
+            targetFileName = fullPath.toString(),
+            append = false
+        )
+        return fullPath
     }
 
     /**
@@ -130,28 +143,34 @@ class CsvHelper {
      * @param[results] speed results to be saved
      * @param[fileName] name of the target file
      */
-    fun writeSpeeds(results: List<SpeedResultRealm>, fileName: String = DEFAULT_SPEED_FILE_PATH) {
-        results.forEach { result ->
-            writer.writeAll(
-                rows = listOf(
-                    listOf(
-                        result.id,
-                        result.date,
-                        result.rank,
-                        result.climberId,
-                        result.laneA,
-                        result.laneB,
-                        result.oneEighth,
-                        result.quarter,
-                        result.semiFinal,
-                        result.smallFinal,
-                        result.final,
-                    )
-                ),
-                targetFileName = fileName,
-                append = true
-            )
-        }
+    fun writeSpeeds(
+        results: List<SpeedResultRealm>,
+        pathName: String = DEFAULT_EXPORT_DIRECTORY,
+        fileName: String = DEFAULT_SPEED_FILE_PATH
+    ): Path {
+        val fullPath = Path.of("$pathName$fileName.csv").toAbsolutePath()
+        Arbor.d("Writing ${results.size} speed results to $fullPath")
+
+        writer.writeAll(
+            rows = results.map { result ->
+                listOf(
+                    result.id,
+                    result.date,
+                    result.rank,
+                    result.climberId,
+                    result.laneA,
+                    result.laneB,
+                    result.oneEighth,
+                    result.quarter,
+                    result.semiFinal,
+                    result.smallFinal,
+                    result.final,
+                )
+            },
+            targetFileName = fullPath.toString(),
+            append = false
+        )
+        return fullPath
     }
 
     /**
@@ -160,7 +179,7 @@ class CsvHelper {
      * @return list of all available climbers
      */
     fun readClimbers(
-        path: String = "$DEFAULT_CLIMBERS_FILE_PATH$DEFAULT_CLIMBERS_FILE_NAME.csv",
+        path: String = "$DEFAULT_EXPORT_DIRECTORY$DEFAULT_CLIMBERS_FILE_NAME.csv",
     ): List<Climber> {
         Arbor.d("Reading climbers from $path")
 
@@ -281,11 +300,11 @@ class CsvHelper {
     }
 
     companion object {
-        const val DEFAULT_CLIMBERS_FILE_NAME = "climbers"
-        const val DEFAULT_CLIMBERS_FILE_PATH = "exported/"
+        const val DEFAULT_EXPORT_DIRECTORY = "exported/"
 
-        const val DEFAULT_LEADS_FILE_PATH = "src/jvmMain/resources/leads.csv"
-        const val DEFAULT_BOULDERS_FILE_PATH = "src/jvmMain/resources/boulders.csv"
-        const val DEFAULT_SPEED_FILE_PATH = "src/jvmMain/resources/speeds.csv"
+        const val DEFAULT_CLIMBERS_FILE_NAME = "climbers"
+        const val DEFAULT_LEADS_FILE_PATH = "leads"
+        const val DEFAULT_BOULDERS_FILE_PATH = "boulders"
+        const val DEFAULT_SPEED_FILE_PATH = "speeds"
     }
 }

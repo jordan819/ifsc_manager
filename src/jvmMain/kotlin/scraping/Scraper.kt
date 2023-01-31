@@ -135,62 +135,74 @@ class Scraper(
         val driver = ChromeDriver(driverOptions)
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
-        var currentYear: Int? = null
+        val leaguesToFetch = listOf(
+            "World Cups and World Championships",
+            "IFSC Youth",
+            "IFSC Europe Youth",
+            "IFSC Europe Adults",
+            "Games",
+        )
 
-        do {
-            driver.get(url)
-            driver.switchTo().frame("calendar")
-            val wait = WebDriverWait(driver, 30)
-            wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
-            )
+        leaguesToFetch.forEach { leagueToFetch ->
+            var currentYear: Int? = 2023 // TODO: set to null in future
+            do {
+                driver.get(url)
+                driver.switchTo().frame("calendar")
+                val wait = WebDriverWait(driver, 30)
+                wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
+                )
 
-            val yearSelectDropdown = Select(driver.findElementById("yearSelect"))
+                val yearSelectDropdown = Select(driver.findElementById("yearSelect"))
+                val leagueSelectDropdown = Select(driver.findElementById("leaguesSelect"))
 
-            if (currentYear != null) {
-                yearSelectDropdown.selectByVisibleText((currentYear - 1).toString())
-            }
-
-            currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
-            Arbor.d("---------------- Fetching data for year $currentYear ----------------")
-
-            delay(1000)
-
-            wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
-            )
-
-            val tagsWithDates = driver.findElementsByClassName("competition")
-                .map { it.findElements(By.className("tag")) to it.findElement(By.className("date")).text }
-
-            val competitions = mutableListOf<CompetitionData>()
-            tagsWithDates.forEach { tagsWithDate ->
-                tagsWithDate.first.forEach { tag ->
-                    // some tags are invalid and don't have hrefs - those need to be ignored
-                    val href = (tag as RemoteWebElement).findElementsByTagName("a").firstOrNull()?.getAttribute("href")
-                        ?: return
-                    val type = tag.text.split(" ").first()
-                    val dateElements = tagsWithDate.second.split(" ")
-                    val date = dateElements[0] + " " + dateElements[1] + " " + dateElements.last()
-                    val formattedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("d MMMM yyyy")).toString()
-                    competitions.add(CompetitionData(href, type, formattedDate))
+                if (currentYear != null) {
+                    yearSelectDropdown.selectByVisibleText((currentYear - 1).toString())
                 }
-            }
-            val competitionsDriver = ChromeDriver(driverOptions)
-            competitions.forEach { data ->
-                try {
-                    fetchTableContent(
-                        url = data.href,
-                        type = data.type,
-                        date = data.date,
-                        driver = competitionsDriver
-                    )
-                } catch (e: TimeoutException) {
-                    Arbor.e("Could not fetch data from $data.href")
+                leagueSelectDropdown.selectByVisibleText(leagueToFetch)
+
+                currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
+                Arbor.d("---------------- Fetching data for year $currentYear ----------------")
+
+                delay(1000)
+
+                wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
+                )
+
+                val tagsWithDates = driver.findElementsByClassName("competition")
+                    .map { it.findElements(By.className("tag")) to it.findElement(By.className("date")).text }
+
+                val competitions = mutableListOf<CompetitionData>()
+                tagsWithDates.forEach { tagsWithDate ->
+                    tagsWithDate.first.forEach { tag ->
+                        // some tags are invalid and don't have hrefs - those need to be ignored
+                        val href =
+                            (tag as RemoteWebElement).findElementsByTagName("a").firstOrNull()?.getAttribute("href")
+                                ?: return
+                        val type = tag.text.split(" ").first()
+                        val dateElements = tagsWithDate.second.split(" ")
+                        val date = dateElements[0] + " " + dateElements[1] + " " + dateElements.last()
+                        val formattedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("d MMMM yyyy")).toString()
+                        competitions.add(CompetitionData(href, type, formattedDate))
+                    }
                 }
-            }
-            competitionsDriver.close()
-        } while ((currentYear ?: 0) > 2010)
+                val competitionsDriver = ChromeDriver(driverOptions)
+                competitions.forEach { data ->
+                    try {
+                        fetchTableContent(
+                            url = data.href,
+                            type = data.type,
+                            date = data.date,
+                            driver = competitionsDriver
+                        )
+                    } catch (e: TimeoutException) {
+                        Arbor.e("Could not fetch data from $data.href")
+                    }
+                }
+                competitionsDriver.close()
+            } while ((currentYear ?: 0) > 2010)
+        }
         driver.close()
     }
 
@@ -206,8 +218,8 @@ class Scraper(
         var eventTitle: String
         var eventCity: String
         driver.findElementsByClassName("event_title").first().text.split("-").let {
-            eventTitle = "${it[0]}-${it[1]}"
-            eventCity = it[2].split(" ").dropLast(1).reduce { acc, next -> "$acc $next" }
+            eventTitle = it.dropLast(1).reduce { acc, next -> "$acc $next" }
+            eventCity = it.last().split(" ").dropLast(1).reduce { acc, next -> "$acc $next" }
         }
 
         when (type) {
@@ -364,7 +376,7 @@ class Scraper(
     }
 
     /**
-     * Generates unique competition cumber, based on event id and category (male or female).
+     * Generates unique competition number, based on event id and category (male or female).
      */
     private fun generateCompetitionId(url: String) =
         url.split("&")[1].split("=")[1] + "-" + url.split("&")[2].split("=")[1]

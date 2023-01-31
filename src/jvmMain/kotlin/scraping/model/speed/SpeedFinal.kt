@@ -6,7 +6,7 @@ package scraping.model.speed
 data class SpeedFinal(
     val rank: Int?,
     val climberId: String,
-    val oneEighth: String,
+    val oneEighth: String?,
     val quarter: String?,
     val semiFinal: String?,
     val smallFinal: String?,

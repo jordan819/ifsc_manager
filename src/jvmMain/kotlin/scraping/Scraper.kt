@@ -145,10 +145,10 @@ class Scraper(
 
         leaguesToFetch.forEach { leagueToFetch ->
             var currentYear: Int? = 2023 // TODO: set to null in future
-            do {
+            yearsLoop@ do {
                 driver.get(url)
                 driver.switchTo().frame("calendar")
-                val wait = WebDriverWait(driver, 30)
+                val wait = WebDriverWait(driver, 20)
                 wait.until(
                     ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
                 )
@@ -159,16 +159,24 @@ class Scraper(
                 if (currentYear != null) {
                     yearSelectDropdown.selectByVisibleText((currentYear - 1).toString())
                 }
-                leagueSelectDropdown.selectByVisibleText(leagueToFetch)
-
-                currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
-                Arbor.d("---------------- Fetching data for year $currentYear ----------------")
 
                 delay(1000)
 
-                wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
-                )
+                leagueSelectDropdown.selectByVisibleText(leagueToFetch)
+
+                currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
+                Arbor.d("---------------- Fetching data for year: $currentYear, league: $leagueToFetch ----------------")
+
+                delay(1000)
+
+                try {
+                    wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
+                    )
+                } catch (e: Exception) {
+                    Arbor.e("Page is empty - skipping")
+                    continue@yearsLoop
+                }
 
                 val tagsWithDates = driver.findElementsByClassName("competition")
                     .map { it.findElements(By.className("tag")) to it.findElement(By.className("date")).text }
@@ -179,7 +187,7 @@ class Scraper(
                         // some tags are invalid and don't have hrefs - those need to be ignored
                         val href =
                             (tag as RemoteWebElement).findElementsByTagName("a").firstOrNull()?.getAttribute("href")
-                                ?: return
+                                ?: return@forEach
                         val type = tag.text.split(" ").first()
                         val dateElements = tagsWithDate.second.split(" ")
                         val date = dateElements[0] + " " + dateElements[1] + " " + dateElements.last()
@@ -204,6 +212,7 @@ class Scraper(
             } while ((currentYear ?: 0) > 2010)
         }
         driver.close()
+        Arbor.d("All available events fetched")
     }
 
     private suspend fun fetchTableContent(url: String, type: String, date: String, driver: ChromeDriver) {
@@ -299,7 +308,7 @@ class Scraper(
                     val climberId =
                         row.findElement(By.tagName("a")).getAttribute("href").split("=").last().toIntOrNull() ?: return
                     val results = row.findElements(By.className("number"))
-                    val oneEighth = results[0].text
+                    val oneEighth = results.getOrNull(0)?.text.takeUnless { it.isNullOrBlank() }
                     val quarter = results.getOrNull(1)?.text.takeUnless { it.isNullOrBlank() }
                     val semiFinal = results.getOrNull(2)?.text.takeUnless { it.isNullOrBlank() }
                     val smallFinal = results.getOrNull(3)?.text.takeUnless { it.isNullOrBlank() }

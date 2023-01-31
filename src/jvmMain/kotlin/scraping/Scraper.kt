@@ -197,7 +197,7 @@ class Scraper(
                             driver = competitionsDriver
                         )
                     } catch (e: TimeoutException) {
-                        Arbor.e("Could not fetch data from $data.href")
+                        Arbor.e("Could not fetch data from ${data.href}")
                     }
                 }
                 competitionsDriver.close()

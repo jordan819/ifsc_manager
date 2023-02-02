@@ -56,7 +56,9 @@ fun ClimberListScreen(
 
     val isAddDialogVisible = remember { mutableStateOf(false) }
     val isEditDialogVisible = remember { mutableStateOf(false to "0") }
-    val isImportDialogVisible = remember { mutableStateOf(false) }
+    val importMode = remember { mutableStateOf<InputDataType?>(null) }
+
+    val isDropdownExpanded = remember { mutableStateOf(false) }
 
     fun showAddClimberDialog() {
         isAddDialogVisible.value = true
@@ -155,16 +157,39 @@ fun ClimberListScreen(
             )
         }
 
-        if (isImportDialogVisible.value) {
-            isImportDialogVisible.value = false
+        if (importMode.value != null) {
+            val mode = importMode.value
             val file = FileHelper().selectCsvFile()
+            importMode.value = null
             if (file != null) {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     try {
-                        val climbers = CsvHelper().readClimbers(file.path)
-                        climbers.forEach {
-                            database.writeClimber(it)
+                        when (mode) {
+                            InputDataType.CLIMBER -> {
+                                val climbers = CsvHelper().readClimbers(file.path)
+                                climbers.forEach {
+                                    database.writeClimber(it)
+                                }
+                            }
+
+                            InputDataType.SPEED -> {
+                                val speeds = CsvHelper().readSpeeds(file.path)
+                                database.writeSpeedResults(speeds)
+                            }
+
+                            InputDataType.LEAD -> {
+                                val leads = CsvHelper().readLeads(file.path)
+                                database.writeLeadResults(leads)
+                            }
+
+                            InputDataType.BOULDER -> {
+                                val boulders = CsvHelper().readBoulders(file.path)
+                                database.writeBoulderResults(boulders)
+                            }
+
+                            null -> return@launch
                         }
+
                     } catch (e: Exception) {
                         errorDisplay.value = ErrorDisplay(
                             message = "Wystąpił błąd podczas odczytu zawodników z pliku ${file.name}\n" +
@@ -225,12 +250,29 @@ fun ClimberListScreen(
                             modifier = Modifier.height(35.dp),
                         )
                     }
-                    IconButton(onClick = { isImportDialogVisible.value = true }) {
+                    IconButton(onClick = { isDropdownExpanded.value = true }) {
                         Icon(
                             painter = painterResource("import.svg"),
                             contentDescription = null,
                             modifier = Modifier.height(35.dp),
                         )
+                    }
+                    DropdownMenu(
+                        expanded = isDropdownExpanded.value,
+                        onDismissRequest = { isDropdownExpanded.value = false }
+                    ) {
+                        Button(onClick = { importMode.value = InputDataType.CLIMBER }) {
+                            Text("Zawodnicy")
+                        }
+                        Button(onClick = { importMode.value = InputDataType.SPEED }) {
+                            Text("SPEED")
+                        }
+                        Button(onClick = { importMode.value = InputDataType.BOULDER }) {
+                            Text("BOULDER")
+                        }
+                        Button(onClick = { importMode.value = InputDataType.LEAD }) {
+                            Text("LEAD")
+                        }
                     }
                 }
             )
@@ -456,4 +498,11 @@ fun ClimberListScreen(
             }
         }
     }
+}
+
+enum class InputDataType {
+    CLIMBER,
+    SPEED,
+    LEAD,
+    BOULDER,
 }

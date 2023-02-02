@@ -16,6 +16,8 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                         id = "1352"
                         date = "2020-06-12"
                         competitionId = "321"
+                        competitionTitle = "IFSC World Cup"
+                        competitionCity = "Berlin"
                         rank = null
                         climberId = "235-f"
                         qualification = "12"
@@ -30,6 +32,8 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                         id = "1352"
                         date = "2020-06-12"
                         competitionId = "321"
+                        competitionTitle = "IFSC World Cup"
+                        competitionCity = "Warsaw"
                         rank = null
                         climberId = "235-f"
                         qualification = "12"
@@ -40,6 +44,8 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                         id = "1353"
                         date = "2020-06-12"
                         competitionId = "321"
+                        competitionTitle = "IFSC World Cup"
+                        competitionCity = "Berlin"
                         rank = 1
                         climberId = "235-f"
                         qualification = "12"
@@ -50,6 +56,8 @@ internal class LeadResultRealmArgumentProvider : ArgumentsProvider {
                         id = "1356"
                         date = "2020-06-12"
                         competitionId = "321"
+                        competitionTitle = "IFSC World Cup"
+                        competitionCity = "London"
                         rank = 2
                         climberId = "235-f"
                         qualification = "11"

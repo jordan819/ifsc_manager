@@ -90,6 +90,8 @@ class CsvHelper {
                     result.id,
                     result.date,
                     result.competitionId,
+                    result.competitionTitle,
+                    result.competitionCity,
                     result.rank,
                     result.climberId,
                     result.qualification,
@@ -124,6 +126,8 @@ class CsvHelper {
                     result.id,
                     result.date,
                     result.competitionId,
+                    result.competitionTitle,
+                    result.competitionCity,
                     result.rank,
                     result.climberId,
                     result.qualification,
@@ -156,6 +160,9 @@ class CsvHelper {
                 listOf(
                     result.id,
                     result.date,
+                    result.competitionId,
+                    result.competitionTitle,
+                    result.competitionCity,
                     result.rank,
                     result.climberId,
                     result.laneA,
@@ -229,11 +236,13 @@ class CsvHelper {
                     id = row[0]
                     date = row[1]
                     competitionId = row[2]
-                    rank = row[3].toIntOrNull()
-                    climberId = row[4]
-                    qualification = row[5]
-                    semiFinal = row[6]
-                    final = row[7]
+                    competitionTitle = row[3]
+                    competitionCity = row[4]
+                    rank = row[5].toIntOrNull()
+                    climberId = row[6]
+                    qualification = row[7]
+                    semiFinal = row[8]
+                    final = row[9]
                 }
             )
         }
@@ -257,11 +266,13 @@ class CsvHelper {
                     id = row[0]
                     date = row[1]
                     competitionId = row[2]
-                    rank = row[3].toIntOrNull()
-                    climberId = row[4]
-                    qualification = row[5]
-                    semiFinal = row[6]
-                    final = row[7]
+                    competitionTitle = row[3]
+                    competitionCity = row[4]
+                    rank = row[5].toIntOrNull()
+                    climberId = row[6]
+                    qualification = row[7]
+                    semiFinal = row[8]
+                    final = row[9]
                 }
             )
         }
@@ -284,15 +295,18 @@ class CsvHelper {
                 SpeedResultRealm().apply {
                     id = row[0]
                     date = row[1]
-                    rank = row[2].toIntOrNull()
-                    climberId = row[3]
-                    laneA = row[4]
-                    laneB = row[5]
-                    oneEighth = row[6]
-                    quarter = row[7]
-                    semiFinal = row[8]
-                    smallFinal = row[9]
-                    final = row[10]
+                    competitionId = row[2]
+                    competitionTitle = row[3]
+                    competitionCity = row[4]
+                    rank = row[5].toIntOrNull()
+                    climberId = row[6]
+                    laneA = row[7]
+                    laneB = row[8]
+                    oneEighth = row[9]
+                    quarter = row[10]
+                    semiFinal = row[11]
+                    smallFinal = row[12]
+                    final = row[13]
                 }
             )
         }

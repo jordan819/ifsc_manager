@@ -40,10 +40,15 @@ class Scraper(
     }
 
     private fun setupDriverOptions() {
-        // Chrome version causes problems - the following driver version supports Chrome 107 only
         // Download driver from here: https://chromedriver.chromium.org/downloads
         // Check Chrome version here: chrome://settings/help
-        System.setProperty("webdriver.chrome.driver", "chromedriver.exe")
+        // TODO: add support for Linux
+        val os = System.getProperty("os.name").toLowerCase()
+        if (os.startsWith("windows")) {
+            System.setProperty("webdriver.chrome.driver", "chromedriver.exe")
+        } else if (os.startsWith("mac")) {
+            System.setProperty("webdriver.chrome.driver", "chromedriver")
+        }
         driverOptions.addArguments("--headless")
     }
 

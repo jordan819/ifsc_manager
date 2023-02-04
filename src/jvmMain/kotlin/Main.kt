@@ -11,15 +11,29 @@ import com.toxicbakery.logging.Seedling
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import scraping.Scraper
 import ui.common.ErrorDialog
 import ui.common.ErrorDisplay
 import utils.navigation.Root
 import utils.navigation.RootUi
+import java.time.LocalDateTime
 
 fun main() {
     Arbor.sow(Seedling())
     Arbor.d("Initializing application...")
+
+    CoroutineScope(Dispatchers.IO).launch {
+        val start = LocalDateTime.now()
+        Scraper(Database()).fetchEvents()
+        val stop = LocalDateTime.now()
+
+        val duration = (stop.nano - start.nano) / 60_000_000.0
+        Arbor.wtf("Started at $start")
+        Arbor.wtf("Finished at $stop")
+        Arbor.wtf("Process took $duration minutes")
+    }
+
 
     application {
         val icon = painterResource("logo.png")

@@ -64,18 +64,31 @@ class Database(
      * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeLeadResults(results: List<LeadGeneral>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
+    suspend fun writeLeadResults(
+        results: List<LeadGeneral>,
+        date: String,
+        competitionId: String,
+        competitionTitle: String,
+        competitionCity: String
+    ) =
         results.forEach { result ->
             writeLeadResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeLeadResult(result: LeadGeneral, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
+    private suspend fun writeLeadResult(
+        result: LeadGeneral,
+        date: String,
+        competitionId: String,
+        competitionTitle: String,
+        competitionCity: String
+    ) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<LeadResultRealm>("id == $0", resultId).find().isEmpty()) {
                 Arbor.e("Lead result with id $resultId already exists - skipping")
                 return@write
             }
+            Arbor.d("Writing lead result with id $resultId to database")
             this.copyToRealm(LeadResultRealm().apply {
                 id = resultId
                 this.date = date
@@ -91,18 +104,56 @@ class Database(
         }
     }
 
-    suspend fun writeBoulderResults(results: List<BoulderGeneral>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
+    suspend fun writeLeadResults(
+        results: List<LeadResultRealm>,
+    ) =
+        results.forEach { result ->
+            realm.write {
+                if (!this.query<LeadResultRealm>("id == $0", result.id).find().isEmpty()) {
+                    Arbor.e("Lead result with id $result.id already exists - skipping")
+                    return@write
+                }
+                Arbor.d("Writing lead result with id ${result.id} to database")
+                this.copyToRealm(LeadResultRealm().apply {
+                    id = result.id
+                    date = result.date
+                    competitionId = result.competitionId
+                    competitionTitle = result.competitionTitle
+                    competitionCity = result.competitionCity
+                    rank = result.rank
+                    climberId = result.climberId
+                    qualification = result.qualification
+                    semiFinal = result.semiFinal
+                    final = result.final
+                })
+            }
+        }
+
+    suspend fun writeBoulderResults(
+        results: List<BoulderGeneral>,
+        date: String,
+        competitionId: String,
+        competitionTitle: String,
+        competitionCity: String
+    ) =
         results.forEach { result ->
             writeBoulderResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeBoulderResult(result: BoulderGeneral, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
+    private suspend fun writeBoulderResult(
+        result: BoulderGeneral,
+        date: String,
+        competitionId: String,
+        competitionTitle: String,
+        competitionCity: String
+    ) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<BoulderResultRealm>("id == $0", resultId).find().isEmpty()) {
                 Arbor.e("Lead result with id $resultId already exists - skipping")
                 return@write
             }
+            Arbor.d("Writing boulder result with id $resultId to database")
             this.copyToRealm(BoulderResultRealm().apply {
                 id = resultId
                 this.date = date
@@ -118,6 +169,31 @@ class Database(
         }
     }
 
+    suspend fun writeBoulderResults(
+        results: List<BoulderResultRealm>,
+    ) =
+        results.forEach { result ->
+            realm.write {
+                if (!this.query<BoulderResultRealm>("id == $0", result.id).find().isEmpty()) {
+                    Arbor.e("Lead result with id $result.id already exists - skipping")
+                    return@write
+                }
+                Arbor.d("Writing lead result with id ${result.id} to database")
+                this.copyToRealm(BoulderResultRealm().apply {
+                    id = result.id
+                    date = result.date
+                    competitionId = result.competitionId
+                    competitionTitle = result.competitionTitle
+                    competitionCity = result.competitionCity
+                    rank = result.rank
+                    climberId = result.climberId
+                    qualification = result.qualification
+                    semiFinal = result.semiFinal
+                    final = result.final
+                })
+            }
+        }
+
     /**
      * Allows user to save data about all results from SPEED type of event to database.
      * In case record with given id already exists, operation will be skipped.
@@ -126,18 +202,31 @@ class Database(
      * @param[date] date when event happened - used to generate unique id for the result
      * @param[competitionId] id of the competition
      */
-    suspend fun writeSpeedResults(results: List<SpeedResult>, date: String, competitionId: String, competitionTitle: String, competitionCity: String) =
+    suspend fun writeSpeedResults(
+        results: List<SpeedResult>,
+        date: String,
+        competitionId: String,
+        competitionTitle: String,
+        competitionCity: String
+    ) =
         results.forEach { result ->
             writeSpeedResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeSpeedResult(result: SpeedResult, date: String, competitionId: String, competitionTitle: String, competitionCity: String) {
+    private suspend fun writeSpeedResult(
+        result: SpeedResult,
+        date: String,
+        competitionId: String,
+        competitionTitle: String,
+        competitionCity: String
+    ) {
         val resultId = generateResultId(competitionId, result.climberId)
         realm.write {
             if (!this.query<SpeedResultRealm>("id == $0", resultId).find().isEmpty()) {
                 Arbor.e("Speed result with id $resultId already exists - skipping")
                 return@write
             }
+            Arbor.d("Writing speed result with id $resultId to database")
             this.copyToRealm(SpeedResultRealm().apply {
                 id = resultId
                 this.date = date
@@ -156,6 +245,33 @@ class Database(
             })
         }
     }
+
+    suspend fun writeSpeedResults(results: List<SpeedResultRealm>) =
+        results.forEach { result ->
+            realm.write {
+                if (!this.query<SpeedResultRealm>("id == $0", result.id).find().isEmpty()) {
+                    Arbor.e("Speed result with id $result.id already exists - skipping")
+                    return@write
+                }
+                Arbor.d("Writing speed result with id ${result.id} to database")
+                this.copyToRealm(SpeedResultRealm().apply {
+                    id = result.id
+                    date = result.date
+                    competitionId = result.competitionId
+                    competitionTitle = result.competitionTitle
+                    competitionCity = result.competitionCity
+                    rank = result.rank
+                    climberId = result.climberId
+                    laneA = result.laneA
+                    laneB = result.laneB
+                    oneEighth = result.oneEighth
+                    quarter = result.quarter
+                    semiFinal = result.semiFinal
+                    smallFinal = result.smallFinal
+                    final = result.final
+                })
+            }
+        }
 
     private fun generateResultId(competitionId: String, climberId: String) = competitionId + "_" + climberId
 

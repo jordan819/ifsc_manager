@@ -239,8 +239,14 @@ fun ClimberListScreen(
                             CsvHelper().writeLeads(leads)
                             CsvHelper().writeSpeeds(speeds)
                             withContext(Dispatchers.IO) {
-                                Runtime.getRuntime()
-                                    .exec("explorer.exe /select,$path")
+                                val os = System.getProperty("os.name").toLowerCase()
+                                if (os.startsWith("windows")) {
+                                    Runtime.getRuntime().exec("explorer.exe /select,$path")
+                                } else if (os.startsWith("mac")) {
+                                    Runtime.getRuntime().exec("open -R $path")
+                                } else if (os.startsWith("linux")) {
+                                    Runtime.getRuntime().exec("nautilus $path")
+                                }
                             }
                         }
                     }) {

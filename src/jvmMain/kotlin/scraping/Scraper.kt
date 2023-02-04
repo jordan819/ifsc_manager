@@ -200,7 +200,9 @@ class Scraper(
                         val type = tag.text.split(" ").first()
                         val dateElements = tagsWithDate.second.split(" ")
                         val date = dateElements[0] + " " + dateElements[1] + " " + dateElements.last()
-                        val formattedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("d MMMM yyyy")).toString()
+
+                        val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy").withLocale(Locale.ENGLISH)
+                        val formattedDate = LocalDate.parse(date, formatter).toString()
                         competitions.add(CompetitionData(href, type, formattedDate))
                     }
                 }

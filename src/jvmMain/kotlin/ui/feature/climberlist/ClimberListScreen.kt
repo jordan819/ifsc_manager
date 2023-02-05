@@ -293,15 +293,6 @@ fun ClimberListScreen(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Button(onClick = {
-                        fetchNewClimbers()
-                    }) {
-                        Text("Pobierz nowych zawodników")
-                    }
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
                     Text(
                         text = "Filtrowanie"
                     )

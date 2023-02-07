@@ -7,10 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +40,8 @@ fun ClimberListScreen(
     errorDisplay: MutableState<ErrorDisplay>,
 ) {
 
+    val initDone = remember { mutableStateOf(false) }
+
     var climberList by remember { mutableStateOf(database.getAllClimbers()) }
 
     // Filter List
@@ -58,7 +57,9 @@ fun ClimberListScreen(
     val isEditDialogVisible = remember { mutableStateOf(false to "0") }
     val importMode = remember { mutableStateOf<InputDataType?>(null) }
 
-    val isDropdownExpanded = remember { mutableStateOf(false) }
+    val isImportDropdownExpanded = remember { mutableStateOf(false) }
+    val isSortDropdownExpanded = remember { mutableStateOf(false) }
+    val isFilterDropdownExpanded = remember { mutableStateOf(false) }
 
     fun showAddClimberDialog() {
         isAddDialogVisible.value = true
@@ -76,6 +77,7 @@ fun ClimberListScreen(
     }
 
     fun updateListDisplay() {
+        isSortDropdownExpanded.value = false
         val selectedSex = mutableListOf<String>()
         if (isMaleChecked.value) {
             selectedSex.add(Sex.MAN.name)
@@ -129,7 +131,11 @@ fun ClimberListScreen(
         }
     }
 
-    updateListDisplay()
+    if (!initDone.value) {
+        initDone.value = true
+        updateListDisplay()
+    }
+
     MaterialTheme {
 
         if (isAddDialogVisible.value) {
@@ -161,6 +167,7 @@ fun ClimberListScreen(
             val mode = importMode.value
             val file = FileHelper().selectCsvFile()
             importMode.value = null
+            isImportDropdownExpanded.value = false
             if (file != null) {
                 coroutineScope.launch {
                     try {
@@ -239,8 +246,14 @@ fun ClimberListScreen(
                             CsvHelper().writeLeads(leads)
                             CsvHelper().writeSpeeds(speeds)
                             withContext(Dispatchers.IO) {
-                                Runtime.getRuntime()
-                                    .exec("explorer.exe /select,$path")
+                                val os = System.getProperty("os.name").toLowerCase()
+                                if (os.startsWith("windows")) {
+                                    Runtime.getRuntime().exec("explorer.exe /select,$path")
+                                } else if (os.startsWith("mac")) {
+                                    Runtime.getRuntime().exec("open -R $path")
+                                } else if (os.startsWith("linux")) {
+                                    Runtime.getRuntime().exec("nautilus $path")
+                                }
                             }
                         }
                     }) {
@@ -250,7 +263,7 @@ fun ClimberListScreen(
                             modifier = Modifier.height(35.dp),
                         )
                     }
-                    IconButton(onClick = { isDropdownExpanded.value = true }) {
+                    IconButton(onClick = { isImportDropdownExpanded.value = true }) {
                         Icon(
                             painter = painterResource("import.svg"),
                             contentDescription = null,
@@ -258,8 +271,8 @@ fun ClimberListScreen(
                         )
                     }
                     DropdownMenu(
-                        expanded = isDropdownExpanded.value,
-                        onDismissRequest = { isDropdownExpanded.value = false }
+                        expanded = isImportDropdownExpanded.value,
+                        onDismissRequest = { isImportDropdownExpanded.value = false }
                     ) {
                         Button(onClick = { importMode.value = InputDataType.CLIMBER }) {
                             Text("Zawodnicy")
@@ -277,179 +290,188 @@ fun ClimberListScreen(
                 }
             )
 
-            Spacer(Modifier.height(30.dp))
-
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceAround
+//                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Button(onClick = {
-                        fetchNewClimbers()
-                    }) {
-                        Text("Pobierz nowych zawodników")
-                    }
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = "Filtrowanie"
                     )
-
-                    Row {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Brał udział w zawodach"
-                            )
-                            Checkbox(
-                                checked = hasAnyResultChecked.value,
-                                onCheckedChange = {
-                                    hasAnyResultChecked.value = it
-                                    updateListDisplay()
-                                },
-                            )
-                        }
+                    IconButton(onClick = { isFilterDropdownExpanded.value = true }) {
+                        Icon(Icons.Default.ArrowDropDown, "")
                     }
+                    DropdownMenu(
+                        expanded = isFilterDropdownExpanded.value,
+                        onDismissRequest = {
+                            isFilterDropdownExpanded.value = false
+                            updateListDisplay()
+                        },
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        ) {
+                            Row {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Brał udział w zawodach"
+                                    )
+                                    Checkbox(
+                                        checked = hasAnyResultChecked.value,
+                                        onCheckedChange = {
+                                            hasAnyResultChecked.value = it
+                                        },
+                                    )
+                                }
+                            }
 
-                    Row {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Oficjalny"
-                            )
-                            Checkbox(
-                                checked = isOfficialChecked.value,
-                                onCheckedChange = {
-                                    isOfficialChecked.value = it
-                                    updateListDisplay()
-                                },
-                            )
-                        }
+                            Row {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Oficjalny"
+                                    )
+                                    Checkbox(
+                                        checked = isOfficialChecked.value,
+                                        onCheckedChange = {
+                                            isOfficialChecked.value = it
+                                        },
+                                    )
+                                }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Nieoficjalny"
-                            )
-                            Checkbox(
-                                checked = isUnofficialChecked.value,
-                                onCheckedChange = {
-                                    isUnofficialChecked.value = it
-                                    updateListDisplay()
-                                },
-                            )
-                        }
-                    }
-                    Row {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Mężczyzna"
-                            )
-                            Checkbox(
-                                checked = isMaleChecked.value,
-                                onCheckedChange = {
-                                    isMaleChecked.value = it
-                                    updateListDisplay()
-                                },
-                            )
-                        }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Nieoficjalny"
+                                    )
+                                    Checkbox(
+                                        checked = isUnofficialChecked.value,
+                                        onCheckedChange = {
+                                            isUnofficialChecked.value = it
+                                        },
+                                    )
+                                }
+                            }
+                            Row {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Mężczyzna"
+                                    )
+                                    Checkbox(
+                                        checked = isMaleChecked.value,
+                                        onCheckedChange = {
+                                            isMaleChecked.value = it
+                                        },
+                                    )
+                                }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Kobieta"
-                            )
-                            Checkbox(
-                                checked = isFemaleChecked.value,
-                                onCheckedChange = {
-                                    isFemaleChecked.value = it
-                                    updateListDisplay()
-                                },
-                            )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Kobieta"
+                                    )
+                                    Checkbox(
+                                        checked = isFemaleChecked.value,
+                                        onCheckedChange = {
+                                            isFemaleChecked.value = it
+                                        },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Spacer(Modifier.width(20.dp))
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = "Sortowanie"
                     )
-                    Row {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Id"
-                            )
-                            Checkbox(
-                                checked = sortOption.value == ClimberSortOption.ID,
-                                onCheckedChange = {
-                                    sortOption.value = ClimberSortOption.ID
-                                    updateListDisplay()
-                                },
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Imię i nazwisko"
-                            )
-                            Checkbox(
-                                checked = sortOption.value == ClimberSortOption.NAME,
-                                onCheckedChange = {
-                                    sortOption.value = ClimberSortOption.NAME
-                                    updateListDisplay()
-                                },
-                            )
-                        }
+                    IconButton(onClick = { isSortDropdownExpanded.value = true }) {
+                        Icon(Icons.Default.ArrowDropDown, "")
                     }
-                    Row {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
+                    DropdownMenu(
+                        expanded = isSortDropdownExpanded.value,
+                        onDismissRequest = { isSortDropdownExpanded.value = false },
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            modifier = Modifier.padding(horizontal = 20.dp)
                         ) {
-                            Text(
-                                text = "Data urodzenia"
-                            )
-                            Checkbox(
-                                checked = sortOption.value == ClimberSortOption.YEAR,
-                                onCheckedChange = {
-                                    sortOption.value = ClimberSortOption.YEAR
-                                    updateListDisplay()
-                                },
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Kraj"
-                            )
-                            Checkbox(
-                                checked = sortOption.value == ClimberSortOption.COUNTRY,
-                                onCheckedChange = {
-                                    sortOption.value = ClimberSortOption.COUNTRY
-                                    updateListDisplay()
-                                },
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Id"
+                                )
+                                Checkbox(
+                                    checked = sortOption.value == ClimberSortOption.ID,
+                                    onCheckedChange = {
+                                        sortOption.value = ClimberSortOption.ID
+                                        updateListDisplay()
+                                    },
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Imię i nazwisko"
+                                )
+                                Checkbox(
+                                    checked = sortOption.value == ClimberSortOption.NAME,
+                                    onCheckedChange = {
+                                        sortOption.value = ClimberSortOption.NAME
+                                        updateListDisplay()
+                                    },
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Data urodzenia"
+                                )
+                                Checkbox(
+                                    checked = sortOption.value == ClimberSortOption.YEAR,
+                                    onCheckedChange = {
+                                        sortOption.value = ClimberSortOption.YEAR
+                                        updateListDisplay()
+                                    },
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Kraj"
+                                )
+                                Checkbox(
+                                    checked = sortOption.value == ClimberSortOption.COUNTRY,
+                                    onCheckedChange = {
+                                        sortOption.value = ClimberSortOption.COUNTRY
+                                        updateListDisplay()
+                                    },
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(10.dp))
 
             // Each cell of a column must have the same weight.
             val column1Weight = .1f // 10%

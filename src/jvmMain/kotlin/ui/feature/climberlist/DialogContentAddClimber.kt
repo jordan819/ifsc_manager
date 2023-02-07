@@ -62,11 +62,12 @@ fun DialogContentAddClimber(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Column() {
+            Column {
                 radioOptions.forEach { text ->
                     Row(
                         Modifier
                             .width(IntrinsicSize.Min)
+                            .height(40.dp)
                             .selectable(
                                 selected = (text == selectedOption),
                                 onClick = {
@@ -75,15 +76,27 @@ fun DialogContentAddClimber(
                             )
                             .padding(horizontal = 16.dp)
                     ) {
-                        RadioButton(
-                            selected = (text == selectedOption),
-                            onClick = { onOptionSelected(text) }
-                        )
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.body1.merge(),
-                            modifier = Modifier.padding(start = 16.dp)
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxHeight(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            RadioButton(
+                                selected = (text == selectedOption),
+                                onClick = { onOptionSelected(text) },
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.fillMaxHeight(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                text = text,
+                                style = MaterialTheme.typography.body1.merge(),
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                        }
                     }
                 }
             }

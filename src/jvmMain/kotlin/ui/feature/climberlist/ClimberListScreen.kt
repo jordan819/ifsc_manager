@@ -290,9 +290,7 @@ fun ClimberListScreen(
                 }
             )
 
-            Row(
-//                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Row {
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,

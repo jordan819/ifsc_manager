@@ -28,7 +28,11 @@ fun HomeScreen(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
-            modifier = Modifier.clickable { navigateToClimberList() }.padding(20.dp),
+            modifier = Modifier
+                .height(180.dp)
+                .width(180.dp)
+                .clickable { navigateToClimberList() }
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
@@ -41,11 +45,15 @@ fun HomeScreen(
         }
 
         Column(
-            modifier = Modifier.clickable {
-                CoroutineScope(Dispatchers.IO).launch {
-                    Scraper(database).fetchEvents()
+            modifier = Modifier
+                .height(180.dp)
+                .width(180.dp)
+                .clickable {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        Scraper(database).fetchEvents()
+                    }
                 }
-            }.padding(20.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
@@ -54,15 +62,19 @@ fun HomeScreen(
                 modifier = Modifier.height(100.dp),
             )
             Spacer(Modifier.height(10.dp))
-            Text("Pobierz eventy")
+            Text("Pobierz wydarzenia")
         }
 
         Column(
-            modifier = Modifier.clickable {
-                CoroutineScope(Dispatchers.IO).launch {
-                    Scraper(database).fetchAllClimbers()
+            modifier = Modifier
+                .height(180.dp)
+                .width(180.dp)
+                .clickable {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        Scraper(database).fetchAllClimbers()
+                    }
                 }
-            }.padding(20.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(

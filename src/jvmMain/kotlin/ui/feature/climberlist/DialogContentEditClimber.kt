@@ -1,8 +1,8 @@
 package ui.feature.climberlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import scraping.model.Climber
 import scraping.model.RecordType
+import utils.AppColors
 
 @Composable
 fun DialogContentEditClimber(
@@ -50,57 +51,56 @@ fun DialogContentEditClimber(
             onConfirmButtonClicked()
         }
 
-        MaterialTheme {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                TextField(
-                    enabled = isClimberUnofficial,
-                    singleLine = true,
-                    label = { Text("Imię i nazwisko") },
-                    value = name.value,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = {
-                        name.value = it
-                        isNameError.value = name.value.isBlank()
-                    },
-                    isError = isNameError.value
-                )
+        Column(
+            modifier = Modifier.background(AppColors.BACKGROUND),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            TextField(
+                enabled = isClimberUnofficial,
+                singleLine = true,
+                label = { Text("Imię i nazwisko") },
+                value = name.value,
+                modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                onValueChange = {
+                    name.value = it
+                    isNameError.value = name.value.isBlank()
+                },
+                isError = isNameError.value
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                TextField(
-                    enabled = true,
-                    singleLine = true,
-                    label = { Text("Data urodzenia") },
-                    value = date.value,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = {
-                        date.value = it.trim()
-                        isDateError.value = !dateRegex.matches(date.value) && date.value.isNotEmpty()
-                    },
-                    isError = isDateError.value
-                )
+            TextField(
+                enabled = true,
+                singleLine = true,
+                label = { Text("Data urodzenia") },
+                value = date.value,
+                modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                onValueChange = {
+                    date.value = it.trim()
+                    isDateError.value = !dateRegex.matches(date.value) && date.value.isNotEmpty()
+                },
+                isError = isDateError.value
+            )
 
-                TextField(
-                    enabled = isClimberUnofficial,
-                    singleLine = true,
-                    label = { Text("Kraj") },
-                    value = country.value,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = { country.value = it.trim() },
-                )
+            TextField(
+                enabled = isClimberUnofficial,
+                singleLine = true,
+                label = { Text("Kraj") },
+                value = country.value,
+                modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                onValueChange = { country.value = it.trim() },
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Button(
-                    enabled = !isDateError.value && !isNameError.value,
-                    onClick = ::updateClimber,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text(text = "Aktualizuj")
-                }
-
+            Button(
+                enabled = !isDateError.value && !isNameError.value,
+                onClick = ::updateClimber,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(text = "Aktualizuj")
             }
         }
-
     }
 }

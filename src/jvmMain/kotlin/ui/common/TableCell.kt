@@ -1,5 +1,6 @@
 package ui.common
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import utils.AppColors
 
 @Composable
 fun RowScope.TableCell(
@@ -23,6 +25,7 @@ fun RowScope.TableCell(
     Box(
         Modifier
             .border(1.dp, Color.Black)
+            .background(AppColors.BACKGROUND)
             .weight(weight)
             .height(40.dp)
             .align(Alignment.CenterVertically),
@@ -46,6 +49,7 @@ fun RowScope.TableCell(
         contentDescription = null,
         modifier = Modifier
             .border(1.dp, Color.Black)
+            .background(AppColors.BACKGROUND)
             .weight(weight)
             .height(40.dp)
             .clickable { onClick() }

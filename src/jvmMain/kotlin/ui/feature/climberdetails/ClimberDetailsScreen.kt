@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
 import scraping.Scraper
+import scraping.model.RecordType
 import ui.common.TableCell
 import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_COMPARATIVE
 import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_INDIVIDUAL
@@ -29,6 +31,7 @@ import ui.feature.climberdetails.ContentType.LEAD
 import ui.feature.climberdetails.ContentType.SPEED
 import ui.feature.climberdetails.chart.SpeedProgressComparativeChart
 import ui.feature.climberdetails.chart.SpeedProgressIndividualChart
+import utils.AppColors
 
 @Composable
 fun ClimberDetailsScreen(
@@ -40,11 +43,20 @@ fun ClimberDetailsScreen(
     database: Database,
 ) {
 
-    val selectedResultType = remember { mutableStateOf<String?>(null) }
+    val selectedResultType = remember {
+        mutableStateOf(
+            if (speedResults.isNotEmpty()) SPEED
+            else if (leadResults.isNotEmpty()) LEAD
+            else if (boulderResults.isNotEmpty()) BOULDER
+            else null
+        )
+    }
 
     val isDropdownExpanded = remember { mutableStateOf(false) }
 
     val chartSelected = remember { mutableStateOf<ChartType?>(null) }
+
+    val isClimberDataEditable = database.getClimberById(climberId)?.recordType == RecordType.UNOFFICIAL
 
     @Composable
     fun LeadTable() {
@@ -170,105 +182,113 @@ fun ClimberDetailsScreen(
         }
     }
 
-    MaterialTheme {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+    Column(
+        modifier = Modifier.background(AppColors.BACKGROUND),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Informacje o zawodniku"
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null
+                    )
+                }
+            },
+            actions = {
+                IconButton(
+                    enabled = isClimberDataEditable,
+                    onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                    )
+                }
+            }
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
         ) {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Informacje o zawodniku"
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = null
-                        )
-                    }
-                }
+            Text("Informacje o zawodniku z id: $climberId")
+        }
+        Row {
+            Text(
+                text = "Boulder: ${boulderResults.size}"
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Text("Informacje o zawodniku z id: $climberId")
-            }
-            Row {
-                Text(
-                    text = "Boulder: ${boulderResults.size}"
-                )
-            }
-            Row {
-                Text(
-                    text = "Lead: ${leadResults.size}"
-                )
-            }
-            Row {
-                Text(
-                    text = "Speed: ${speedResults.size}"
-                )
-            }
+        }
+        Row {
+            Text(
+                text = "Lead: ${leadResults.size}"
+            )
+        }
+        Row {
+            Text(
+                text = "Speed: ${speedResults.size}"
+            )
+        }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(15.dp)
-            ) {
-                if (leadResults.isNotEmpty()) {
-                    SelectContentButton(
-                        onClick = { selectedResultType.value = LEAD },
-                        text = "LEAD"
-                    )
-                }
-                if (speedResults.isNotEmpty()) {
-                    SelectContentButton(
-                        onClick = { selectedResultType.value = SPEED },
-                        text = "SPEED"
-                    )
-                }
-                if (boulderResults.isNotEmpty()) {
-                    SelectContentButton(
-                        onClick = { selectedResultType.value = BOULDER },
-                        text = "BOULDER"
-                    )
-                }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            if (leadResults.isNotEmpty()) {
+                SelectContentButton(
+                    onClick = { selectedResultType.value = LEAD },
+                    text = "LEAD"
+                )
             }
-            Row {
-                if (leadResults.isNotEmpty() || speedResults.isNotEmpty() || boulderResults.isNotEmpty()) {
-                    SelectContentButton(
-                        onClick = { selectedResultType.value = ANALYSIS },
-                        text = "Analiza wyników"
-                    )
-                    Column {
-                        IconButton(onClick = { isDropdownExpanded.value = true }) {
-                            Icon(Icons.Default.MoreVert, "")
-                        }
-                        DropdownMenu(
-                            expanded = isDropdownExpanded.value,
-                            onDismissRequest = { isDropdownExpanded.value = false }
-                        ) {
-                            Button(onClick = { chartSelected.value = SPEED_PROGRESS_INDIVIDUAL }) {
-                                Text("Postęp w kategorii SPEED")
-                            }
-                            Button(onClick = { chartSelected.value = SPEED_PROGRESS_COMPARATIVE }) {
-                                Text("Porównanie w kategorii SPEED")
-                            }
-                        }
-                    }
-                }
+            if (speedResults.isNotEmpty()) {
+                SelectContentButton(
+                    onClick = { selectedResultType.value = SPEED },
+                    text = "SPEED"
+                )
             }
-            Spacer(Modifier.height(10.dp))
-
-            when (selectedResultType.value) {
-                LEAD -> LeadTable()
-                SPEED -> SpeedTable()
-                BOULDER -> BoulderTable()
-                ANALYSIS -> Analysis()
+            if (boulderResults.isNotEmpty()) {
+                SelectContentButton(
+                    onClick = { selectedResultType.value = BOULDER },
+                    text = "BOULDER"
+                )
             }
         }
-    }
+        Row {
+            if (leadResults.isNotEmpty() || speedResults.isNotEmpty() || boulderResults.isNotEmpty()) {
+                SelectContentButton(
+                    onClick = { selectedResultType.value = ANALYSIS },
+                    text = "Analiza wyników"
+                )
+                Column {
+                    IconButton(onClick = { isDropdownExpanded.value = true }) {
+                        Icon(Icons.Default.MoreVert, "")
+                    }
+                    DropdownMenu(
+                        expanded = isDropdownExpanded.value,
+                        onDismissRequest = { isDropdownExpanded.value = false }
+                    ) {
+                        Button(onClick = { chartSelected.value = SPEED_PROGRESS_INDIVIDUAL }) {
+                            Text("Postęp w kategorii SPEED")
+                        }
+                        Button(onClick = { chartSelected.value = SPEED_PROGRESS_COMPARATIVE }) {
+                            Text("Porównanie w kategorii SPEED")
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(10.dp))
 
+        when (selectedResultType.value) {
+            LEAD -> LeadTable()
+            SPEED -> SpeedTable()
+            BOULDER -> BoulderTable()
+            ANALYSIS -> Analysis()
+        }
+    }
 }
 
 enum class ChartType {

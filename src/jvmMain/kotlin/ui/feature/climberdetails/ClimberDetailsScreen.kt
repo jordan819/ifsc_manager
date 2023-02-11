@@ -183,7 +183,7 @@ fun ClimberDetailsScreen(
     }
 
     Column(
-        modifier = Modifier.background(AppColors.BACKGROUND),
+        modifier = Modifier.background(AppColors.Gray),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -193,6 +193,7 @@ fun ClimberDetailsScreen(
                     text = "Informacje o zawodniku"
                 )
             },
+            backgroundColor = AppColors.Blue,
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
                     Icon(

@@ -26,7 +26,7 @@ fun Dialog(
         Card {
             Column(
                 modifier = Modifier
-                    .background(AppColors.BACKGROUND)
+                    .background(AppColors.Gray)
                     .padding(8.dp)
                     .height(IntrinsicSize.Min)
             ) {

@@ -3,5 +3,6 @@ package utils
 import androidx.compose.ui.graphics.Color
 
 object AppColors {
-    val BACKGROUND = Color(218, 218, 218, 190)
+    val Gray = Color(218, 218, 218, 190)
+    val Blue = Color(0, 118, 156, 255)
 }

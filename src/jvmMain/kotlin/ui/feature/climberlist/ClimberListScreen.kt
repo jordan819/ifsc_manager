@@ -209,7 +209,7 @@ fun ClimberListScreen(
     }
 
     Column(
-        modifier = Modifier.background(AppColors.BACKGROUND),
+        modifier = Modifier.background(AppColors.Gray),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -219,6 +219,7 @@ fun ClimberListScreen(
                     text = "Zawodnicy"
                 )
             },
+            backgroundColor = AppColors.Blue,
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
                     Icon(

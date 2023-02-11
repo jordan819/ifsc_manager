@@ -23,7 +23,7 @@ fun HomeScreen(
     database: Database,
 ) {
     Row(
-        Modifier.fillMaxSize().background(AppColors.BACKGROUND),
+        Modifier.fillMaxSize().background(AppColors.Gray),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {

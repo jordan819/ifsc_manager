@@ -25,7 +25,7 @@ fun RowScope.TableCell(
     Box(
         Modifier
             .border(1.dp, Color.Black)
-            .background(AppColors.BACKGROUND)
+            .background(AppColors.Gray)
             .weight(weight)
             .height(40.dp)
             .align(Alignment.CenterVertically),
@@ -49,7 +49,7 @@ fun RowScope.TableCell(
         contentDescription = null,
         modifier = Modifier
             .border(1.dp, Color.Black)
-            .background(AppColors.BACKGROUND)
+            .background(AppColors.Gray)
             .weight(weight)
             .height(40.dp)
             .clickable { onClick() }

@@ -39,7 +39,7 @@ fun DialogContentEditClimber(
         fun updateClimber() = coroutineScope.launch {
             val newClimber = Climber(
                 climberId = climberId,
-                name = name.value,
+                name = name.value.trim(),
                 sex = climber.sex,
                 dateOfBirth = date.value,
                 country = country.value,
@@ -59,7 +59,7 @@ fun DialogContentEditClimber(
                     value = name.value,
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
                     onValueChange = {
-                        name.value = it.trim()
+                        name.value = it
                         isNameError.value = name.value.isBlank()
                     },
                     isError = isNameError.value
@@ -75,7 +75,7 @@ fun DialogContentEditClimber(
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
                     onValueChange = {
                         date.value = it.trim()
-                        isDateError.value = !dateRegex.matches(it) && it.isNotEmpty()
+                        isDateError.value = !dateRegex.matches(date.value) && date.value.isNotEmpty()
                     },
                     isError = isDateError.value
                 )

@@ -11,13 +11,11 @@ import com.toxicbakery.logging.Seedling
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import scraping.Scraper
 import ui.common.ErrorDialog
 import ui.common.ErrorDisplay
 import utils.navigation.Root
 import utils.navigation.RootUi
-import java.time.LocalDateTime
 
 fun main() {
     Arbor.sow(Seedling())

@@ -1,7 +1,10 @@
 package ui.feature.climberlist
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +32,10 @@ fun DialogContentEditClimber(
         val date = remember { mutableStateOf(climber.dateOfBirth ?: "") }
         val country = remember { mutableStateOf(climber.country) }
 
+        val isNameError = remember { mutableStateOf(false) }
+        val dateRegex = "^\\d{4}(-\\d{2}(-\\d{2})?)?$".toRegex()
+        val isDateError = remember { mutableStateOf(false) }
+
         fun updateClimber() = coroutineScope.launch {
             val newClimber = Climber(
                 climberId = climberId,
@@ -47,33 +54,45 @@ fun DialogContentEditClimber(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 TextField(
                     enabled = isClimberUnofficial,
+                    singleLine = true,
                     label = { Text("Imię i nazwisko") },
                     value = name.value,
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = { name.value = it },
+                    onValueChange = {
+                        name.value = it.trim()
+                        isNameError.value = name.value.isBlank()
+                    },
+                    isError = isNameError.value
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextField(
                     enabled = true,
+                    singleLine = true,
                     label = { Text("Data urodzenia") },
                     value = date.value,
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = { date.value = it },
+                    onValueChange = {
+                        date.value = it.trim()
+                        isDateError.value = !dateRegex.matches(it) && it.isNotEmpty()
+                    },
+                    isError = isDateError.value
                 )
 
                 TextField(
                     enabled = isClimberUnofficial,
+                    singleLine = true,
                     label = { Text("Kraj") },
                     value = country.value,
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = { country.value = it },
+                    onValueChange = { country.value = it.trim() },
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
+                    enabled = !isDateError.value && !isNameError.value,
                     onClick = ::updateClimber,
                     modifier = Modifier.align(Alignment.End)
                 ) {

@@ -1,6 +1,5 @@
 package ui.feature.climberlist
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -16,7 +15,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import scraping.model.Climber
 import scraping.model.RecordType
-import utils.AppColors
 
 @Composable
 fun DialogContentEditClimber(
@@ -52,7 +50,6 @@ fun DialogContentEditClimber(
         }
 
         Column(
-            modifier = Modifier.background(AppColors.BACKGROUND),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             TextField(

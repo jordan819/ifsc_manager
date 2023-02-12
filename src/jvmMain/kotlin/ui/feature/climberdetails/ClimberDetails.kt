@@ -2,11 +2,13 @@ package ui.feature.climberdetails
 
 import androidx.compose.runtime.Composable
 import io.realm.Database
+import kotlinx.coroutines.CoroutineScope
 
 class ClimberDetails(
     val climberId: String,
     val database: Database,
     val onBackClick: () -> Unit,
+    val coroutineScope: CoroutineScope,
 ) {
     val leadResults = database.getLeadResultsByClimberId(climberId)
     val speedResults = database.getSpeedResultsByClimberId(climberId)
@@ -22,5 +24,6 @@ fun ClimberDetailsUi(climberDetails: ClimberDetails) {
         speedResults = climberDetails.speedResults,
         boulderResults = climberDetails.boulderResults,
         database = climberDetails.database,
+        coroutineScope = climberDetails.coroutineScope,
     )
 }

@@ -30,11 +30,16 @@ fun DialogContentAddClimber(
         val country = remember { mutableStateOf("") }
 
         val isNameError = remember { mutableStateOf(false) }
-        val dateRegex = "^\\d{4}(-\\d{2}(-\\d{2})?)?$".toRegex()
+        val dateRegex = "^\\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?\$".toRegex()
         val isDateError = remember { mutableStateOf(false) }
+        val isButtonEnabled = remember { mutableStateOf(false) }
 
         val radioOptions = listOf("Mężczyzna", "Kobieta")
-        val (selectedOption, onOptionSelected) = remember { mutableStateOf<String?>(null) }
+        val selectedOption = remember { mutableStateOf<String?>(null) }
+
+        fun updateButtonState() {
+            isButtonEnabled.value = !isNameError.value && !isDateError.value && selectedOption.value != null
+        }
 
         fun addClimber() = coroutineScope.launch {
             val id =
@@ -42,7 +47,7 @@ fun DialogContentAddClimber(
             val climber = Climber(
                 climberId = "${id}-M",
                 name = name.value.trim(),
-                sex = when (selectedOption) {
+                sex = when (selectedOption.value) {
                     "Mężczyzna" -> Sex.MAN
                     "Kobieta" -> Sex.WOMAN
                     else -> null
@@ -64,6 +69,7 @@ fun DialogContentAddClimber(
                 onValueChange = {
                     name.value = it
                     isNameError.value = name.value.isBlank()
+                    updateButtonState()
                 },
                 isError = isNameError.value
             )
@@ -77,9 +83,10 @@ fun DialogContentAddClimber(
                             .width(IntrinsicSize.Min)
                             .height(40.dp)
                             .selectable(
-                                selected = (text == selectedOption),
+                                selected = (text == selectedOption.value),
                                 onClick = {
-                                    onOptionSelected(text)
+                                    selectedOption.value = text
+                                    updateButtonState()
                                 }
                             )
                             .padding(horizontal = 16.dp)
@@ -90,8 +97,11 @@ fun DialogContentAddClimber(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             RadioButton(
-                                selected = (text == selectedOption),
-                                onClick = { onOptionSelected(text) },
+                                selected = (text == selectedOption.value),
+                                onClick = {
+                                    selectedOption.value = text
+                                    updateButtonState()
+                                },
                             )
                         }
                         Column(
@@ -116,6 +126,7 @@ fun DialogContentAddClimber(
                 onValueChange = {
                     date.value = it.trim()
                     isDateError.value = !dateRegex.matches(date.value) && date.value.isNotEmpty()
+                    updateButtonState()
                 },
                 isError = isDateError.value
             )
@@ -124,7 +135,10 @@ fun DialogContentAddClimber(
                 label = { Text("Kraj") },
                 value = country.value,
                 modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                onValueChange = { country.value = it.trim() },
+                onValueChange = {
+                    country.value = it.trim()
+                    updateButtonState()
+                },
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -132,14 +146,11 @@ fun DialogContentAddClimber(
             Button(
                 onClick = ::addClimber,
                 modifier = Modifier.align(Alignment.End),
-                enabled = !isNameError.value && !isDateError.value,
+                enabled = isButtonEnabled.value,
             ) {
                 Text(text = "Dodaj")
             }
-
         }
-
     }
-
 }
 

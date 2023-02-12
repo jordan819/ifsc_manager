@@ -7,7 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +64,8 @@ fun ClimberListScreen(
     val isImportDropdownExpanded = remember { mutableStateOf(false) }
     val isSortDropdownExpanded = remember { mutableStateOf(false) }
     val isFilterDropdownExpanded = remember { mutableStateOf(false) }
+
+    val isDeletingEnabled = remember { mutableStateOf(false) }
 
     fun showAddClimberDialog() {
         isAddDialogVisible.value = true
@@ -215,16 +220,14 @@ fun ClimberListScreen(
     ) {
         TopAppBar(
             title = {
-                Text(
-                    text = "Zawodnicy"
-                )
+                Text("Zawodnicy")
             },
             backgroundColor = AppColors.Blue,
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null
+                        contentDescription = null,
                     )
                 }
             },
@@ -288,19 +291,12 @@ fun ClimberListScreen(
                         Text("LEAD")
                     }
                 }
-            }
-        )
-
-        Row {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Filtrowanie"
-                )
                 IconButton(onClick = { isFilterDropdownExpanded.value = true }) {
-                    Icon(Icons.Default.ArrowDropDown, "")
+                    Icon(
+                        painter = painterResource("filter.svg"),
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
                 }
                 DropdownMenu(
                     expanded = isFilterDropdownExpanded.value,
@@ -389,17 +385,12 @@ fun ClimberListScreen(
                         }
                     }
                 }
-            }
-            Spacer(Modifier.width(20.dp))
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Sortowanie"
-                )
                 IconButton(onClick = { isSortDropdownExpanded.value = true }) {
-                    Icon(Icons.Default.ArrowDropDown, "")
+                    Icon(
+                        painter = painterResource("sort.svg"),
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
                 }
                 DropdownMenu(
                     expanded = isSortDropdownExpanded.value,
@@ -467,10 +458,15 @@ fun ClimberListScreen(
                         }
                     }
                 }
+                IconButton(onClick = { isDeletingEnabled.value = !isDeletingEnabled.value }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
+                }
             }
-        }
-
-        Spacer(Modifier.height(10.dp))
+        )
 
         // Each cell of a column must have the same weight.
         val column1Weight = .1f // 10%
@@ -490,7 +486,9 @@ fun ClimberListScreen(
                     TableCell(text = "Data urodzenia", weight = column4Weight)
                     TableCell(text = "Kraj", weight = column5Weight)
                     TableCell(text = "EDIT", weight = column6Weight)
-                    TableCell(text = "X", weight = column6Weight)
+                    if (isDeletingEnabled.value) {
+                        TableCell(text = "X", weight = column6Weight)
+                    }
                 }
             }
             // Here are all the lines of your table.
@@ -510,10 +508,12 @@ fun ClimberListScreen(
                         image = Icons.Default.Edit,
                         weight = column6Weight,
                         onClick = { showEditClimberDialog(it.id) })
-                    TableCell(
-                        image = Icons.Default.Delete,
-                        weight = column6Weight,
-                        onClick = { deleteUser(it.id) })
+                    if (isDeletingEnabled.value) {
+                        TableCell(
+                            image = Icons.Default.Delete,
+                            weight = column6Weight,
+                            onClick = { deleteUser(it.id) })
+                    }
                 }
             }
         }

@@ -49,6 +49,7 @@ class Database(
             id = climber.climberId
             sex = climber.sex?.name
             name = climber.name
+            imageUrl = climber.imageUrl
             dateOfBirth = climber.dateOfBirth
             country = climber.country
             federation = climber.federation
@@ -213,7 +214,7 @@ class Database(
             writeSpeedResult(result, date, competitionId, competitionTitle, competitionCity)
         }
 
-    private suspend fun writeSpeedResult(
+    suspend fun writeSpeedResult(
         result: SpeedResult,
         date: String,
         competitionId: String,
@@ -306,6 +307,7 @@ class Database(
         return Climber(
             climberId = climberRealm.id,
             name = climberRealm.name,
+            imageUrl = climberRealm.imageUrl,
             sex = when (climberRealm.sex) {
                 Sex.MAN.name -> Sex.MAN
                 Sex.WOMAN.name -> Sex.WOMAN
@@ -328,6 +330,7 @@ class Database(
         realm.write {
             val climber = this.query<ClimberRealm>("id == $0", id).first().find() ?: return@write
             climber.name = newValue.name
+            climber.imageUrl = newValue.imageUrl
             climber.dateOfBirth = newValue.dateOfBirth
             climber.country = newValue.country
             climber.recordType = newValue.recordType.toString()

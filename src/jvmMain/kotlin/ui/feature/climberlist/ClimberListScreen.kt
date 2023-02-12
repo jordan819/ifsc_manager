@@ -23,7 +23,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import scraping.Scraper
 import scraping.model.RecordType
 import scraping.model.Sex
 import ui.common.Dialog
@@ -36,7 +35,6 @@ import java.nio.file.Path
 
 @Composable
 fun ClimberListScreen(
-    scraper: Scraper,
     database: Database,
     onBackClick: () -> Unit,
     navigateToClimberDetails: (climberId: String) -> Unit,
@@ -130,12 +128,6 @@ fun ClimberListScreen(
     fun deleteUser(climberId: String) = coroutineScope.launch {
         database.deleteClimber(climberId)
         updateListDisplay()
-    }
-
-    fun fetchNewClimbers() {
-        coroutineScope.launch {
-            scraper.fetchNewClimbers()
-        }
     }
 
     if (!initDone.value) {

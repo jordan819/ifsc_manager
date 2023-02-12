@@ -1,6 +1,8 @@
 package ui.feature.climberdetails
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,13 +17,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import io.realm.Database
 import io.realm.model.BoulderResultRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
+import kotlinx.coroutines.CoroutineScope
 import scraping.Scraper
+import scraping.model.Climber
 import scraping.model.RecordType
+import ui.common.Dialog
 import ui.common.TableCell
 import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_COMPARATIVE
 import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_INDIVIDUAL
@@ -32,16 +38,20 @@ import ui.feature.climberdetails.ContentType.SPEED
 import ui.feature.climberdetails.chart.SpeedProgressComparativeChart
 import ui.feature.climberdetails.chart.SpeedProgressIndividualChart
 import utils.AppColors
+import utils.ImageLoader
 
 @Composable
 fun ClimberDetailsScreen(
-    climberId: String,
+    climber: Climber?,
     onBackClick: () -> Unit,
     leadResults: List<LeadResultRealm>,
     speedResults: List<SpeedResultRealm>,
     boulderResults: List<BoulderResultRealm>,
     database: Database,
+    coroutineScope: CoroutineScope,
 ) {
+
+    if (climber == null) return
 
     val selectedResultType = remember {
         mutableStateOf(
@@ -54,9 +64,11 @@ fun ClimberDetailsScreen(
 
     val isDropdownExpanded = remember { mutableStateOf(false) }
 
+    val isAddDialogVisible = remember { mutableStateOf(false) }
+
     val chartSelected = remember { mutableStateOf<ChartType?>(null) }
 
-    val isClimberDataEditable = database.getClimberById(climberId)?.recordType == RecordType.UNOFFICIAL
+    val isClimberDataEditable = climber.recordType == RecordType.UNOFFICIAL
 
     @Composable
     fun LeadTable() {
@@ -168,7 +180,7 @@ fun ClimberDetailsScreen(
     fun Analysis() {
         when (chartSelected.value) {
             SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.sortedBy { it.date })
-            SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climberId, database)
+            SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climber.climberId, database)
             else -> {}
         }
     }
@@ -204,78 +216,117 @@ fun ClimberDetailsScreen(
             },
             actions = {
                 IconButton(
-                    enabled = isClimberDataEditable,
-                    onClick = {}) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                    )
+                    onClick = { isAddDialogVisible.value = true }
+                ) {
+                    if (isClimberDataEditable) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                        )
+                    }
                 }
             }
         )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Text("Informacje o zawodniku z id: $climberId")
-        }
+        Spacer(Modifier.height(10.dp))
         Row {
-            Text(
-                text = "Boulder: ${boulderResults.size}"
-            )
-        }
-        Row {
-            Text(
-                text = "Lead: ${leadResults.size}"
-            )
-        }
-        Row {
-            Text(
-                text = "Speed: ${speedResults.size}"
-            )
-        }
+            Column {
+                val bitmap = ImageLoader.loadImageOfClimber(climber.imageUrl)
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = null,
+                        modifier = Modifier.requiredHeightIn(max = 150.dp).border(1.dp, AppColors.Blue),
+                    )
+                } else (
+                        Image(
+                            painter = painterResource("climber-default.jpg"),
+                            contentDescription = null,
+                            modifier = Modifier.requiredHeightIn(max = 150.dp).border(1.dp, AppColors.Blue),
+                        )
+                        )
+            }
+            Spacer(Modifier.width(20.dp))
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text("Id: ${climber.climberId}")
+                }
+                Row {
+                    Text(
+                        text = "Liczba zawodów typu bouldering: ${boulderResults.size}"
+                    )
+                }
+                Row {
+                    Text(
+                        text = "Liczba zawodów typu prowadzenie: ${leadResults.size}"
+                    )
+                }
+                Row {
+                    Text(
+                        text = "Liczba zawodów typu prędkość: ${speedResults.size}"
+                    )
+                }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(15.dp)
-        ) {
-            if (leadResults.isNotEmpty()) {
-                SelectContentButton(
-                    onClick = { selectedResultType.value = LEAD },
-                    text = "LEAD"
-                )
-            }
-            if (speedResults.isNotEmpty()) {
-                SelectContentButton(
-                    onClick = { selectedResultType.value = SPEED },
-                    text = "SPEED"
-                )
-            }
-            if (boulderResults.isNotEmpty()) {
-                SelectContentButton(
-                    onClick = { selectedResultType.value = BOULDER },
-                    text = "BOULDER"
-                )
-            }
-        }
-        Row {
-            if (leadResults.isNotEmpty() || speedResults.isNotEmpty() || boulderResults.isNotEmpty()) {
-                SelectContentButton(
-                    onClick = { selectedResultType.value = ANALYSIS },
-                    text = "Analiza wyników"
-                )
-                Column {
-                    IconButton(onClick = { isDropdownExpanded.value = true }) {
-                        Icon(Icons.Default.MoreVert, "")
+                if (isAddDialogVisible.value) {
+                    Dialog(
+                        title = "Dodawanie wyniku zawodnika",
+                        content = DialogContentAddResult(
+                            database = database,
+                            coroutineScope = coroutineScope,
+                            climberId = climber.climberId,
+                            defaultResultType = selectedResultType.value
+                        ) {
+                            // TODO: refresh results lists
+                        },
+                        onCloseRequest = { isAddDialogVisible.value = false },
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
+                    if (leadResults.isNotEmpty()) {
+                        SelectContentButton(
+                            onClick = { selectedResultType.value = LEAD },
+                            text = "LEAD"
+                        )
                     }
-                    DropdownMenu(
-                        expanded = isDropdownExpanded.value,
-                        onDismissRequest = { isDropdownExpanded.value = false }
-                    ) {
-                        Button(onClick = { chartSelected.value = SPEED_PROGRESS_INDIVIDUAL }) {
-                            Text("Postęp w kategorii SPEED")
-                        }
-                        Button(onClick = { chartSelected.value = SPEED_PROGRESS_COMPARATIVE }) {
-                            Text("Porównanie w kategorii SPEED")
+                    if (speedResults.isNotEmpty()) {
+                        SelectContentButton(
+                            onClick = { selectedResultType.value = SPEED },
+                            text = "SPEED"
+                        )
+                    }
+                    if (boulderResults.isNotEmpty()) {
+                        SelectContentButton(
+                            onClick = { selectedResultType.value = BOULDER },
+                            text = "BOULDER"
+                        )
+                    }
+                }
+                Row {
+                    if (leadResults.isNotEmpty() || speedResults.isNotEmpty() || boulderResults.isNotEmpty()) {
+                        SelectContentButton(
+                            onClick = { selectedResultType.value = ANALYSIS },
+                            text = "Analiza wyników"
+                        )
+                        Column {
+                            IconButton(onClick = { isDropdownExpanded.value = true }) {
+                                Icon(Icons.Default.MoreVert, "")
+                            }
+                            DropdownMenu(
+                                expanded = isDropdownExpanded.value,
+                                onDismissRequest = { isDropdownExpanded.value = false }
+                            ) {
+                                Button(onClick = { chartSelected.value = SPEED_PROGRESS_INDIVIDUAL }) {
+                                    Text("Postęp w kategorii SPEED")
+                                }
+                                Button(onClick = { chartSelected.value = SPEED_PROGRESS_COMPARATIVE }) {
+                                    Text("Porównanie w kategorii SPEED")
+                                }
+                            }
                         }
                     }
                 }

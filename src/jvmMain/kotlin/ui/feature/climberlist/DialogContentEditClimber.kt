@@ -28,6 +28,7 @@ fun DialogContentEditClimber(
         val isClimberUnofficial = climber.recordType == RecordType.UNOFFICIAL
 
         val name = remember { mutableStateOf(climber.name) }
+        val image = remember { mutableStateOf(climber.imageUrl) }
         val date = remember { mutableStateOf(climber.dateOfBirth ?: "") }
         val country = remember { mutableStateOf(climber.country) }
 
@@ -39,6 +40,7 @@ fun DialogContentEditClimber(
             val newClimber = Climber(
                 climberId = climberId,
                 name = name.value.trim(),
+                imageUrl = image.value,
                 sex = climber.sex,
                 dateOfBirth = date.value,
                 country = country.value,
@@ -88,9 +90,17 @@ fun DialogContentEditClimber(
                 modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
                 onValueChange = { country.value = it.trim() },
             )
-
+            TextField(
+                enabled = isClimberUnofficial,
+                singleLine = true,
+                label = { Text("Link do zdjęcia") },
+                value = image.value ?: "",
+                modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                onValueChange = {
+                    image.value = it
+                },
+            )
             Spacer(modifier = Modifier.height(8.dp))
-
             Button(
                 enabled = !isDateError.value && !isNameError.value,
                 onClick = ::updateClimber,

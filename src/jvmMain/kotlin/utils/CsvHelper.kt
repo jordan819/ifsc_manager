@@ -56,11 +56,12 @@ class CsvHelper {
                 listOf(
                     climber.id,
                     climber.name,
+                    climber.imageUrl,
                     climber.sex,
                     climber.dateOfBirth,
                     climber.country,
                     climber.federation,
-                    climber.recordType
+                    climber.recordType,
                 )
             },
             targetFileName = fullPath.toString(),
@@ -200,15 +201,16 @@ class CsvHelper {
                 Climber(
                     climberId = row[0],
                     name = row[1],
-                    sex = when (row[2]) {
+                    imageUrl = row[2],
+                    sex = when (row[3]) {
                         Sex.MAN.name -> Sex.MAN
                         Sex.WOMAN.name -> Sex.WOMAN
                         else -> null
                     },
-                    dateOfBirth = row[3],
-                    country = row[4],
-                    federation = row[5],
-                    recordType = when (row[6]) {
+                    dateOfBirth = row[4],
+                    country = row[5],
+                    federation = row[6],
+                    recordType = when (row[7]) {
                         RecordType.OFFICIAL.name -> RecordType.OFFICIAL
                         RecordType.UNOFFICIAL.name -> RecordType.UNOFFICIAL
                         else -> RecordType.UNOFFICIAL
@@ -241,8 +243,8 @@ class CsvHelper {
                     rank = row[5].toIntOrNull()
                     climberId = row[6]
                     qualification = row[7]
-                    semiFinal = row[8]
-                    final = row[9]
+                    semiFinal = toStringOrNull(row[8])
+                    final = toStringOrNull(row[9])
                 }
             )
         }
@@ -271,8 +273,8 @@ class CsvHelper {
                     rank = row[5].toIntOrNull()
                     climberId = row[6]
                     qualification = row[7]
-                    semiFinal = row[8]
-                    final = row[9]
+                    semiFinal = toStringOrNull(row[8])
+                    final = toStringOrNull(row[9])
                 }
             )
         }
@@ -300,18 +302,20 @@ class CsvHelper {
                     competitionCity = row[4]
                     rank = row[5].toIntOrNull()
                     climberId = row[6]
-                    laneA = row[7]
-                    laneB = row[8]
-                    oneEighth = row[9]
-                    quarter = row[10]
-                    semiFinal = row[11]
-                    smallFinal = row[12]
-                    final = row[13]
+                    laneA = toStringOrNull(row[7])
+                    laneB = toStringOrNull(row[8])
+                    oneEighth = toStringOrNull(row[9])
+                    quarter = toStringOrNull(row[10])
+                    semiFinal = toStringOrNull(row[11])
+                    smallFinal = toStringOrNull(row[12])
+                    final = toStringOrNull(row[13])
                 }
             )
         }
         return speedList
     }
+
+    private fun toStringOrNull(value: String) = if (value == "null") null else value
 
     companion object {
         const val DEFAULT_EXPORT_DIRECTORY = "exported/"

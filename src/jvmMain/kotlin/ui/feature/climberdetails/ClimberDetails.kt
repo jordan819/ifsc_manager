@@ -10,6 +10,7 @@ class ClimberDetails(
     val onBackClick: () -> Unit,
     val coroutineScope: CoroutineScope,
 ) {
+    val climber = database.getClimberById(climberId)
     val leadResults = database.getLeadResultsByClimberId(climberId)
     val speedResults = database.getSpeedResultsByClimberId(climberId)
     val boulderResults = database.getBoulderResultsByClimberId(climberId)
@@ -18,7 +19,7 @@ class ClimberDetails(
 @Composable
 fun ClimberDetailsUi(climberDetails: ClimberDetails) {
     ClimberDetailsScreen(
-        climberId = climberDetails.climberId,
+        climber = climberDetails.climber,
         onBackClick = climberDetails.onBackClick,
         leadResults = climberDetails.leadResults,
         speedResults = climberDetails.speedResults,

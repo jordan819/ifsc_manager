@@ -21,7 +21,8 @@ fun Dialog(
     Dialog(
         title = title,
         state = DialogState(size = DpSize.Companion.Unspecified),
-        onCloseRequest = onCloseRequest
+        onCloseRequest = onCloseRequest,
+        resizable = false,
     ) {
         Card {
             Column(

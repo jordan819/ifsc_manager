@@ -213,6 +213,7 @@ internal class DatabaseTest {
         val climber = Climber(
             climberId,
             "John",
+            "url",
             Sex.MAN,
             null,
             "USA",
@@ -222,6 +223,7 @@ internal class DatabaseTest {
         val newClimber = Climber(
             climberId,
             "Alex Murphy",
+            "url",
             Sex.MAN,
             "1998",
             "USA",
@@ -246,6 +248,7 @@ internal class DatabaseTest {
         val climber = Climber(
             climberId,
             "John",
+            "url",
             Sex.MAN,
             null,
             "USA",
@@ -271,6 +274,7 @@ internal class DatabaseTest {
         val climber1 = Climber(
             climberId1,
             "John",
+            "url",
             Sex.MAN,
             null,
             "USA",
@@ -280,6 +284,7 @@ internal class DatabaseTest {
         val climber2 = Climber(
             climberId2,
             "Eleonora",
+            "url",
             Sex.WOMAN,
             "2000-07-14",
             "USA",
@@ -289,6 +294,7 @@ internal class DatabaseTest {
         val climber3 = Climber(
             climberId3,
             "John",
+            "url",
             Sex.MAN,
             null,
             "USA",

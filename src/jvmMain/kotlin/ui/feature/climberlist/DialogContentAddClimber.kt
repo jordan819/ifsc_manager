@@ -26,19 +26,27 @@ fun DialogContentAddClimber(
     return {
 
         val name = remember { mutableStateOf("") }
+        val image = remember { mutableStateOf("") }
         val date = remember { mutableStateOf("") }
         val country = remember { mutableStateOf("") }
 
         val isNameError = remember { mutableStateOf(false) }
         val dateRegex = "^\\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?\$".toRegex()
         val isDateError = remember { mutableStateOf(false) }
+        val isCountryError = remember { mutableStateOf(false) }
         val isButtonEnabled = remember { mutableStateOf(false) }
 
         val radioOptions = listOf("Mężczyzna", "Kobieta")
         val selectedOption = remember { mutableStateOf<String?>(null) }
 
         fun updateButtonState() {
-            isButtonEnabled.value = !isNameError.value && !isDateError.value && selectedOption.value != null
+            isButtonEnabled.value =
+                name.value.isNotBlank() &&
+                        country.value.isNotBlank() &&
+                        !isNameError.value &&
+                        !isDateError.value &&
+                        !isCountryError.value &&
+                        selectedOption.value != null
         }
 
         fun addClimber() = coroutineScope.launch {
@@ -47,13 +55,14 @@ fun DialogContentAddClimber(
             val climber = Climber(
                 climberId = "${id}-M",
                 name = name.value.trim(),
+                imageUrl = image.value,
                 sex = when (selectedOption.value) {
                     "Mężczyzna" -> Sex.MAN
                     "Kobieta" -> Sex.WOMAN
                     else -> null
                 },
-                dateOfBirth = date.value,
-                country = country.value,
+                dateOfBirth = date.value.takeUnless { it.isBlank() },
+                country = country.value.trim(),
                 recordType = RecordType.UNOFFICIAL
             )
             database.writeClimber(climber)
@@ -137,12 +146,20 @@ fun DialogContentAddClimber(
                 modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
                 onValueChange = {
                     country.value = it.trim()
+                    isNameError.value = name.value.isBlank()
                     updateButtonState()
                 },
             )
-
+            TextField(
+                label = { Text("Link do zdjęcia") },
+                value = image.value,
+                singleLine = true,
+                modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                onValueChange = {
+                    image.value = it
+                },
+            )
             Spacer(modifier = Modifier.height(8.dp))
-
             Button(
                 onClick = ::addClimber,
                 modifier = Modifier.align(Alignment.End),

@@ -130,7 +130,8 @@ class Scraper(
         val age =
             (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
         val dateOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }.toString()
-        return Climber(climberId.toString(), name, sex, dateOfBirth, country, federation, RecordType.OFFICIAL)
+        val imageUrl = "https://ifsc.results.info/athletes/$climberId/photo"
+        return Climber(climberId.toString(), name, imageUrl, sex, dateOfBirth, country, federation, RecordType.OFFICIAL)
     }
 
     /**

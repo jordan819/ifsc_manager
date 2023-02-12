@@ -69,7 +69,7 @@ class CsvHelperTest {
         // assert
         val writtenContent = File(fullPath).readText()
         assertEquals(
-            "${climbers.first().id},${climbers.first().name},${climbers.first().sex},${climbers.first().dateOfBirth},${climbers.first().country},${climbers.first().federation},${climbers.first().recordType}\n",
+            "${climbers.first().id},${climbers.first().name},${climbers.first().imageUrl},${climbers.first().sex},${climbers.first().dateOfBirth},${climbers.first().country},${climbers.first().federation},${climbers.first().recordType}\n",
             writtenContent
         )
     }
@@ -79,7 +79,7 @@ class CsvHelperTest {
     fun `read climber data`(climbers: List<ClimberRealm>, @TempDir tempDir: File) {
         // arrange
         val row = with(climbers.first()) {
-            "$id,$name,$sex,$dateOfBirth,$country,$federation,$recordType"
+            "$id,$name,$imageUrl,$sex,$dateOfBirth,$country,$federation,$recordType"
         }
         val path = "$tempDir/climbers.csv"
 
@@ -87,7 +87,7 @@ class CsvHelperTest {
 
         // act
         val writtenContent = with(csvHelper.readClimbers(path).first()) {
-            "$climberId,$name,$sex,$dateOfBirth,$country,$federation,$recordType"
+            "$climberId,$name,$imageUrl,$sex,$dateOfBirth,$country,$federation,$recordType"
         }
 
         // assert

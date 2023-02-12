@@ -17,6 +17,7 @@ internal class ClimberListArgumentProvider : ArgumentsProvider {
                     Climber(
                         "123",
                         "John Doe",
+                        "url",
                         null,
                         null,
                         "USA",
@@ -26,6 +27,7 @@ internal class ClimberListArgumentProvider : ArgumentsProvider {
                     Climber(
                         "321",
                         "Arkadiusz Justyński",
+                        "url",
                         Sex.MAN,
                         "1987",
                         "POL",
@@ -35,6 +37,7 @@ internal class ClimberListArgumentProvider : ArgumentsProvider {
                     Climber(
                         "420",
                         "Fanny Gibert",
+                        "url",
                         Sex.WOMAN,
                         "2000-07-14",
                         "FRA",

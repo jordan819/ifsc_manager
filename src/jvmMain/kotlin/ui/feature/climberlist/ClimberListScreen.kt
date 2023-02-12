@@ -123,7 +123,8 @@ fun ClimberListScreen(
             filteredClimberList
         }
 
-        climberList = sortClimberList(filteredClimberList)
+        climberList =
+            sortClimberList(filteredClimberList)//.filter { database.getSpeedResultsByClimberId(it.id).size > 20 }
     }
 
     fun deleteUser(climberId: String) = coroutineScope.launch {
@@ -223,6 +224,7 @@ fun ClimberListScreen(
                 Text("Zawodnicy")
             },
             backgroundColor = AppColors.Blue,
+            modifier = Modifier.height(70.dp),
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
                     Icon(
@@ -458,11 +460,20 @@ fun ClimberListScreen(
                         }
                     }
                 }
-                IconButton(onClick = { isDeletingEnabled.value = !isDeletingEnabled.value }) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.clickable { isDeletingEnabled.value = !isDeletingEnabled.value },
+                ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = null,
                         modifier = Modifier.height(35.dp),
+                    )
+                    Switch(
+                        checked = isDeletingEnabled.value,
+                        onCheckedChange = { isDeletingEnabled.value = !isDeletingEnabled.value },
+                        modifier = Modifier.height(20.dp)
                     )
                 }
             }
@@ -485,9 +496,9 @@ fun ClimberListScreen(
                     TableCell(text = "Płeć", weight = column3Weight)
                     TableCell(text = "Data urodzenia", weight = column4Weight)
                     TableCell(text = "Kraj", weight = column5Weight)
-                    TableCell(text = "EDIT", weight = column6Weight)
+                    TableCell(text = "Edytuj", weight = column6Weight)
                     if (isDeletingEnabled.value) {
-                        TableCell(text = "X", weight = column6Weight)
+                        TableCell(text = "Usuń", weight = column6Weight)
                     }
                 }
             }

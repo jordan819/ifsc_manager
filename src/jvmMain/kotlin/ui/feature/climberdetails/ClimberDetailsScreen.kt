@@ -115,7 +115,6 @@ fun ClimberDetailsScreen(
                     TableCell(text = it.final ?: "-", weight = weight2)
                 }
             }
-
         }
     }
 
@@ -126,7 +125,7 @@ fun ClimberDetailsScreen(
         LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
             item {
                 Row(Modifier.background(Color.Gray)) {
-                    TableCell(text = "", weight = (weight1 + weight2) * 2)
+                    TableCell(text = "", weight = (weight1 + weight2) * 1.99f)
                     TableCell(text = "Kwalifikacje", weight = weight1 * 2)
                     TableCell(text = "Finały", weight = weight1 * 5)
                 }

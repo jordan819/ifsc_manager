@@ -3,6 +3,7 @@ package ui.feature.climberdetails
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,7 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import scraping.Scraper
@@ -139,7 +141,6 @@ fun ClimberDetailsScreen(
                     TableCell(text = it.final ?: "-", weight = weight1)
                 }
             }
-
         }
     }
 
@@ -183,15 +184,6 @@ fun ClimberDetailsScreen(
         }
     }
 
-    @Composable
-    fun SelectContentButton(onClick: () -> Unit, text: String) {
-        Button(
-            onClick = onClick
-        ) {
-            Text(text)
-        }
-    }
-
     Column(
         modifier = Modifier.background(AppColors.Gray).fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -232,18 +224,18 @@ fun ClimberDetailsScreen(
                     Image(
                         bitmap = bitmap,
                         contentDescription = null,
-                        modifier = Modifier.requiredHeightIn(max = 150.dp).border(1.dp, AppColors.Blue),
+                        modifier = Modifier.requiredHeightIn(max = 200.dp).border(1.dp, AppColors.Blue),
                     )
-                } else (
-                        Image(
-                            painter = painterResource("climber-default.jpg"),
-                            contentDescription = null,
-                            modifier = Modifier.requiredHeightIn(max = 150.dp).border(1.dp, AppColors.Blue),
-                        )
-                        )
+                } else {
+                    Image(
+                        painter = painterResource("climber-default.jpg"),
+                        contentDescription = null,
+                        modifier = Modifier.requiredHeightIn(max = 200.dp).border(1.dp, AppColors.Blue),
+                    )
+                }
             }
             Spacer(Modifier.width(20.dp))
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
@@ -252,17 +244,17 @@ fun ClimberDetailsScreen(
                 }
                 Row {
                     Text(
-                        text = "Liczba zawodów typu bouldering: ${boulderResults.value.size}"
+                        text = "Zawody typu czas: ${speedResults.value.size}"
                     )
                 }
                 Row {
                     Text(
-                        text = "Liczba zawodów typu prowadzenie: ${leadResults.value.size}"
+                        text = "Zawody typu prowadzenie: ${leadResults.value.size}"
                     )
                 }
                 Row {
                     Text(
-                        text = "Liczba zawodów typu prędkość: ${speedResults.value.size}"
+                        text = "Zawody typu bouldering: ${boulderResults.value.size}"
                     )
                 }
 
@@ -287,44 +279,75 @@ fun ClimberDetailsScreen(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(15.dp)
                 ) {
-                    if (leadResults.value.isNotEmpty()) {
-                        SelectContentButton(
-                            onClick = { selectedResultType.value = LEAD },
-                            text = "LEAD"
-                        )
-                    }
                     if (speedResults.value.isNotEmpty()) {
-                        SelectContentButton(
-                            onClick = { selectedResultType.value = SPEED },
-                            text = "SPEED"
-                        )
+                        Row(
+                            modifier = Modifier
+                                .clickable { selectedResultType.value = SPEED }
+                                .background(AppColors.Blue)
+                                .padding(8.dp)
+                        ) {
+                            Text(text = "Czas", color = Color.White, fontSize = 14.sp)
+                        }
+                    }
+                    if (leadResults.value.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .clickable { selectedResultType.value = LEAD }
+                                .background(AppColors.Blue)
+                                .padding(8.dp)
+                        ) {
+                            Text(text = "Prowadzenie", color = Color.White, fontSize = 14.sp)
+                        }
                     }
                     if (boulderResults.value.isNotEmpty()) {
-                        SelectContentButton(
-                            onClick = { selectedResultType.value = BOULDER },
-                            text = "BOULDER"
-                        )
+                        Row(
+                            modifier = Modifier
+                                .clickable { selectedResultType.value = BOULDER }
+                                .background(AppColors.Blue)
+                                .padding(8.dp)
+                        ) {
+                            Text(text = "Bouldering", color = Color.White, fontSize = 14.sp)
+                        }
                     }
                 }
-                Row {
-                    if (leadResults.value.isNotEmpty() || speedResults.value.isNotEmpty() || boulderResults.value.isNotEmpty()) {
-                        SelectContentButton(
-                            onClick = { selectedResultType.value = ANALYSIS },
-                            text = "Analiza wyników"
-                        )
-                        Column {
-                            IconButton(onClick = { isDropdownExpanded.value = true }) {
-                                Icon(Icons.Default.MoreVert, "")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (speedResults.value.isNotEmpty()) {
+                        Text("Analiza wyników")
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            IconButton(onClick = {
+                                isDropdownExpanded.value = true
+                            }) {
+                                Icon(Icons.Default.ArrowDropDown, "")
                             }
                             DropdownMenu(
                                 expanded = isDropdownExpanded.value,
                                 onDismissRequest = { isDropdownExpanded.value = false }
                             ) {
-                                Button(onClick = { chartSelected.value = SPEED_PROGRESS_INDIVIDUAL }) {
-                                    Text("Postęp w kategorii SPEED")
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            chartSelected.value = SPEED_PROGRESS_INDIVIDUAL
+                                            selectedResultType.value = ANALYSIS
+                                        }
+                                        .background(AppColors.Blue)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(text = "Postęp indywidualny", color = Color.White, fontSize = 14.sp)
                                 }
-                                Button(onClick = { chartSelected.value = SPEED_PROGRESS_COMPARATIVE }) {
-                                    Text("Porównanie w kategorii SPEED")
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            chartSelected.value = SPEED_PROGRESS_COMPARATIVE
+                                            selectedResultType.value = ANALYSIS
+                                        }
+                                        .background(AppColors.Blue)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(text = "Porównanie z konkurencją", color = Color.White, fontSize = 14.sp)
                                 }
                             }
                         }
@@ -333,7 +356,6 @@ fun ClimberDetailsScreen(
             }
         }
         Spacer(Modifier.height(10.dp))
-
         when (selectedResultType.value) {
             LEAD -> LeadTable()
             SPEED -> SpeedTable()

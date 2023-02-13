@@ -35,6 +35,7 @@ fun DialogContentEditClimber(
         val isNameError = remember { mutableStateOf(false) }
         val dateRegex = "^\\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?\$".toRegex()
         val isDateError = remember { mutableStateOf(false) }
+        val isCountryError = remember { mutableStateOf(false) }
 
         fun updateClimber() = coroutineScope.launch {
             val newClimber = Climber(
@@ -88,7 +89,11 @@ fun DialogContentEditClimber(
                 label = { Text("Kraj") },
                 value = country.value,
                 modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                onValueChange = { country.value = it.trim() },
+                onValueChange = {
+                    country.value = it.trim()
+                    isCountryError.value = country.value.isBlank()
+                },
+                isError = isCountryError.value
             )
             TextField(
                 enabled = isClimberUnofficial,
@@ -102,7 +107,7 @@ fun DialogContentEditClimber(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
-                enabled = !isDateError.value && !isNameError.value,
+                enabled = !isDateError.value && !isNameError.value && !isCountryError.value,
                 onClick = ::updateClimber,
                 modifier = Modifier.align(Alignment.End)
             ) {

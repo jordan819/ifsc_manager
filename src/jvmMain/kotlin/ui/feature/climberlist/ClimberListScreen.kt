@@ -122,8 +122,7 @@ fun ClimberListScreen(
             filteredClimberList
         }
 
-        climberList =
-            sortClimberList(filteredClimberList)//.filter { database.getSpeedResultsByClimberId(it.id).size > 20 }
+        climberList = sortClimberList(filteredClimberList)
     }
 
     fun deleteUser(climberId: String) = coroutineScope.launch {
@@ -196,7 +195,7 @@ fun ClimberListScreen(
                     }
 
                 } catch (e: Exception) {
-                    val type = when(mode) {
+                    val type = when (mode) {
                         InputDataType.CLIMBER -> "zawodników"
                         InputDataType.SPEED -> "wyników zawodów na czas"
                         InputDataType.LEAD -> "wyników zawodów na prowadzenie"

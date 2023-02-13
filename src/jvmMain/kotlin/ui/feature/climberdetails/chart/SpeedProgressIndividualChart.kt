@@ -38,6 +38,7 @@ fun SpeedProgressIndividualChart(
     val width = screenSize.getWidth()
 
     val chart = XYChartBuilder()
+        .title("Postęp zawodnika w czasie")
         .xAxisTitle("Index")
         .yAxisTitle("Czas")
         .width(width.toInt())
@@ -54,7 +55,6 @@ fun SpeedProgressIndividualChart(
     val image = BitmapEncoder.getBufferedImage(chart).toComposeImageBitmap()
 
     Column {
-        Text("Postęp zawodnika w czasie")
         Image(
             bitmap = image,
             contentDescription = null,

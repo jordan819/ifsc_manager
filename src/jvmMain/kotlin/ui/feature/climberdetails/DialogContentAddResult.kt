@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedResult
 
 @Composable
@@ -21,11 +22,10 @@ fun DialogContentAddResult(
     database: Database,
     coroutineScope: CoroutineScope,
     climberId: String,
-    defaultResultType: String?,
     onConfirmButtonClicked: () -> Unit,
 ): @Composable () -> Unit {
 
-    val resultType = remember { mutableStateOf(defaultResultType ?: ContentType.SPEED) }
+    val resultType = remember { mutableStateOf(ContentType.SPEED) }
 
     @Composable
     fun Speed() {
@@ -74,7 +74,7 @@ fun DialogContentAddResult(
                 TextField(
                     label = { Text("Data zawodów") },
                     value = date.value,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         date.value = it.trim()
                         isDateError.value = !dateRegex.matches(date.value) || date.value.isBlank()
@@ -86,7 +86,7 @@ fun DialogContentAddResult(
                     label = { Text("Nazwa zawodów") },
                     value = competitionTitle.value,
                     singleLine = true,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         competitionTitle.value = it
                     },
@@ -96,40 +96,53 @@ fun DialogContentAddResult(
                     label = { Text("Miasto") },
                     value = competitionCity.value,
                     singleLine = true,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         competitionCity.value = it
                     },
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
-                    label = { Text("Tor A") },
-                    value = laneA.value,
+                    label = { Text("Miejsce w zawodach") },
+                    value = rank.value,
                     singleLine = true,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
-                        if (it.isEmpty() || it.toFloatOrNull() != null) {
-                            laneA.value = it.trim()
+                        if (it.isEmpty() || it.toIntOrNull() != null) {
+                            rank.value = it.trim()
                         }
                     },
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(
-                    label = { Text("Tor B") },
-                    value = laneB.value,
-                    singleLine = true,
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
-                    onValueChange = {
-                        laneB.value = it.trim()
-                    },
-                )
+                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(400.dp)) {
+                    TextField(
+                        label = { Text("Tor A") },
+                        value = laneA.value,
+                        singleLine = true,
+                        modifier = Modifier.width(190.dp).wrapContentHeight(),
+                        onValueChange = {
+                            if (it.isEmpty() || it.toFloatOrNull() != null) {
+                                laneA.value = it.trim()
+                            }
+                        },
+                    )
+                    TextField(
+                        label = { Text("Tor B") },
+                        value = laneB.value,
+                        singleLine = true,
+                        modifier = Modifier.width(190.dp).wrapContentHeight(),
+                        onValueChange = {
+                            laneB.value = it.trim()
+                        },
+                    )
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     label = { Text("1/8") },
                     value = oneEighth.value,
                     singleLine = true,
                     enabled = laneA.value.isNotBlank() || laneB.value.isNotBlank(),
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         oneEighth.value = it.trim()
                     },
@@ -140,7 +153,7 @@ fun DialogContentAddResult(
                     value = quarter.value,
                     singleLine = true,
                     enabled = oneEighth.value.isNotBlank(),
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         quarter.value = it.trim()
                     },
@@ -151,7 +164,7 @@ fun DialogContentAddResult(
                     value = semiFinal.value,
                     singleLine = true,
                     enabled = quarter.value.isNotBlank(),
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         semiFinal.value = it.trim()
                     },
@@ -162,7 +175,7 @@ fun DialogContentAddResult(
                     value = smallFinal.value,
                     singleLine = true,
                     enabled = semiFinal.value.isNotBlank() && final.value.isBlank(),
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         smallFinal.value = it.trim()
                     },
@@ -173,7 +186,7 @@ fun DialogContentAddResult(
                     value = final.value,
                     singleLine = true,
                     enabled = semiFinal.value.isNotBlank() && smallFinal.value.isBlank(),
-                    modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
                     onValueChange = {
                         final.value = it.trim()
                     },
@@ -197,7 +210,126 @@ fun DialogContentAddResult(
     @Composable
     fun Lead() {
         Column {
-            Text("Lead")
+            val rank = remember { mutableStateOf("") }
+            val qualification = remember { mutableStateOf("") }
+            val semiFinal = remember { mutableStateOf("") }
+            val final = remember { mutableStateOf("") }
+            val date = remember { mutableStateOf("") }
+            val competitionTitle = remember { mutableStateOf("") }
+            val competitionCity = remember { mutableStateOf("") }
+
+            val dateRegex = "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\$".toRegex()
+            val isDateError = remember { mutableStateOf(false) }
+
+            fun addResult() = coroutineScope.launch {
+                val competitionId =
+                    (database.getAllLeads().lastOrNull { it.id.contains("M") }?.id?.split("-")?.get(0)
+                        ?.split("_")?.get(0)?.toInt() ?: 0) + 1
+                val result = LeadGeneral(
+                    rank = rank.value.trim().toIntOrNull(),
+                    climberId = climberId,
+                    qualification = qualification.value,
+                    semiFinal = semiFinal.value.takeUnless { it.isBlank() },
+                    final = final.value.takeUnless { it.isBlank() },
+                )
+                database.writeLeadResults(
+                    listOf(result),
+                    date.value,
+                    competitionId.toString(),
+                    competitionTitle.value,
+                    competitionCity.value
+                )
+                onConfirmButtonClicked()
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                TextField(
+                    label = { Text("Data zawodów") },
+                    value = date.value,
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
+                    onValueChange = {
+                        date.value = it.trim()
+                        isDateError.value = !dateRegex.matches(date.value) || date.value.isBlank()
+                    },
+                    isError = isDateError.value
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    label = { Text("Nazwa zawodów") },
+                    value = competitionTitle.value,
+                    singleLine = true,
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
+                    onValueChange = {
+                        competitionTitle.value = it
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    label = { Text("Miasto") },
+                    value = competitionCity.value,
+                    singleLine = true,
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
+                    onValueChange = {
+                        competitionCity.value = it
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    label = { Text("Miejsce w zawodach") },
+                    value = rank.value,
+                    singleLine = true,
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
+                    onValueChange = {
+                        if (it.isEmpty() || it.toIntOrNull() != null) {
+                            rank.value = it.trim()
+                        }
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    label = { Text("Kwalifikacje") },
+                    value = qualification.value,
+                    singleLine = true,
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
+                    onValueChange = {
+                        qualification.value = it
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    label = { Text("Półfinał") },
+                    value = final.value,
+                    singleLine = true,
+                    enabled = semiFinal.value.isNotBlank(),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
+                    onValueChange = {
+                        final.value = it
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    label = { Text("Finał") },
+                    value = final.value,
+                    singleLine = true,
+                    enabled = semiFinal.value.isNotBlank(),
+                    modifier = Modifier.weight(1F).width(400.dp).wrapContentHeight(),
+                    onValueChange = {
+                        final.value = it
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = ::addResult,
+                    modifier = Modifier.align(Alignment.End),
+                    enabled = !isDateError.value
+                            && date.value.isNotBlank()
+                            && competitionTitle.value.isNotBlank()
+                            && competitionCity.value.isNotBlank()
+                            && qualification.value.isNotBlank()
+                ) {
+                    Text(text = "Dodaj")
+                }
+            }
         }
     }
 
@@ -210,7 +342,8 @@ fun DialogContentAddResult(
 
     return {
         Column(
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.wrapContentHeight()
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -236,7 +369,7 @@ fun DialogContentAddResult(
                             resultType.value = ContentType.LEAD
                         },
                     )
-                    Text("Bouldering")
+                    Text("Prowadzenie")
                 }
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -247,7 +380,7 @@ fun DialogContentAddResult(
                             resultType.value = ContentType.BOULDER
                         },
                     )
-                    Text("Prowadzenie")
+                    Text("Bouldering")
                 }
             }
             Spacer(Modifier.height(10.dp))

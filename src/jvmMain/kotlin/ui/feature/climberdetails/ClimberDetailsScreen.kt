@@ -18,24 +18,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import scraping.Scraper
 import scraping.model.Climber
 import scraping.model.RecordType
 import ui.common.Dialog
 import ui.common.TableCell
-import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_COMPARATIVE
-import ui.feature.climberdetails.ChartType.SPEED_PROGRESS_INDIVIDUAL
+import ui.feature.climberdetails.ChartType.*
 import ui.feature.climberdetails.ContentType.ANALYSIS
 import ui.feature.climberdetails.ContentType.BOULDER
 import ui.feature.climberdetails.ContentType.LEAD
 import ui.feature.climberdetails.ContentType.SPEED
 import ui.feature.climberdetails.chart.SpeedProgressComparativeChart
 import ui.feature.climberdetails.chart.SpeedProgressIndividualChart
+import ui.feature.climberdetails.chart.SuccessFailRatioPercentageChart
 import utils.AppColors
 import utils.ImageLoader
 
@@ -53,6 +56,16 @@ fun ClimberDetailsScreen(
     val speedResults = remember { mutableStateOf(database.getSpeedResultsByClimberId(climber.climberId)) }
     val boulderResults = remember { mutableStateOf(database.getBoulderResultsByClimberId(climber.climberId)) }
 
+    val isImageLoading = remember { mutableStateOf(true) }
+    val bitmap = remember { mutableStateOf<ImageBitmap?>(null) }
+    coroutineScope.launch {
+        delay(500)
+        if (climber.imageUrl.isNotBlank()) {
+            bitmap.value = ImageLoader.loadImageOfClimber(climber.imageUrl)
+        }
+        isImageLoading.value = false
+    }
+
     val selectedResultType = remember {
         mutableStateOf(
             if (speedResults.value.isNotEmpty()) SPEED
@@ -69,6 +82,11 @@ fun ClimberDetailsScreen(
     val chartSelected = remember { mutableStateOf<ChartType?>(null) }
 
     val isClimberDataEditable = climber.recordType == RecordType.UNOFFICIAL
+
+    val isEditDialogVisible = remember { mutableStateOf(false to "") }
+    fun showEditDialog(resultId: String) {
+        isEditDialogVisible.value = true to resultId
+    }
 
     @Composable
     fun LeadTable() {
@@ -127,7 +145,13 @@ fun ClimberDetailsScreen(
                 }
             }
             items(speedResults.value) {
-                Row(Modifier.fillMaxWidth()) {
+                Row(Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (isClimberDataEditable) {
+                            showEditDialog(it.id)
+                        }
+                    }) {
                     TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
                     TableCell(text = it.competitionCity, weight = weight2)
@@ -171,7 +195,6 @@ fun ClimberDetailsScreen(
                     TableCell(text = it.final ?: "-", weight = weight2)
                 }
             }
-
         }
     }
 
@@ -180,6 +203,7 @@ fun ClimberDetailsScreen(
         when (chartSelected.value) {
             SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.value.sortedBy { it.date })
             SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climber.climberId, database)
+            SUCCESS_FAIL_RATIO -> SuccessFailRatioPercentageChart(climber.climberId, database)
             else -> {}
         }
     }
@@ -218,20 +242,31 @@ fun ClimberDetailsScreen(
         )
         Spacer(Modifier.height(10.dp))
         Row {
-            Column {
-                val bitmap = ImageLoader.loadImageOfClimber(climber.imageUrl)
-                if (bitmap != null) {
-                    Image(
-                        bitmap = bitmap,
-                        contentDescription = null,
-                        modifier = Modifier.requiredHeightIn(max = 200.dp).border(1.dp, AppColors.Blue),
-                    )
-                } else {
-                    Image(
-                        painter = painterResource("climber-default.jpg"),
-                        contentDescription = null,
-                        modifier = Modifier.requiredHeightIn(max = 200.dp).border(1.dp, AppColors.Blue),
-                    )
+            Column(
+                verticalArrangement = Arrangement.Center
+            ) {
+                bitmap.value.let {
+                    if (isImageLoading.value) {
+                        Column(
+                            modifier = Modifier.width(200.dp).height(200.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            CircularProgressIndicator(color = AppColors.Blue)
+                        }
+                    } else if (it != null) {
+                        Image(
+                            bitmap = it,
+                            contentDescription = null,
+                            modifier = Modifier.requiredHeightIn(max = 200.dp).border(1.dp, AppColors.Blue),
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource("climber-default.jpg"),
+                            contentDescription = null,
+                            modifier = Modifier.requiredHeightIn(max = 200.dp).border(1.dp, AppColors.Blue),
+                        )
+                    }
                 }
             }
             Spacer(Modifier.width(20.dp))
@@ -265,7 +300,6 @@ fun ClimberDetailsScreen(
                             database = database,
                             coroutineScope = coroutineScope,
                             climberId = climber.climberId,
-                            defaultResultType = selectedResultType.value
                         ) {
                             isAddDialogVisible.value = false
                             speedResults.value = database.getSpeedResultsByClimberId(climber.climberId)
@@ -325,7 +359,8 @@ fun ClimberDetailsScreen(
                             }
                             DropdownMenu(
                                 expanded = isDropdownExpanded.value,
-                                onDismissRequest = { isDropdownExpanded.value = false }
+                                onDismissRequest = { isDropdownExpanded.value = false },
+                                modifier = Modifier.padding(5.dp),
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -333,21 +368,41 @@ fun ClimberDetailsScreen(
                                             chartSelected.value = SPEED_PROGRESS_INDIVIDUAL
                                             selectedResultType.value = ANALYSIS
                                         }
+                                        .align(Alignment.CenterHorizontally)
                                         .background(AppColors.Blue)
                                         .padding(8.dp)
                                 ) {
                                     Text(text = "Postęp indywidualny", color = Color.White, fontSize = 14.sp)
                                 }
+                                Spacer(Modifier.height(5.dp))
                                 Row(
                                     modifier = Modifier
                                         .clickable {
                                             chartSelected.value = SPEED_PROGRESS_COMPARATIVE
                                             selectedResultType.value = ANALYSIS
                                         }
+                                        .align(Alignment.CenterHorizontally)
                                         .background(AppColors.Blue)
                                         .padding(8.dp)
                                 ) {
                                     Text(text = "Porównanie z konkurencją", color = Color.White, fontSize = 14.sp)
+                                }
+                                Spacer(Modifier.height(5.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            chartSelected.value = SUCCESS_FAIL_RATIO
+                                            selectedResultType.value = ANALYSIS
+                                        }
+                                        .align(Alignment.CenterHorizontally)
+                                        .background(AppColors.Blue)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Udział dyskwalifikacji we wszystkich startach",
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
                                 }
                             }
                         }
@@ -362,12 +417,29 @@ fun ClimberDetailsScreen(
             BOULDER -> BoulderTable()
             ANALYSIS -> Analysis()
         }
+        if (isEditDialogVisible.value.first) {
+            Dialog(
+                title = "Aktualizacja wyniku",
+                content = DialogContentEditResult(
+                    database = database,
+                    coroutineScope = coroutineScope,
+                    resultId = isEditDialogVisible.value.second,
+                ) {
+                    leadResults.value = database.getLeadResultsByClimberId(climber.climberId)
+                    speedResults.value = database.getSpeedResultsByClimberId(climber.climberId)
+                    boulderResults.value = database.getBoulderResultsByClimberId(climber.climberId)
+                    isEditDialogVisible.value = false to "0"
+                },
+                onCloseRequest = { isEditDialogVisible.value = false to "0" },
+            )
+        }
     }
 }
 
 enum class ChartType {
     SPEED_PROGRESS_INDIVIDUAL,
     SPEED_PROGRESS_COMPARATIVE,
+    SUCCESS_FAIL_RATIO,
 }
 
 object ContentType {

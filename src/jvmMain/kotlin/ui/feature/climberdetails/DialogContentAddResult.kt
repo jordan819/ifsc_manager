@@ -25,7 +25,7 @@ fun DialogContentAddResult(
     onConfirmButtonClicked: () -> Unit,
 ): @Composable () -> Unit {
 
-    val resultType = remember { mutableStateOf(defaultResultType) }
+    val resultType = remember { mutableStateOf(defaultResultType ?: ContentType.SPEED) }
 
     @Composable
     fun Speed() {
@@ -255,7 +255,6 @@ fun DialogContentAddResult(
                 ContentType.SPEED -> Speed()
                 ContentType.LEAD -> Lead()
                 ContentType.BOULDER -> Boulder()
-                else -> Speed()
             }
 
         }

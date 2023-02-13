@@ -2,6 +2,7 @@ package ui.feature.climberdetails
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -41,15 +42,15 @@ fun DialogContentAddResult(
             val competitionTitle = remember { mutableStateOf("") }
             val competitionCity = remember { mutableStateOf("") }
 
-            val dateRegex = "^\\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?\$".toRegex()
+            val dateRegex = "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\$".toRegex()
             val isDateError = remember { mutableStateOf(false) }
 
             fun addResult() = coroutineScope.launch {
                 val competitionId =
-                    (database.getAllClimbers().lastOrNull { it.id.contains("M") }?.id?.split("-")?.get(0)?.toInt()
-                        ?: 0) + 1
+                    (database.getAllSpeeds().lastOrNull { it.id.contains("M") }?.id?.split("-")?.get(0)
+                        ?.split("_")?.get(0)?.toInt() ?: 0) + 1
                 val result = SpeedResult(
-                    rank = rank.value.toIntOrNull(),
+                    rank = rank.value.trim().toIntOrNull(),
                     climberId = climberId,
                     laneA = laneA.value.takeUnless { it.isBlank() },
                     laneB = laneB.value.takeUnless { it.isBlank() },
@@ -59,8 +60,13 @@ fun DialogContentAddResult(
                     smallFinal = smallFinal.value.takeUnless { it.isBlank() },
                     final = final.value.takeUnless { it.isBlank() },
                 )
-                // TODO
-//                database.writeSpeedResult(result, date.value, competitionId, competitionTitle.value, competitionCity.value)
+                database.writeSpeedResult(
+                    result,
+                    date.value,
+                    competitionId.toString(),
+                    competitionTitle.value,
+                    competitionCity.value
+                )
                 onConfirmButtonClicked()
             }
 
@@ -71,7 +77,7 @@ fun DialogContentAddResult(
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
                     onValueChange = {
                         date.value = it.trim()
-                        isDateError.value = !dateRegex.matches(date.value) && date.value.isNotEmpty()
+                        isDateError.value = !dateRegex.matches(date.value) || date.value.isBlank()
                     },
                     isError = isDateError.value
                 )
@@ -102,7 +108,9 @@ fun DialogContentAddResult(
                     singleLine = true,
                     modifier = Modifier.weight(1F).width(400.dp).height(IntrinsicSize.Min),
                     onValueChange = {
-                        laneA.value = it.trim()
+                        if (it.isEmpty() || it.toFloatOrNull() != null) {
+                            laneA.value = it.trim()
+                        }
                     },
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -174,7 +182,11 @@ fun DialogContentAddResult(
                 Button(
                     onClick = ::addResult,
                     modifier = Modifier.align(Alignment.End),
-//                    enabled = !isNameError.value && !isDateError.value, // TODO
+                    enabled = !isDateError.value
+                            && date.value.isNotBlank()
+                            && competitionTitle.value.isNotBlank()
+                            && competitionCity.value.isNotBlank()
+                            && (laneA.value.isNotBlank() || laneB.value.isNotBlank())
                 ) {
                     Text(text = "Dodaj")
                 }
@@ -197,14 +209,56 @@ fun DialogContentAddResult(
     }
 
     return {
+        Column(
+            verticalArrangement = Arrangement.Center
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.width(400.dp),
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    RadioButton(
+                        selected = (resultType.value == ContentType.SPEED),
+                        onClick = {
+                            resultType.value = ContentType.SPEED
+                        },
+                    )
+                    Text("Czas")
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    RadioButton(
+                        selected = (resultType.value == ContentType.LEAD),
+                        onClick = {
+                            resultType.value = ContentType.LEAD
+                        },
+                    )
+                    Text("Bouldering")
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    RadioButton(
+                        selected = (resultType.value == ContentType.BOULDER),
+                        onClick = {
+                            resultType.value = ContentType.BOULDER
+                        },
+                    )
+                    Text("Prowadzenie")
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            when (resultType.value) {
+                ContentType.SPEED -> Speed()
+                ContentType.LEAD -> Lead()
+                ContentType.BOULDER -> Boulder()
+                else -> Speed()
+            }
 
-        when (resultType.value) {
-            ContentType.SPEED -> Speed()
-            ContentType.LEAD -> Lead()
-            ContentType.BOULDER -> Boulder()
-            else -> Speed()
         }
-
     }
 
 }

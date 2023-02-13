@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.realm.Database
 import io.realm.model.ClimberRealm
 import kotlinx.coroutines.CoroutineScope
@@ -195,8 +196,15 @@ fun ClimberListScreen(
                     }
 
                 } catch (e: Exception) {
+                    val type = when(mode) {
+                        InputDataType.CLIMBER -> "zawodników"
+                        InputDataType.SPEED -> "wyników zawodów na czas"
+                        InputDataType.LEAD -> "wyników zawodów na prowadzenie"
+                        InputDataType.BOULDER -> "wyników typu bouldering"
+                        null -> "danych"
+                    }
                     errorDisplay.value = ErrorDisplay(
-                        message = "Wystąpił błąd podczas odczytu zawodników z pliku ${file.name}\n" +
+                        message = "Wystąpił błąd podczas odczytu $type z pliku ${file.name}\n" +
                                 "Upewnij się, że zawarte w nim dane są poprawne.",
                         isVisible = true
                     )
@@ -270,19 +278,47 @@ fun ClimberListScreen(
                 }
                 DropdownMenu(
                     expanded = isImportDropdownExpanded.value,
-                    onDismissRequest = { isImportDropdownExpanded.value = false }
+                    onDismissRequest = { isImportDropdownExpanded.value = false },
+                    modifier = Modifier.padding(5.dp),
                 ) {
-                    Button(onClick = { importMode.value = InputDataType.CLIMBER }) {
-                        Text("Zawodnicy")
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.CLIMBER }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Zawodnicy", color = Color.White, fontSize = 16.sp)
                     }
-                    Button(onClick = { importMode.value = InputDataType.SPEED }) {
-                        Text("SPEED")
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.SPEED }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Czas", color = Color.White, fontSize = 16.sp)
                     }
-                    Button(onClick = { importMode.value = InputDataType.BOULDER }) {
-                        Text("BOULDER")
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.BOULDER }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Bouldering", color = Color.White, fontSize = 16.sp)
                     }
-                    Button(onClick = { importMode.value = InputDataType.LEAD }) {
-                        Text("LEAD")
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.LEAD }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Prowadzenie", color = Color.White, fontSize = 16.sp)
                     }
                 }
                 IconButton(onClick = { isFilterDropdownExpanded.value = true }) {

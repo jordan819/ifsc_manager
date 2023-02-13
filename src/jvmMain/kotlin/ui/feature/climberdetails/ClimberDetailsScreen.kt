@@ -20,9 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import io.realm.Database
-import io.realm.model.BoulderResultRealm
-import io.realm.model.LeadResultRealm
-import io.realm.model.SpeedResultRealm
 import kotlinx.coroutines.CoroutineScope
 import scraping.Scraper
 import scraping.model.Climber
@@ -44,20 +41,21 @@ import utils.ImageLoader
 fun ClimberDetailsScreen(
     climber: Climber?,
     onBackClick: () -> Unit,
-    leadResults: List<LeadResultRealm>,
-    speedResults: List<SpeedResultRealm>,
-    boulderResults: List<BoulderResultRealm>,
     database: Database,
     coroutineScope: CoroutineScope,
 ) {
 
     if (climber == null) return
 
+    val leadResults = remember { mutableStateOf(database.getLeadResultsByClimberId(climber.climberId)) }
+    val speedResults = remember { mutableStateOf(database.getSpeedResultsByClimberId(climber.climberId)) }
+    val boulderResults = remember { mutableStateOf(database.getBoulderResultsByClimberId(climber.climberId)) }
+
     val selectedResultType = remember {
         mutableStateOf(
-            if (speedResults.isNotEmpty()) SPEED
-            else if (leadResults.isNotEmpty()) LEAD
-            else if (boulderResults.isNotEmpty()) BOULDER
+            if (speedResults.value.isNotEmpty()) SPEED
+            else if (leadResults.value.isNotEmpty()) LEAD
+            else if (boulderResults.value.isNotEmpty()) BOULDER
             else null
         )
     }
@@ -86,7 +84,7 @@ fun ClimberDetailsScreen(
                     TableCell(text = "Finał", weight = weight2)
                 }
             }
-            items(leadResults) {
+            items(leadResults.value) {
                 Row(Modifier.fillMaxWidth()) {
                     TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
@@ -126,7 +124,7 @@ fun ClimberDetailsScreen(
                     TableCell(text = "Finał", weight = weight1)
                 }
             }
-            items(speedResults) {
+            items(speedResults.value) {
                 Row(Modifier.fillMaxWidth()) {
                     TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
@@ -161,7 +159,7 @@ fun ClimberDetailsScreen(
                     TableCell(text = "Finał", weight = weight2)
                 }
             }
-            items(boulderResults) {
+            items(boulderResults.value) {
                 Row(Modifier.fillMaxWidth()) {
                     TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
@@ -179,7 +177,7 @@ fun ClimberDetailsScreen(
     @Composable
     fun Analysis() {
         when (chartSelected.value) {
-            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.sortedBy { it.date })
+            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.value.sortedBy { it.date })
             SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climber.climberId, database)
             else -> {}
         }
@@ -195,9 +193,8 @@ fun ClimberDetailsScreen(
     }
 
     Column(
-        modifier = Modifier.background(AppColors.Gray),
+        modifier = Modifier.background(AppColors.Gray).fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
     ) {
         TopAppBar(
             title = {
@@ -251,21 +248,21 @@ fun ClimberDetailsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    Text("Id: ${climber.climberId}")
+                    Text("${climber.name} (Id: ${climber.climberId})")
                 }
                 Row {
                     Text(
-                        text = "Liczba zawodów typu bouldering: ${boulderResults.size}"
+                        text = "Liczba zawodów typu bouldering: ${boulderResults.value.size}"
                     )
                 }
                 Row {
                     Text(
-                        text = "Liczba zawodów typu prowadzenie: ${leadResults.size}"
+                        text = "Liczba zawodów typu prowadzenie: ${leadResults.value.size}"
                     )
                 }
                 Row {
                     Text(
-                        text = "Liczba zawodów typu prędkość: ${speedResults.size}"
+                        text = "Liczba zawodów typu prędkość: ${speedResults.value.size}"
                     )
                 }
 
@@ -278,7 +275,10 @@ fun ClimberDetailsScreen(
                             climberId = climber.climberId,
                             defaultResultType = selectedResultType.value
                         ) {
-                            // TODO: refresh results lists
+                            isAddDialogVisible.value = false
+                            speedResults.value = database.getSpeedResultsByClimberId(climber.climberId)
+                            leadResults.value = database.getLeadResultsByClimberId(climber.climberId)
+                            boulderResults.value = database.getBoulderResultsByClimberId(climber.climberId)
                         },
                         onCloseRequest = { isAddDialogVisible.value = false },
                     )
@@ -287,19 +287,19 @@ fun ClimberDetailsScreen(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(15.dp)
                 ) {
-                    if (leadResults.isNotEmpty()) {
+                    if (leadResults.value.isNotEmpty()) {
                         SelectContentButton(
                             onClick = { selectedResultType.value = LEAD },
                             text = "LEAD"
                         )
                     }
-                    if (speedResults.isNotEmpty()) {
+                    if (speedResults.value.isNotEmpty()) {
                         SelectContentButton(
                             onClick = { selectedResultType.value = SPEED },
                             text = "SPEED"
                         )
                     }
-                    if (boulderResults.isNotEmpty()) {
+                    if (boulderResults.value.isNotEmpty()) {
                         SelectContentButton(
                             onClick = { selectedResultType.value = BOULDER },
                             text = "BOULDER"
@@ -307,7 +307,7 @@ fun ClimberDetailsScreen(
                     }
                 }
                 Row {
-                    if (leadResults.isNotEmpty() || speedResults.isNotEmpty() || boulderResults.isNotEmpty()) {
+                    if (leadResults.value.isNotEmpty() || speedResults.value.isNotEmpty() || boulderResults.value.isNotEmpty()) {
                         SelectContentButton(
                             onClick = { selectedResultType.value = ANALYSIS },
                             text = "Analiza wyników"

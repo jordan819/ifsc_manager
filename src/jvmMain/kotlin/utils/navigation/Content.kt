@@ -49,6 +49,7 @@ class Root(
         Home(
             navigateToClimberList = { router.push(Configuration.ClimberList) },
             database = database,
+            errorDisplay = errorDisplay,
         ).asContent { HomeUi(it) }
 
     private fun climberList(): Content =

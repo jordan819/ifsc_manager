@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.realm.Database
@@ -202,11 +204,12 @@ fun ClimberListScreen(
                         InputDataType.BOULDER -> "wyników typu bouldering"
                         null -> "danych"
                     }
-                    errorDisplay.value = ErrorDisplay(
-                        message = "Wystąpił błąd podczas odczytu $type z pliku ${file.name}\n" +
-                                "Upewnij się, że zawarte w nim dane są poprawne.",
-                        isVisible = true
-                    )
+                    val message: AnnotatedString = buildAnnotatedString {
+                        val str =
+                            "Wystąpił błąd podczas odczytu $type z pliku ${file.name}\n" + "Upewnij się, że zawarte w nim dane są poprawne."
+                        append(str)
+                    }
+                    errorDisplay.value = ErrorDisplay(message)
                 }
                 updateListDisplay()
             }

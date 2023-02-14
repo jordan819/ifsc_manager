@@ -61,8 +61,8 @@ class Scraper(
         try {
             driver = ChromeDriver(driverOptions)
             val capabilities = driver.capabilities
-            driverVersion = capabilities.version.split(".").first().toIntOrNull()
-            chromeVersion =
+            chromeVersion = capabilities.version.split(".").first().toIntOrNull()
+            driverVersion =
                 (capabilities.getCapability("chrome") as Map<String, String>)["chromedriverVersion"]?.split(".")
                     ?.first()?.toIntOrNull()
         } catch (e: IllegalStateException) {

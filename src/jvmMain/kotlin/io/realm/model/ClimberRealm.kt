@@ -10,6 +10,7 @@ class ClimberRealm : RealmObject {
     @PrimaryKey
     var id: String = "0"
     var name: String = ""
+    var imageUrl: String = ""
     var sex: String? = null
     var dateOfBirth: String? = null
     var country: String = ""

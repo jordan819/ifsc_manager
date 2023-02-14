@@ -1,5 +1,6 @@
 package ui.common
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
@@ -8,6 +9,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogState
+import utils.AppColors
 
 @Composable
 fun Dialog(
@@ -19,13 +21,13 @@ fun Dialog(
     Dialog(
         title = title,
         state = DialogState(size = DpSize.Companion.Unspecified),
-        onCloseRequest = onCloseRequest
+        onCloseRequest = onCloseRequest,
+        resizable = false,
     ) {
-        Card(
-            elevation = 8.dp,
-        ) {
+        Card {
             Column(
                 modifier = Modifier
+                    .background(AppColors.Gray)
                     .padding(8.dp)
                     .height(IntrinsicSize.Min)
             ) {

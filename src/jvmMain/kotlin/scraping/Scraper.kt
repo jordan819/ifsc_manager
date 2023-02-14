@@ -5,6 +5,7 @@ import io.realm.Database
 import kotlinx.coroutines.delay
 import org.openqa.selenium.By
 import org.openqa.selenium.TimeoutException
+import org.openqa.selenium.WebDriverException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
@@ -21,6 +22,7 @@ import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedFinal
 import scraping.model.speed.SpeedQualification
 import scraping.model.speed.SpeedResult
+import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -50,6 +52,29 @@ class Scraper(
             System.setProperty("webdriver.chrome.driver", "chromedriver")
         }
         driverOptions.addArguments("--headless")
+    }
+
+    fun getDriverAndChromeVersions(): Pair<Int?, Int?> {
+        var driverVersion: Int?
+        var chromeVersion: Int?
+        var driver: ChromeDriver? = null
+        try {
+            driver = ChromeDriver(driverOptions)
+            val capabilities = driver.capabilities
+            driverVersion = capabilities.version.split(".").first().toIntOrNull()
+            chromeVersion =
+                (capabilities.getCapability("chrome") as Map<String, String>)["chromedriverVersion"]?.split(".")
+                    ?.first()?.toIntOrNull()
+        } catch (e: IllegalStateException) {
+            driverVersion = null
+            chromeVersion = -1
+        } catch (e: WebDriverException) {
+            driverVersion = -1
+            chromeVersion = null
+        } finally {
+            driver?.close()
+        }
+        return driverVersion to chromeVersion
     }
 
     /**
@@ -130,7 +155,8 @@ class Scraper(
         val age =
             (driver.findElementByClassName("age") as RemoteWebElement).findElementByTagName("strong").text.toIntOrNull()
         val dateOfBirth = age?.let { Calendar.getInstance().get(Calendar.YEAR) - it }.toString()
-        return Climber(climberId.toString(), name, sex, dateOfBirth, country, federation, RecordType.OFFICIAL)
+        val imageUrl = "https://ifsc.results.info/athletes/$climberId/photo"
+        return Climber(climberId.toString(), name, imageUrl, sex, dateOfBirth, country, federation, RecordType.OFFICIAL)
     }
 
     /**

@@ -16,30 +16,37 @@ import java.awt.Toolkit
 fun SpeedProgressIndividualChart(
     speedResults: List<SpeedResultRealm>,
 ) {
+    val laneAResult = mutableListOf<Double?>()
+    val laneBResult = mutableListOf<Double?>()
     val oneEightResult = mutableListOf<Double?>()
     val quarterResult = mutableListOf<Double?>()
     val semiResult = mutableListOf<Double?>()
     val smallResult = mutableListOf<Double?>()
     val finalResult = mutableListOf<Double?>()
     speedResults.forEach { result: SpeedResultRealm ->
+        laneAResult.add(result.laneA?.toDoubleOrNull())
+        laneBResult.add(result.laneB?.toDoubleOrNull())
         oneEightResult.add(result.oneEighth?.toDoubleOrNull())
         quarterResult.add(result.quarter?.toDoubleOrNull())
         semiResult.add(result.semiFinal?.toDoubleOrNull())
         smallResult.add(result.smallFinal?.toDoubleOrNull())
         finalResult.add(result.final?.toDoubleOrNull())
     }
-    val xLabels = (1..oneEightResult.size).toList()
+    val xLabels = (1..laneAResult.size).toList()
 
     val screenSize = Toolkit.getDefaultToolkit().screenSize
     val width = screenSize.getWidth()
 
     val chart = XYChartBuilder()
+        .title("Postęp zawodnika w czasie")
         .xAxisTitle("Index")
         .yAxisTitle("Czas")
         .width(width.toInt())
         .build()
 
-    chart.addSeries("1/8", xLabels, oneEightResult).marker = SeriesMarkers.CIRCLE
+    chart.addSeries("Tor A", xLabels, laneAResult).marker = SeriesMarkers.CIRCLE
+    addChartSeries(chart, "Tor B", laneBResult)
+    addChartSeries(chart, "1/8", oneEightResult)
     addChartSeries(chart, "1/4", quarterResult)
     addChartSeries(chart, "Półfinał", semiResult)
     addChartSeries(chart, "Mały finał", smallResult)
@@ -48,7 +55,6 @@ fun SpeedProgressIndividualChart(
     val image = BitmapEncoder.getBufferedImage(chart).toComposeImageBitmap()
 
     Column {
-        Text("Postęp zawodnika w czasie")
         Image(
             bitmap = image,
             contentDescription = null,

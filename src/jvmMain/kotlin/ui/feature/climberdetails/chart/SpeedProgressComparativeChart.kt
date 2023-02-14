@@ -23,6 +23,20 @@ fun SpeedProgressComparativeChart(
     val allResults =
         database.getAllSpeeds().filter { it.climberId != climberId && it.id.split("_")[0] in competitionIds }
 
+    val climberLaneA: List<Double> = climberResults.mapNotNull { result: SpeedResultRealm ->
+        result.laneA?.toDoubleOrNull()
+    }
+    val allLaneA: List<Double> = allResults.mapNotNull { result: SpeedResultRealm ->
+        result.laneA?.toDoubleOrNull()
+    }
+
+    val climberLaneB: List<Double> = climberResults.mapNotNull { result: SpeedResultRealm ->
+        result.laneB?.toDoubleOrNull()
+    }
+    val allLaneB: List<Double> = allResults.mapNotNull { result: SpeedResultRealm ->
+        result.laneB?.toDoubleOrNull()
+    }
+
     val climberEight: List<Double> = climberResults.mapNotNull { result: SpeedResultRealm ->
         result.oneEighth?.toDoubleOrNull()
     }
@@ -67,7 +81,9 @@ fun SpeedProgressComparativeChart(
         .width(width.toInt())
         .build()
 
-    val climberYData = listOf(
+    val climberYData = listOfNotNull(
+        climberLaneA.takeUnless { it.isEmpty() }?.average(),
+        climberLaneB.average(),
         climberEight.average(),
         climberQuarter.average(),
         climberSemi.average(),
@@ -75,6 +91,8 @@ fun SpeedProgressComparativeChart(
         climberFinal.average(),
     )
     val allYData = listOf(
+        allLaneA.average(),
+        allLaneB.average(),
         allEight.average(),
         allQuarter.average(),
         allSemi.average(),

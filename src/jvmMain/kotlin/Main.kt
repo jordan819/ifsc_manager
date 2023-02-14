@@ -11,13 +11,11 @@ import com.toxicbakery.logging.Seedling
 import io.realm.Database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import scraping.Scraper
 import ui.common.ErrorDialog
 import ui.common.ErrorDisplay
 import utils.navigation.Root
 import utils.navigation.RootUi
-import java.time.LocalDateTime
 
 fun main() {
     Arbor.sow(Seedling())
@@ -26,7 +24,7 @@ fun main() {
     application {
         val icon = painterResource("logo.png")
 
-        val showError = remember { mutableStateOf(ErrorDisplay("", false)) }
+        val showError = remember { mutableStateOf(ErrorDisplay(null)) }
 
         Window(
             onCloseRequest = ::exitApplication,
@@ -35,7 +33,7 @@ fun main() {
         ) {
             RootUi(root(showError))
 
-            if (showError.value.isVisible) {
+            if (showError.value.message != null) {
                 ErrorDialog(showError)
             }
         }

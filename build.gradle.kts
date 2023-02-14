@@ -16,6 +16,7 @@ repositories {
     google()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    maven("https://packages.jetbrains.team/maven/p/skija/maven")
 }
 
 kotlin {
@@ -53,6 +54,10 @@ kotlin {
 
                 // CSV files support
                 implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
+
+                // Image Loader
+                api("org.jetbrains.skija:skija-windows:0.93.6")
+
             }
         }
         val jvmTest by getting {

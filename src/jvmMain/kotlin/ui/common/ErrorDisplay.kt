@@ -1,6 +1,7 @@
 package ui.common
 
+import androidx.compose.ui.text.AnnotatedString
+
 data class ErrorDisplay(
-    val message: String,
-    val isVisible: Boolean,
+    val message: AnnotatedString?,
 )

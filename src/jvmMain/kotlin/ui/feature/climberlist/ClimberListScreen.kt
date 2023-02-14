@@ -7,32 +7,37 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.realm.Database
 import io.realm.model.ClimberRealm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import scraping.Scraper
 import scraping.model.RecordType
 import scraping.model.Sex
 import ui.common.Dialog
 import ui.common.ErrorDisplay
 import ui.common.TableCell
+import utils.AppColors
 import utils.CsvHelper
 import utils.FileHelper
 import java.nio.file.Path
 
 @Composable
 fun ClimberListScreen(
-    scraper: Scraper,
     database: Database,
     onBackClick: () -> Unit,
     navigateToClimberDetails: (climberId: String) -> Unit,
@@ -60,6 +65,8 @@ fun ClimberListScreen(
     val isImportDropdownExpanded = remember { mutableStateOf(false) }
     val isSortDropdownExpanded = remember { mutableStateOf(false) }
     val isFilterDropdownExpanded = remember { mutableStateOf(false) }
+
+    val isDeletingEnabled = remember { mutableStateOf(false) }
 
     fun showAddClimberDialog() {
         isAddDialogVisible.value = true
@@ -125,392 +132,424 @@ fun ClimberListScreen(
         updateListDisplay()
     }
 
-    fun fetchNewClimbers() {
-        coroutineScope.launch {
-            scraper.fetchNewClimbers()
-        }
-    }
-
     if (!initDone.value) {
         initDone.value = true
         updateListDisplay()
     }
 
-    MaterialTheme {
+    if (isAddDialogVisible.value) {
+        Dialog(
+            title = "Dodawanie zawodnika",
+            content = DialogContentAddClimber(database, coroutineScope) {
+                updateListDisplay()
+            },
+            onCloseRequest = { isAddDialogVisible.value = false },
+        )
+    }
 
-        if (isAddDialogVisible.value) {
-            Dialog(
-                title = "Dodawanie zawodnika",
-                content = DialogContentAddClimber(database, coroutineScope) {
-                    updateListDisplay()
-                },
-                onCloseRequest = { isAddDialogVisible.value = false },
-            )
-        }
-
-        if (isEditDialogVisible.value.first) {
-            Dialog(
-                title = "Aktualizacja zawodnika",
-                content = DialogContentEditClimber(
-                    climberId = isEditDialogVisible.value.second,
-                    database = database,
-                    coroutineScope = coroutineScope,
-                ) {
-                    updateListDisplay()
-                    isEditDialogVisible.value = false to "0"
-                },
-                onCloseRequest = { isEditDialogVisible.value = false to "0" },
-            )
-        }
-
-        if (importMode.value != null) {
-            val mode = importMode.value
-            val file = FileHelper().selectCsvFile()
-            importMode.value = null
-            isImportDropdownExpanded.value = false
-            if (file != null) {
-                coroutineScope.launch {
-                    try {
-                        when (mode) {
-                            InputDataType.CLIMBER -> {
-                                val climbers = CsvHelper().readClimbers(file.path)
-                                climbers.forEach {
-                                    database.writeClimber(it)
-                                }
-                            }
-
-                            InputDataType.SPEED -> {
-                                val speeds = CsvHelper().readSpeeds(file.path)
-                                database.writeSpeedResults(speeds)
-                            }
-
-                            InputDataType.LEAD -> {
-                                val leads = CsvHelper().readLeads(file.path)
-                                database.writeLeadResults(leads)
-                            }
-
-                            InputDataType.BOULDER -> {
-                                val boulders = CsvHelper().readBoulders(file.path)
-                                database.writeBoulderResults(boulders)
-                            }
-
-                            null -> return@launch
-                        }
-
-                    } catch (e: Exception) {
-                        errorDisplay.value = ErrorDisplay(
-                            message = "Wystąpił błąd podczas odczytu zawodników z pliku ${file.name}\n" +
-                                    "Upewnij się, że zawarte w nim dane są poprawne.",
-                            isVisible = true
-                        )
-                    }
-                    updateListDisplay()
-                }
-            }
-        }
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Zawodnicy"
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = null
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showAddClimberDialog() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = null,
-                            modifier = Modifier.height(35.dp),
-                        )
-                    }
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            val climbers = database.getAllClimbers()
-                            val boulders = database.getAllBoulders()
-                            val leads = database.getAllLeads()
-                            val speeds = database.getAllSpeeds()
-                            val path: Path = CsvHelper().writeClimbers(climbers)
-                            CsvHelper().writeBoulders(boulders)
-                            CsvHelper().writeLeads(leads)
-                            CsvHelper().writeSpeeds(speeds)
-                            withContext(Dispatchers.IO) {
-                                val os = System.getProperty("os.name").toLowerCase()
-                                if (os.startsWith("windows")) {
-                                    Runtime.getRuntime().exec("explorer.exe /select,$path")
-                                } else if (os.startsWith("mac")) {
-                                    Runtime.getRuntime().exec("open -R $path")
-                                } else if (os.startsWith("linux")) {
-                                    Runtime.getRuntime().exec("nautilus $path")
-                                }
-                            }
-                        }
-                    }) {
-                        Icon(
-                            painter = painterResource("export.svg"),
-                            contentDescription = null,
-                            modifier = Modifier.height(35.dp),
-                        )
-                    }
-                    IconButton(onClick = { isImportDropdownExpanded.value = true }) {
-                        Icon(
-                            painter = painterResource("import.svg"),
-                            contentDescription = null,
-                            modifier = Modifier.height(35.dp),
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = isImportDropdownExpanded.value,
-                        onDismissRequest = { isImportDropdownExpanded.value = false }
-                    ) {
-                        Button(onClick = { importMode.value = InputDataType.CLIMBER }) {
-                            Text("Zawodnicy")
-                        }
-                        Button(onClick = { importMode.value = InputDataType.SPEED }) {
-                            Text("SPEED")
-                        }
-                        Button(onClick = { importMode.value = InputDataType.BOULDER }) {
-                            Text("BOULDER")
-                        }
-                        Button(onClick = { importMode.value = InputDataType.LEAD }) {
-                            Text("LEAD")
-                        }
-                    }
-                }
-            )
-
-            Row(
-//                horizontalAlignment = Alignment.CenterHorizontally
+    if (isEditDialogVisible.value.first) {
+        Dialog(
+            title = "Aktualizacja zawodnika",
+            content = DialogContentEditClimber(
+                climberId = isEditDialogVisible.value.second,
+                database = database,
+                coroutineScope = coroutineScope,
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Filtrowanie"
-                    )
-                    IconButton(onClick = { isFilterDropdownExpanded.value = true }) {
-                        Icon(Icons.Default.ArrowDropDown, "")
+                updateListDisplay()
+                isEditDialogVisible.value = false to "0"
+            },
+            onCloseRequest = { isEditDialogVisible.value = false to "0" },
+        )
+    }
+
+    if (importMode.value != null) {
+        val mode = importMode.value
+        val file = FileHelper().selectCsvFile()
+        importMode.value = null
+        isImportDropdownExpanded.value = false
+        if (file != null) {
+            coroutineScope.launch {
+                try {
+                    when (mode) {
+                        InputDataType.CLIMBER -> {
+                            val climbers = CsvHelper().readClimbers(file.path)
+                            climbers.forEach {
+                                database.writeClimber(it)
+                            }
+                        }
+
+                        InputDataType.SPEED -> {
+                            val speeds = CsvHelper().readSpeeds(file.path)
+                            database.writeSpeedResults(speeds)
+                        }
+
+                        InputDataType.LEAD -> {
+                            val leads = CsvHelper().readLeads(file.path)
+                            database.writeLeadResults(leads)
+                        }
+
+                        InputDataType.BOULDER -> {
+                            val boulders = CsvHelper().readBoulders(file.path)
+                            database.writeBoulderResults(boulders)
+                        }
+
+                        null -> return@launch
                     }
-                    DropdownMenu(
-                        expanded = isFilterDropdownExpanded.value,
-                        onDismissRequest = {
-                            isFilterDropdownExpanded.value = false
-                            updateListDisplay()
-                        },
+
+                } catch (e: Exception) {
+                    val type = when (mode) {
+                        InputDataType.CLIMBER -> "zawodników"
+                        InputDataType.SPEED -> "wyników zawodów na czas"
+                        InputDataType.LEAD -> "wyników zawodów na prowadzenie"
+                        InputDataType.BOULDER -> "wyników typu bouldering"
+                        null -> "danych"
+                    }
+                    val message: AnnotatedString = buildAnnotatedString {
+                        val str =
+                            "Wystąpił błąd podczas odczytu $type z pliku ${file.name}\n" + "Upewnij się, że zawarte w nim dane są poprawne."
+                        append(str)
+                    }
+                    errorDisplay.value = ErrorDisplay(message)
+                }
+                updateListDisplay()
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier.background(AppColors.Gray),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        TopAppBar(
+            title = {
+                Text("Zawodnicy")
+            },
+            backgroundColor = AppColors.Blue,
+            modifier = Modifier.height(70.dp),
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = { showAddClimberDialog() }) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
+                }
+                IconButton(onClick = {
+                    coroutineScope.launch {
+                        val climbers = database.getAllClimbers()
+                        val boulders = database.getAllBoulders()
+                        val leads = database.getAllLeads()
+                        val speeds = database.getAllSpeeds()
+                        val path: Path = CsvHelper().writeClimbers(climbers)
+                        CsvHelper().writeBoulders(boulders)
+                        CsvHelper().writeLeads(leads)
+                        CsvHelper().writeSpeeds(speeds)
+                        withContext(Dispatchers.IO) {
+                            val os = System.getProperty("os.name").toLowerCase()
+                            if (os.startsWith("windows")) {
+                                Runtime.getRuntime().exec("explorer.exe /select,$path")
+                            } else if (os.startsWith("mac")) {
+                                Runtime.getRuntime().exec("open -R $path")
+                            } else if (os.startsWith("linux")) {
+                                Runtime.getRuntime().exec("nautilus $path")
+                            }
+                        }
+                    }
+                }) {
+                    Icon(
+                        painter = painterResource("export.svg"),
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
+                }
+                IconButton(onClick = { isImportDropdownExpanded.value = true }) {
+                    Icon(
+                        painter = painterResource("import.svg"),
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
+                }
+                DropdownMenu(
+                    expanded = isImportDropdownExpanded.value,
+                    onDismissRequest = { isImportDropdownExpanded.value = false },
+                    modifier = Modifier.padding(5.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.CLIMBER }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.End,
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        ) {
-                            Row {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Brał udział w zawodach"
-                                    )
-                                    Checkbox(
-                                        checked = hasAnyResultChecked.value,
-                                        onCheckedChange = {
-                                            hasAnyResultChecked.value = it
-                                        },
-                                    )
-                                }
+                        Text(text = "Zawodnicy", color = Color.White, fontSize = 16.sp)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.SPEED }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Czas", color = Color.White, fontSize = 16.sp)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.BOULDER }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Bouldering", color = Color.White, fontSize = 16.sp)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable { importMode.value = InputDataType.LEAD }
+                            .background(AppColors.Blue)
+                            .padding(15.dp)
+                    ) {
+                        Text(text = "Prowadzenie", color = Color.White, fontSize = 16.sp)
+                    }
+                }
+                IconButton(onClick = { isFilterDropdownExpanded.value = true }) {
+                    Icon(
+                        painter = painterResource("filter.svg"),
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
+                }
+                DropdownMenu(
+                    expanded = isFilterDropdownExpanded.value,
+                    onDismissRequest = {
+                        isFilterDropdownExpanded.value = false
+                        updateListDisplay()
+                    },
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    ) {
+                        Row {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Brał udział w zawodach"
+                                )
+                                Checkbox(
+                                    checked = hasAnyResultChecked.value,
+                                    onCheckedChange = {
+                                        hasAnyResultChecked.value = it
+                                    },
+                                )
+                            }
+                        }
+
+                        Row {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Oficjalny"
+                                )
+                                Checkbox(
+                                    checked = isOfficialChecked.value,
+                                    onCheckedChange = {
+                                        isOfficialChecked.value = it
+                                    },
+                                )
                             }
 
-                            Row {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Oficjalny"
-                                    )
-                                    Checkbox(
-                                        checked = isOfficialChecked.value,
-                                        onCheckedChange = {
-                                            isOfficialChecked.value = it
-                                        },
-                                    )
-                                }
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Nieoficjalny"
-                                    )
-                                    Checkbox(
-                                        checked = isUnofficialChecked.value,
-                                        onCheckedChange = {
-                                            isUnofficialChecked.value = it
-                                        },
-                                    )
-                                }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Nieoficjalny"
+                                )
+                                Checkbox(
+                                    checked = isUnofficialChecked.value,
+                                    onCheckedChange = {
+                                        isUnofficialChecked.value = it
+                                    },
+                                )
                             }
-                            Row {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Mężczyzna"
-                                    )
-                                    Checkbox(
-                                        checked = isMaleChecked.value,
-                                        onCheckedChange = {
-                                            isMaleChecked.value = it
-                                        },
-                                    )
-                                }
+                        }
+                        Row {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Mężczyzna"
+                                )
+                                Checkbox(
+                                    checked = isMaleChecked.value,
+                                    onCheckedChange = {
+                                        isMaleChecked.value = it
+                                    },
+                                )
+                            }
 
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Kobieta"
-                                    )
-                                    Checkbox(
-                                        checked = isFemaleChecked.value,
-                                        onCheckedChange = {
-                                            isFemaleChecked.value = it
-                                        },
-                                    )
-                                }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Kobieta"
+                                )
+                                Checkbox(
+                                    checked = isFemaleChecked.value,
+                                    onCheckedChange = {
+                                        isFemaleChecked.value = it
+                                    },
+                                )
                             }
                         }
                     }
                 }
-                Spacer(Modifier.width(20.dp))
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Sortowanie"
+                IconButton(onClick = { isSortDropdownExpanded.value = true }) {
+                    Icon(
+                        painter = painterResource("sort.svg"),
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
                     )
-                    IconButton(onClick = { isSortDropdownExpanded.value = true }) {
-                        Icon(Icons.Default.ArrowDropDown, "")
-                    }
-                    DropdownMenu(
-                        expanded = isSortDropdownExpanded.value,
-                        onDismissRequest = { isSortDropdownExpanded.value = false },
+                }
+                DropdownMenu(
+                    expanded = isSortDropdownExpanded.value,
+                    onDismissRequest = { isSortDropdownExpanded.value = false },
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier.padding(horizontal = 20.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.End,
-                            modifier = Modifier.padding(horizontal = 20.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Id"
-                                )
-                                Checkbox(
-                                    checked = sortOption.value == ClimberSortOption.ID,
-                                    onCheckedChange = {
-                                        sortOption.value = ClimberSortOption.ID
-                                        updateListDisplay()
-                                    },
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Imię i nazwisko"
-                                )
-                                Checkbox(
-                                    checked = sortOption.value == ClimberSortOption.NAME,
-                                    onCheckedChange = {
-                                        sortOption.value = ClimberSortOption.NAME
-                                        updateListDisplay()
-                                    },
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Data urodzenia"
-                                )
-                                Checkbox(
-                                    checked = sortOption.value == ClimberSortOption.YEAR,
-                                    onCheckedChange = {
-                                        sortOption.value = ClimberSortOption.YEAR
-                                        updateListDisplay()
-                                    },
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Kraj"
-                                )
-                                Checkbox(
-                                    checked = sortOption.value == ClimberSortOption.COUNTRY,
-                                    onCheckedChange = {
-                                        sortOption.value = ClimberSortOption.COUNTRY
-                                        updateListDisplay()
-                                    },
-                                )
-                            }
+                            Text(
+                                text = "Id"
+                            )
+                            Checkbox(
+                                checked = sortOption.value == ClimberSortOption.ID,
+                                onCheckedChange = {
+                                    sortOption.value = ClimberSortOption.ID
+                                    updateListDisplay()
+                                },
+                            )
                         }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Imię i nazwisko"
+                            )
+                            Checkbox(
+                                checked = sortOption.value == ClimberSortOption.NAME,
+                                onCheckedChange = {
+                                    sortOption.value = ClimberSortOption.NAME
+                                    updateListDisplay()
+                                },
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Data urodzenia"
+                            )
+                            Checkbox(
+                                checked = sortOption.value == ClimberSortOption.YEAR,
+                                onCheckedChange = {
+                                    sortOption.value = ClimberSortOption.YEAR
+                                    updateListDisplay()
+                                },
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Kraj"
+                            )
+                            Checkbox(
+                                checked = sortOption.value == ClimberSortOption.COUNTRY,
+                                onCheckedChange = {
+                                    sortOption.value = ClimberSortOption.COUNTRY
+                                    updateListDisplay()
+                                },
+                            )
+                        }
+                    }
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.clickable { isDeletingEnabled.value = !isDeletingEnabled.value },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.height(35.dp),
+                    )
+                    Switch(
+                        checked = isDeletingEnabled.value,
+                        onCheckedChange = { isDeletingEnabled.value = !isDeletingEnabled.value },
+                        modifier = Modifier.height(20.dp)
+                    )
+                }
+            }
+        )
+
+        // Each cell of a column must have the same weight.
+        val column1Weight = .1f // 10%
+        val column2Weight = .4f // 40%
+        val column3Weight = .1f // 10%
+        val column4Weight = .2f // 20%
+        val column5Weight = .15f // 15%
+        val column6Weight = .05f // 5%
+        // The LazyColumn will be our table.
+        LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
+            // Here is the header
+            item {
+                Row(Modifier.background(Color.Gray)) {
+                    TableCell(text = "Id", weight = column1Weight)
+                    TableCell(text = "Imię i nazwisko", weight = column2Weight)
+                    TableCell(text = "Płeć", weight = column3Weight)
+                    TableCell(text = "Data urodzenia", weight = column4Weight)
+                    TableCell(text = "Kraj", weight = column5Weight)
+                    TableCell(text = "Edytuj", weight = column6Weight)
+                    if (isDeletingEnabled.value) {
+                        TableCell(text = "Usuń", weight = column6Weight)
                     }
                 }
             }
-
-            Spacer(Modifier.height(10.dp))
-
-            // Each cell of a column must have the same weight.
-            val column1Weight = .1f // 10%
-            val column2Weight = .4f // 40%
-            val column3Weight = .1f // 10%
-            val column4Weight = .2f // 20%
-            val column5Weight = .15f // 15%
-            val column6Weight = .05f // 5%
-            // The LazyColumn will be our table. Notice the use of the weights below
-            LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
-                // Here is the header
-                item {
-                    Row(Modifier.background(Color.Gray)) {
-                        TableCell(text = "Id", weight = column1Weight)
-                        TableCell(text = "Imię i nazwisko", weight = column2Weight)
-                        TableCell(text = "Płeć", weight = column3Weight)
-                        TableCell(text = "Data urodzenia", weight = column4Weight)
-                        TableCell(text = "Kraj", weight = column5Weight)
-                        TableCell(text = "EDIT", weight = column6Weight)
-                        TableCell(text = "X", weight = column6Weight)
-                    }
+            // Here are all the lines of your table.
+            items(climberList) {
+                val sex = when (it.sex) {
+                    Sex.MAN.name -> "Mężczyzna"
+                    Sex.WOMAN.name -> "Kobieta"
+                    else -> "-"
                 }
-                // Here are all the lines of your table.
-                items(climberList) {
-                    val sex = when (it.sex) {
-                        Sex.MAN.name -> "Mężczyzna"
-                        Sex.WOMAN.name -> "Kobieta"
-                        else -> "-"
-                    }
-                    Row(Modifier.fillMaxWidth().clickable { navigateToClimberDetails(it.id) }) {
-                        TableCell(text = it.id, weight = column1Weight)
-                        TableCell(text = it.name, weight = column2Weight)
-                        TableCell(text = sex, weight = column3Weight)
-                        TableCell(text = it.dateOfBirth ?: "-", weight = column4Weight)
-                        TableCell(text = it.country, weight = column5Weight)
-                        TableCell(
-                            image = Icons.Default.Edit,
-                            weight = column6Weight,
-                            onClick = { showEditClimberDialog(it.id) })
+                Row(Modifier.fillMaxWidth().clickable { navigateToClimberDetails(it.id) }) {
+                    TableCell(text = it.id, weight = column1Weight)
+                    TableCell(text = it.name, weight = column2Weight)
+                    TableCell(text = sex, weight = column3Weight)
+                    TableCell(text = it.dateOfBirth ?: "-", weight = column4Weight)
+                    TableCell(text = it.country, weight = column5Weight)
+                    TableCell(
+                        image = Icons.Default.Edit,
+                        weight = column6Weight,
+                        onClick = { showEditClimberDialog(it.id) })
+                    if (isDeletingEnabled.value) {
                         TableCell(
                             image = Icons.Default.Delete,
                             weight = column6Weight,

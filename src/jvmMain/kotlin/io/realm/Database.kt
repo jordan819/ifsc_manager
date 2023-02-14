@@ -357,6 +357,20 @@ class Database(
         }
     }
 
+    suspend fun updateLeadResult(id: String, newValue: LeadResultRealm) {
+        Arbor.d("Updating lead result with id $id...")
+        realm.write {
+            val leadResult = this.query<LeadResultRealm>("id == $0", id).first().find() ?: return@write
+            leadResult.date = newValue.date
+            leadResult.competitionTitle = newValue.competitionTitle
+            leadResult.competitionCity = newValue.competitionCity
+            leadResult.rank = newValue.rank
+            leadResult.qualification = newValue.qualification
+            leadResult.semiFinal = newValue.semiFinal
+            leadResult.final = newValue.final
+        }
+    }
+
     /**
      * Returns list of lead results for certain climber.
      *
@@ -434,6 +448,12 @@ class Database(
 
     fun getSpeedResultsById(id: String): SpeedResultRealm? =
         realm.query<SpeedResultRealm>("id==$0", id).first().find()
+
+    fun getLeadResultsById(id: String): LeadResultRealm? =
+        realm.query<LeadResultRealm>("id==$0", id).first().find()
+
+    fun getBoulderResultsById(id: String): BoulderResultRealm? =
+        realm.query<BoulderResultRealm>("id==$0", id).first().find()
 
 
 }

@@ -83,9 +83,19 @@ fun ClimberDetailsScreen(
 
     val isClimberDataEditable = climber.recordType == RecordType.UNOFFICIAL
 
-    val isEditDialogVisible = remember { mutableStateOf(false to "") }
-    fun showEditDialog(resultId: String) {
-        isEditDialogVisible.value = true to resultId
+    val isSpeedEditDialogVisible = remember { mutableStateOf(false to "") }
+    fun showSpeedEditDialog(resultId: String) {
+        isSpeedEditDialogVisible.value = true to resultId
+    }
+
+    val isLeadEditDialogVisible = remember { mutableStateOf(false to "") }
+    fun showLeadEditDialog(resultId: String) {
+        isLeadEditDialogVisible.value = true to resultId
+    }
+
+    val isBoulderEditDialogVisible = remember { mutableStateOf(false to "") }
+    fun showBoulderEditDialog(resultId: String) {
+        isBoulderEditDialogVisible.value = true to resultId
     }
 
     @Composable
@@ -105,7 +115,13 @@ fun ClimberDetailsScreen(
                 }
             }
             items(leadResults.value) {
-                Row(Modifier.fillMaxWidth()) {
+                Row(Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (isClimberDataEditable) {
+                            showLeadEditDialog(it.id)
+                        }
+                    }) {
                     TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
                     TableCell(text = it.competitionCity, weight = weight2)
@@ -148,7 +164,7 @@ fun ClimberDetailsScreen(
                     .fillMaxWidth()
                     .clickable {
                         if (isClimberDataEditable) {
-                            showEditDialog(it.id)
+                            showSpeedEditDialog(it.id)
                         }
                     }) {
                     TableCell(text = it.date, weight = weight1)
@@ -184,7 +200,13 @@ fun ClimberDetailsScreen(
                 }
             }
             items(boulderResults.value) {
-                Row(Modifier.fillMaxWidth()) {
+                Row(Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (isClimberDataEditable) {
+                            showBoulderEditDialog(it.id)
+                        }
+                    }) {
                     TableCell(text = it.date, weight = weight1)
                     TableCell(text = it.rank?.toString() ?: "-", weight = weight1)
                     TableCell(text = it.competitionCity, weight = weight2)
@@ -416,20 +438,52 @@ fun ClimberDetailsScreen(
             BOULDER -> BoulderTable()
             ANALYSIS -> Analysis()
         }
-        if (isEditDialogVisible.value.first) {
+        if (isSpeedEditDialogVisible.value.first) {
             Dialog(
                 title = "Aktualizacja wyniku",
-                content = DialogContentEditResult(
+                content = DialogContentEditSpeedResult(
                     database = database,
                     coroutineScope = coroutineScope,
-                    resultId = isEditDialogVisible.value.second,
+                    resultId = isSpeedEditDialogVisible.value.second,
                 ) {
                     leadResults.value = database.getLeadResultsByClimberId(climber.climberId)
                     speedResults.value = database.getSpeedResultsByClimberId(climber.climberId)
                     boulderResults.value = database.getBoulderResultsByClimberId(climber.climberId)
-                    isEditDialogVisible.value = false to "0"
+                    isSpeedEditDialogVisible.value = false to "0"
                 },
-                onCloseRequest = { isEditDialogVisible.value = false to "0" },
+                onCloseRequest = { isSpeedEditDialogVisible.value = false to "0" },
+            )
+        }
+        if (isLeadEditDialogVisible.value.first) {
+            Dialog(
+                title = "Aktualizacja wyniku",
+                content = DialogContentEditLeadResult(
+                    database = database,
+                    coroutineScope = coroutineScope,
+                    resultId = isLeadEditDialogVisible.value.second,
+                ) {
+                    leadResults.value = database.getLeadResultsByClimberId(climber.climberId)
+                    speedResults.value = database.getSpeedResultsByClimberId(climber.climberId)
+                    boulderResults.value = database.getBoulderResultsByClimberId(climber.climberId)
+                    isLeadEditDialogVisible.value = false to "0"
+                },
+                onCloseRequest = { isLeadEditDialogVisible.value = false to "0" },
+            )
+        }
+        if (isBoulderEditDialogVisible.value.first) {
+            Dialog(
+                title = "Aktualizacja wyniku",
+                content = DialogContentEditBoulderResult(
+                    database = database,
+                    coroutineScope = coroutineScope,
+                    resultId = isLeadEditDialogVisible.value.second,
+                ) {
+                    leadResults.value = database.getLeadResultsByClimberId(climber.climberId)
+                    speedResults.value = database.getSpeedResultsByClimberId(climber.climberId)
+                    boulderResults.value = database.getBoulderResultsByClimberId(climber.climberId)
+                    isLeadEditDialogVisible.value = false to "0"
+                },
+                onCloseRequest = { isBoulderEditDialogVisible.value = false to "0" },
             )
         }
     }

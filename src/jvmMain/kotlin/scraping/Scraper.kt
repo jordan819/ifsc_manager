@@ -25,7 +25,6 @@ import scraping.model.lead.LeadGeneral
 import scraping.model.speed.SpeedFinal
 import scraping.model.speed.SpeedQualification
 import scraping.model.speed.SpeedResult
-import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -113,6 +112,11 @@ class Scraper(
             } catch (_: NoSuchElementException) {
                 continue@loop
             }
+        }
+        _state.update { uiState ->
+            uiState.copy(
+                log = "Pobieranie zawodników zostało zakończone!"
+            )
         }
         driver.close()
         val stop = System.currentTimeMillis()
@@ -229,7 +233,11 @@ class Scraper(
                     try {
                         _state.update { uiState ->
                             uiState.copy(
-                                log = "Pobieranie wyników:\nLiga: $leagueToFetch\nRok:$currentYear\nLink:${data.href}"
+                                log = "Pobieranie wyników:\n" +
+                                        "Liga: $leagueToFetch\n" +
+                                        "Rok:$currentYear\n" +
+                                        "Id wydarzenia:${data.href.split("&")[1].split("=")[1]}\n" +
+                                        "Id tabeli: ${data.href.split("&")[2].split("=")[1]}"
                             )
                         }
                         fetchTableContent(

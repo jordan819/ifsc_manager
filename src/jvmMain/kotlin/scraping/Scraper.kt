@@ -3,6 +3,9 @@ package scraping
 import com.toxicbakery.logging.Arbor
 import io.realm.Database
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import org.openqa.selenium.By
 import org.openqa.selenium.TimeoutException
 import org.openqa.selenium.WebDriverException
@@ -44,7 +47,6 @@ class Scraper(
     private fun setupDriverOptions() {
         // Download driver from here: https://chromedriver.chromium.org/downloads
         // Check Chrome version here: chrome://settings/help
-        // TODO: add support for Linux
         val os = System.getProperty("os.name").toLowerCase()
         if (os.startsWith("windows")) {
             System.setProperty("webdriver.chrome.driver", "chromedriver.exe")
@@ -77,6 +79,13 @@ class Scraper(
         return driverVersion to chromeVersion
     }
 
+    private val _state = MutableStateFlow(State())
+    val state = _state.asStateFlow()
+
+    data class State(
+        val log: String = ""
+    )
+
     /**
      * Fetches data about all registered [climbers][Climber].
      *
@@ -94,8 +103,14 @@ class Scraper(
                 driver.get(url + climberId)
                 val climber = getClimberDataFromTable(climberId, driver) ?: continue@loop
                 database.writeClimber(climber)
+
+                _state.update { uiState ->
+                    uiState.copy(
+                        log = "Pobieranie zawodnika z id: ${climber.climberId}..."
+                    )
+                }
+
             } catch (_: NoSuchElementException) {
-                Arbor.d("Successfully fetched ${climberId - 1} climbers")
                 continue@loop
             }
         }
@@ -103,34 +118,6 @@ class Scraper(
         val stop = System.currentTimeMillis()
         val interval = TimeUnit.MILLISECONDS.toSeconds(stop - start)
         Arbor.d("Selenium fetched ${climberId - 1} climbers in ${interval}s")
-    }
-
-    suspend fun fetchNewClimbers() {
-        Arbor.d("Fetching new climbers only...")
-        val oldClimbersIdList = database.getAllClimbers().map { it.id }
-        var climberId = 1
-        while (climberId < MAX_CLIMBER_ID) {
-            if (climberId.toString() !in oldClimbersIdList) {
-                fetchSingleClimber(climberId)
-            }
-            climberId++
-        }
-        Arbor.d("Finished fetching new climbers")
-    }
-
-    private suspend fun fetchSingleClimber(climberId: Int) {
-        Arbor.d("Fetching climber with id: $climberId...")
-        val url = "https://www.ifsc-climbing.org/index.php?option=com_ifsc&task=athlete.display&id="
-        val driver = ChromeDriver(driverOptions)
-        try {
-            driver.get(url + climberId)
-            val climber = getClimberDataFromTable(climberId, driver) ?: return
-            database.writeClimber(climber)
-            Arbor.d(climber.toString())
-        } catch (_: NoSuchElementException) {
-            Arbor.e("Climber with id $climberId could not be fetched")
-        }
-        driver.close()
     }
 
     private fun getClimberDataFromTable(climberId: Int, driver: ChromeDriver): Climber? {
@@ -167,6 +154,11 @@ class Scraper(
      */
     suspend fun fetchEvents() {
         Arbor.d("Fetching events...")
+        _state.update { uiState ->
+            uiState.copy(
+                log = "Inicjowanie pobierania wyników..."
+            )
+        }
         val driver = ChromeDriver(driverOptions)
         val url = "https://www.ifsc-climbing.org/index.php/world-competition/calendar"
 
@@ -235,6 +227,11 @@ class Scraper(
                 val competitionsDriver = ChromeDriver(driverOptions)
                 competitions.forEach { data ->
                     try {
+                        _state.update { uiState ->
+                            uiState.copy(
+                                log = "Pobieranie wyników:\nLiga: $leagueToFetch\nRok:$currentYear\nLink:${data.href}"
+                            )
+                        }
                         fetchTableContent(
                             url = data.href,
                             type = data.type,
@@ -249,6 +246,11 @@ class Scraper(
             } while ((currentYear ?: 0) > 2010)
         }
         driver.close()
+        _state.update { uiState ->
+            uiState.copy(
+                log = "Pobieranie wyników zostało zakończone!"
+            )
+        }
         Arbor.d("All available events fetched")
     }
 

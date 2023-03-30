@@ -1,7 +1,6 @@
 package ui.feature.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -45,7 +44,7 @@ fun HomeScreen(
         if (driverVersion == null) {
             val message: AnnotatedString = buildAnnotatedString {
                 val str =
-                    "Nie znaleziono sterownika!\n\nPobierz sterownik i umieść go w tej samej lokalizacji co aplikacja."
+                    "Nie znaleziono sterownika!\n\nPobierz sterownik i umieść go w folderze z aplikacją."
                 val startIndex = str.indexOf("Pobierz")
                 val endIndex = startIndex + 7
                 append(str)
@@ -78,7 +77,7 @@ fun HomeScreen(
         if (driverVersion != chromeVersion) {
             val message: AnnotatedString = buildAnnotatedString {
                 val str = "Niezgodna wersja sterownika!\n\n" +
-                        "Pobierz sterownik dla wersji Chrome $chromeVersion i umieść go w tej samej lokalizacji co aplikacja."
+                        "Pobierz sterownik dla wersji Chrome $chromeVersion i umieść go w folderze z aplikacją."
                 val startIndex = str.indexOf("Pobierz")
                 val endIndex = startIndex + 7
                 append(str)

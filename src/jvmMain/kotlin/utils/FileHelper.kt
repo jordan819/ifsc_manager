@@ -24,8 +24,7 @@ class FileHelper {
                 }
             }
         } else {
-            // TODO: add support for MacOS
-            Arbor.wtf("Unknown OS")
+            Arbor.wtf("Unsupported OS")
         }
 
         isVisible = true

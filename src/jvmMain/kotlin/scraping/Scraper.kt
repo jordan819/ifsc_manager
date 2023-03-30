@@ -46,7 +46,7 @@ class Scraper(
     private fun setupDriverOptions() {
         // Download driver from here: https://chromedriver.chromium.org/downloads
         // Check Chrome version here: chrome://settings/help
-        val os = System.getProperty("os.name").toLowerCase()
+        val os = System.getProperty("os.name").lowercase(Locale.getDefault())
         if (os.startsWith("windows")) {
             System.setProperty("webdriver.chrome.driver", "chromedriver.exe")
         } else if (os.startsWith("mac")) {
@@ -191,15 +191,11 @@ class Scraper(
                     yearSelectDropdown.selectByVisibleText((currentYear - 1).toString())
                 }
 
-                delay(1000)
-
                 leagueSelectDropdown.selectByVisibleText(leagueToFetch)
 
                 currentYear = yearSelectDropdown.firstSelectedOption.text.toInt()
                 Arbor.d("---------------- Fetching data for year: $currentYear, league: $leagueToFetch ----------------")
-
-                delay(1000)
-
+                delay(500)
                 try {
                     wait.until(
                         ExpectedConditions.visibilityOfElementLocated(By.className("competition"))
@@ -229,7 +225,11 @@ class Scraper(
                     }
                 }
                 val competitionsDriver = ChromeDriver(driverOptions)
+                var hehe = 0
                 competitions.forEach { data ->
+                    if (hehe > 12) {
+                        return
+                    }
                     try {
                         _state.update { uiState ->
                             uiState.copy(
@@ -240,12 +240,15 @@ class Scraper(
                                         "Id tabeli: ${data.href.split("&")[2].split("=")[1]}"
                             )
                         }
-                        fetchTableContent(
-                            url = data.href,
-                            type = data.type,
-                            date = data.date,
-                            driver = competitionsDriver
-                        )
+                        delay(1500)
+                        hehe++
+                        Arbor.wtf(hehe.toString())
+//                        fetchTableContent(
+//                            url = data.href,
+//                            type = data.type,
+//                            date = data.date,
+//                            driver = competitionsDriver
+//                        )
                     } catch (e: TimeoutException) {
                         Arbor.e("Could not fetch data from ${data.href}")
                     }

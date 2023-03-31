@@ -36,9 +36,7 @@ import ui.feature.climberdetails.ContentType.ANALYSIS
 import ui.feature.climberdetails.ContentType.BOULDER
 import ui.feature.climberdetails.ContentType.LEAD
 import ui.feature.climberdetails.ContentType.SPEED
-import ui.feature.climberdetails.chart.SpeedProgressComparativeChart
-import ui.feature.climberdetails.chart.SpeedProgressIndividualChart
-import ui.feature.climberdetails.chart.SuccessFailRatioPercentageChart
+import ui.feature.climberdetails.chart.*
 import utils.AppColors
 import utils.ImageLoader
 
@@ -53,7 +51,9 @@ fun ClimberDetailsScreen(
     if (climber == null) return
 
     val leadResults = remember { mutableStateOf(database.getLeadResultsByClimberId(climber.climberId)) }
-    val speedResults = remember { mutableStateOf(database.getSpeedResultsByClimberId(climber.climberId)) }
+    val speedResults = remember { mutableStateOf(database.getSpeedResultsByClimberId(climber.climberId).filter {
+        (it.quarter?.toDoubleOrNull() ?: 0.0) < 90.0
+    }) }
     val boulderResults = remember { mutableStateOf(database.getBoulderResultsByClimberId(climber.climberId)) }
 
     val isImageLoading = remember { mutableStateOf(true) }
@@ -222,9 +222,13 @@ fun ClimberDetailsScreen(
     @Composable
     fun Analysis() {
         when (chartSelected.value) {
-            SPEED_PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.value.sortedBy { it.date })
-            SPEED_PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climber.climberId, database)
+            PROGRESS_INDIVIDUAL -> SpeedProgressIndividualChart(speedResults.value.sortedBy { it.date })
+            PROGRESS_COMPARATIVE -> SpeedProgressComparativeChart(climber.climberId, database)
             SUCCESS_FAIL_RATIO -> SuccessFailRatioPercentageChart(climber.climberId, database)
+            COUNTRIES_TOP -> CountriesTopChart(database)
+            COUNTRIES_AVERAGE -> CountriesAverageChart(database)
+            PROGRESS_BY_CLIMBER_AGE -> ProgressByClimberAge(climber.climberId, database)
+            TIME_THRESHOLDS -> AverageTimeThresholds(database)
             else -> {}
         }
     }
@@ -386,7 +390,8 @@ fun ClimberDetailsScreen(
                                 Row(
                                     modifier = Modifier
                                         .clickable {
-                                            chartSelected.value = SPEED_PROGRESS_INDIVIDUAL
+                                            isDropdownExpanded.value = false
+                                            chartSelected.value = PROGRESS_INDIVIDUAL
                                             selectedResultType.value = ANALYSIS
                                         }
                                         .align(Alignment.CenterHorizontally)
@@ -399,7 +404,8 @@ fun ClimberDetailsScreen(
                                 Row(
                                     modifier = Modifier
                                         .clickable {
-                                            chartSelected.value = SPEED_PROGRESS_COMPARATIVE
+                                            isDropdownExpanded.value = false
+                                            chartSelected.value = PROGRESS_COMPARATIVE
                                             selectedResultType.value = ANALYSIS
                                         }
                                         .align(Alignment.CenterHorizontally)
@@ -412,6 +418,7 @@ fun ClimberDetailsScreen(
                                 Row(
                                     modifier = Modifier
                                         .clickable {
+                                            isDropdownExpanded.value = false
                                             chartSelected.value = SUCCESS_FAIL_RATIO
                                             selectedResultType.value = ANALYSIS
                                         }
@@ -421,6 +428,78 @@ fun ClimberDetailsScreen(
                                 ) {
                                     Text(
                                         text = "Udział dyskwalifikacji we wszystkich startach",
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                Spacer(Modifier.height(5.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            isDropdownExpanded.value = false
+                                            chartSelected.value = COUNTRIES_TOP
+                                            selectedResultType.value = ANALYSIS
+                                        }
+                                        .align(Alignment.CenterHorizontally)
+                                        .background(AppColors.Blue)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Rekordy krajów",
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                Spacer(Modifier.height(5.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            isDropdownExpanded.value = false
+                                            chartSelected.value = COUNTRIES_AVERAGE
+                                            selectedResultType.value = ANALYSIS
+                                        }
+                                        .align(Alignment.CenterHorizontally)
+                                        .background(AppColors.Blue)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Średnie krajów",
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                Spacer(Modifier.height(5.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            isDropdownExpanded.value = false
+                                            chartSelected.value = PROGRESS_BY_CLIMBER_AGE
+                                            selectedResultType.value = ANALYSIS
+                                        }
+                                        .align(Alignment.CenterHorizontally)
+                                        .background(AppColors.Blue)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Wyniki zawodnika od jego wieku",
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                Spacer(Modifier.height(5.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            isDropdownExpanded.value = false
+                                            chartSelected.value = TIME_THRESHOLDS
+                                            selectedResultType.value = ANALYSIS
+                                        }
+                                        .align(Alignment.CenterHorizontally)
+                                        .background(AppColors.Blue)
+                                        .padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Progi czasowe",
                                         color = Color.White,
                                         fontSize = 14.sp
                                     )
@@ -490,9 +569,13 @@ fun ClimberDetailsScreen(
 }
 
 enum class ChartType {
-    SPEED_PROGRESS_INDIVIDUAL,
-    SPEED_PROGRESS_COMPARATIVE,
+    PROGRESS_INDIVIDUAL,
+    PROGRESS_COMPARATIVE,
+    PROGRESS_BY_CLIMBER_AGE,
     SUCCESS_FAIL_RATIO,
+    COUNTRIES_TOP,
+    COUNTRIES_AVERAGE,
+    TIME_THRESHOLDS,
 }
 
 object ContentType {

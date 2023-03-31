@@ -5,6 +5,9 @@ import io.realm.model.BoulderResultRealm
 import io.realm.model.ClimberRealm
 import io.realm.model.LeadResultRealm
 import io.realm.model.SpeedResultRealm
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import scraping.model.Climber
 import scraping.model.RecordType
 import scraping.model.Sex
@@ -31,6 +34,13 @@ class Database(
         .name(databaseName)
         .build()
     private val realm = Realm.open(configuration)
+
+    private val _state = MutableStateFlow(State())
+    val state = _state.asStateFlow()
+
+    data class State(
+        val log: String? = null
+    )
 
     /**
      * Allows user to save data about a certain player to database. In case record with given id already exists,
@@ -107,8 +117,13 @@ class Database(
 
     suspend fun writeLeadResults(
         results: List<LeadResultRealm>,
-    ) =
-        results.forEach { result ->
+    ) {
+        results.forEachIndexed { index, result ->
+            _state.update { uiState ->
+                uiState.copy(
+                    log = "${index + 1}/${results.size}"
+                )
+            }
             realm.write {
                 if (!this.query<LeadResultRealm>("id == $0", result.id).find().isEmpty()) {
                     Arbor.e("Lead result with id $result.id already exists - skipping")
@@ -129,6 +144,12 @@ class Database(
                 })
             }
         }
+        _state.update { uiState ->
+            uiState.copy(
+                log = null
+            )
+        }
+    }
 
     suspend fun writeBoulderResults(
         results: List<BoulderGeneral>,
@@ -172,8 +193,13 @@ class Database(
 
     suspend fun writeBoulderResults(
         results: List<BoulderResultRealm>,
-    ) =
-        results.forEach { result ->
+    ) {
+        results.forEachIndexed { index, result ->
+            _state.update { uiState ->
+                uiState.copy(
+                    log = "${index + 1}/${results.size}"
+                )
+            }
             realm.write {
                 if (!this.query<BoulderResultRealm>("id == $0", result.id).find().isEmpty()) {
                     Arbor.e("Lead result with id $result.id already exists - skipping")
@@ -194,6 +220,12 @@ class Database(
                 })
             }
         }
+        _state.update { uiState ->
+            uiState.copy(
+                log = null
+            )
+        }
+    }
 
     /**
      * Allows user to save data about all results from SPEED type of event to database.
@@ -247,8 +279,13 @@ class Database(
         }
     }
 
-    suspend fun writeSpeedResults(results: List<SpeedResultRealm>) =
-        results.forEach { result ->
+    suspend fun writeSpeedResults(results: List<SpeedResultRealm>) {
+        results.forEachIndexed { index, result ->
+            _state.update { uiState ->
+                uiState.copy(
+                    log = "${index + 1}/${results.size}"
+                )
+            }
             realm.write {
                 if (!this.query<SpeedResultRealm>("id == $0", result.id).find().isEmpty()) {
                     Arbor.e("Speed result with id $result.id already exists - skipping")
@@ -273,6 +310,12 @@ class Database(
                 })
             }
         }
+        _state.update { uiState ->
+            uiState.copy(
+                log = null
+            )
+        }
+    }
 
     private fun generateResultId(competitionId: String, climberId: String) = competitionId + "_" + climberId
 

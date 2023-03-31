@@ -24,6 +24,8 @@ import io.realm.Database
 import io.realm.model.ClimberRealm
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import scraping.model.RecordType
@@ -48,6 +50,8 @@ fun ClimberListScreen(
     val initDone = remember { mutableStateOf(false) }
 
     var climberList by remember { mutableStateOf(database.getAllClimbers()) }
+
+    val logs = remember { mutableStateOf<String?>(null) }
 
     // Filter List
     val hasAnyResultChecked = remember { mutableStateOf(true) }
@@ -168,14 +172,20 @@ fun ClimberListScreen(
         importMode.value = null
         isImportDropdownExpanded.value = false
         if (file != null) {
+            database.state.onEach {
+                logs.value = it.log
+            }
+                .launchIn(coroutineScope)
             coroutineScope.launch {
                 try {
                     when (mode) {
                         InputDataType.CLIMBER -> {
                             val climbers = CsvHelper().readClimbers(file.path)
-                            climbers.forEach {
-                                database.writeClimber(it)
+                            climbers.forEachIndexed { index, climber ->
+                                logs.value = "${index + 1}/${climbers.size}"
+                                database.writeClimber(climber)
                             }
+                            logs.value = null
                         }
 
                         InputDataType.SPEED -> {
@@ -508,6 +518,18 @@ fun ClimberListScreen(
                 }
             }
         )
+
+        logs.value?.let { log ->
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = log,
+                    fontSize = 24.sp,
+                )
+            }
+        }
 
         // Each cell of a column must have the same weight.
         val column1Weight = .1f // 10%

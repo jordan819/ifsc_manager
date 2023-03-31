@@ -50,6 +50,7 @@ class Root(
             navigateToClimberList = { router.push(Configuration.ClimberList) },
             database = database,
             errorDisplay = errorDisplay,
+            coroutineScope = coroutineScope,
         ).asContent { HomeUi(it) }
 
     private fun climberList(): Content =

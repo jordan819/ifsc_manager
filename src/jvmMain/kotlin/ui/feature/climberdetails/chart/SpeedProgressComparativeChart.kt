@@ -19,9 +19,7 @@ fun SpeedProgressComparativeChart(
 ) {
 
     val climberResults = database.getSpeedResultsByClimberId(climberId)
-    val competitionIds = climberResults.map { it.id.split("_")[0] }.groupBy { it }
-    val allResults =
-        database.getAllSpeeds().filter { it.climberId != climberId && it.id.split("_")[0] in competitionIds }
+    val allResults = database.getAllSpeeds().filter { it.climberId != climberId }
 
     val climberLaneA: List<Double> = climberResults.mapNotNull { result: SpeedResultRealm ->
         result.laneA?.toDoubleOrNull()
@@ -50,7 +48,6 @@ fun SpeedProgressComparativeChart(
     val allQuarter: List<Double> = allResults.mapNotNull { result: SpeedResultRealm ->
         result.quarter?.toDoubleOrNull()
     }
-
     val climberSemi: List<Double> = climberResults.mapNotNull { result: SpeedResultRealm ->
         result.semiFinal?.toDoubleOrNull()
     }

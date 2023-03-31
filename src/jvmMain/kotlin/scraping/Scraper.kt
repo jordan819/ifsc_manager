@@ -175,7 +175,7 @@ class Scraper(
         )
 
         leaguesToFetch.forEach { leagueToFetch ->
-            var currentYear: Int? = 2023 // TODO: set to null in future
+            var currentYear: Int? = null
             yearsLoop@ do {
                 driver.get(url)
                 driver.switchTo().frame("calendar")
